@@ -8,8 +8,9 @@ python3 scripts/download.py     --id_file_path src/three_groups.json\
 ```
 ## metadata_extractor
 ```
-python3 scripts/download.py     --id_file_path src/metadata_test_glbs.json\
-                                --obj_save_path src/metadata_test/
+python3 scripts/download2.py    --id_file_path src/metadata_test.json\
+                                --save_path src/\
+                                --store_in_save_path 0
 ```
 
 Download Blender:
@@ -31,9 +32,9 @@ Run metadata_extractor
 ```
 cd ..
 
-scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_extractor.py -- \
+scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_multiproc.py -- \
         --save_path metadata/ \
-        --objects_path src/metadata_test/group_1/glbs/000-023/
+        --objects_path src/metadata_test_paths/
 ```
 <!-- \
     --cpu_count 16 \

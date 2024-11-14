@@ -5,6 +5,7 @@ from typing import List, Dict, Any
 import argparse
 import bpy
 import sys
+import json
 
 from concurrent.futures import ProcessPoolExecutor
 
@@ -34,7 +35,7 @@ def parse_args():
         "--objects_path",
         type=str,
         # default=default_objects_path,
-        help="The path of the objects to work with.")
+        help="The path to the folder of .json files containing object paths to work with.")
     parser.add_argument( # --cpu_count
         "--cpu_count",
         type=int,
@@ -181,8 +182,13 @@ def main():
     print(f"Working with {args.cpu_count} CPUs")
 
     # loading object paths
-    object_files = [os.path.join(args.objects_path, f) for f in os.listdir(args.objects_path) if f.endswith(('.glb', '.fbx'))]
-
+    paths_to_jsons = [os.path.join(args.objects_path, f) for f in os.listdir(args.objects_path)]
+    object_files = []
+    for json_file in paths_to_jsons:
+        with open(json_file, "r") as file:
+            data = json.load(file)
+            _, paths = next(iter(data.items()))
+            object_files.extend(paths)
     # Splitting based on cpu count
     object_chunks = split_list(object_files, args.cpu_count)
 
