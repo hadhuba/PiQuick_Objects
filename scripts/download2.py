@@ -27,21 +27,28 @@ Usage:
 
 import objaverse
 import multiprocessing
-import argparse
 import os
 import json
+import argparse
 
-def search_in_database(folder: str, uids) -> bool:
+def search_in_database(folder: str, uids):
     filepaths = []
     ids_to_download = []
+    
+    if not os.path.exists(folder):
+        for uid in uids:
+            path_to_id = os.path.join(folder, uid + ".glb")
+            filepaths.append(path_to_id)
+            ids_to_download = uids
+    else:
+        downloaded_files = os.listdir(folder)
+        downloaded_ids = {file.split('.')[0] for file in downloaded_files}
+        for uid in uids:
+            path_to_id = os.path.join(folder, uid + ".glb")
+            filepaths.append(path_to_id)
+            if uid not in downloaded_ids:
+                ids_to_download.append(uid)
 
-    downloaded_files = os.listdir(folder)
-    downloaded_ids = {file.split('.')[0] for file in downloaded_files}  # Extract IDs from filenames
-    for uid in uids:
-        path_to_id = os.path.join(folder, uid + ".glb")
-        filepaths.append(path_to_id)
-        if uid not in downloaded_ids:
-            ids_to_download.append(uid)
     return filepaths, ids_to_download
             
 def write_group_to_json(group, filepaths, separate):
@@ -56,18 +63,19 @@ def write_group_to_json(group, filepaths, separate):
     group_json_path = os.path.join(output_json_dir, group+".json")
     with open(group_json_path, "w") as json_file:
         json.dump(data, json_file, indent=2)
-    print(f"Json file with id paths written for group: {group}")
+    print(f"\nJson file with id paths written for group: {group}\n{group_json_path}\n")
 
 # Argument parsing for input and output file paths
 parser = argparse.ArgumentParser()
 parser.add_argument("--id_file_path", type=str, required=True)
 parser.add_argument("--save_path", type=str)
-parser.add_argument("--store_in_save_path",type=bool, default=False)
+parser.add_argument("--store_in_save_path",type=int, default=0)
 args = parser.parse_args()
 
 # Set default for save_path if not provided
 if args.save_path is None:
     args.save_path = os.path.dirname(os.path.abspath(args.id_file_path))
+    
 
 # Determine available CPU count for multiprocessing
 multiprocessing_cpu_count = multiprocessing.cpu_count()
@@ -76,9 +84,6 @@ print(objaverse.__version__)
 # Load object IDs from specified JSON file
 with open(args.id_file_path, "r") as json_file:
     grouped_ids = json.load(json_file)
-
-# Set base path for Objaverse downloads
-# objaverse.BASE_PATH = './'
 
 # Process each group of IDs
 for group, ids in grouped_ids.items():
@@ -90,19 +95,15 @@ for group, ids in grouped_ids.items():
         os.makedirs(obj_save_path, exist_ok=True)
     # storing glbs in folder given in argument
     else:
-        obj_save_path = os.path.join(args.save_path, group)
+        id_file_name = os.path.basename(args.id_file_path).split('.')[-2]
+        obj_save_path = os.path.join(args.save_path, id_file_name, group)
         os.makedirs(obj_save_path, exist_ok=True)
-
+        
     # Checking if files are already downloaded
     final_save_path = os.path.join(obj_save_path, "glbs", "000-023")
+    print(f"Saving object files to {obj_save_path}")
 
-    if not os.path.exists(final_save_path):
-        print(f"{group} path does not exist; starting new downloads.")
-        ids_to_download = uids
-        filepaths = []
-    else:
-        print(f"{group} path exists; some files may already be downloaded.")
-        filepaths, ids_to_download = search_in_database(final_save_path, uids)
+    filepaths, ids_to_download = search_in_database(final_save_path, uids)
     
     # If all exists
     if not ids_to_download:
