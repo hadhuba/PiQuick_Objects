@@ -1063,9 +1063,9 @@ def main():
         default=16)
     parser.add_argument( #--only_northern_hemisphere
         "--only_northern_hemisphere",
-        action="store_true",
+        type=int,
         help="Only render the northern hemisphere of the object.",
-        default=False,
+        default=0,
     )
     parser.add_argument(
         "--elevation",

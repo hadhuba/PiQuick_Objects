@@ -65,3 +65,22 @@ scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_e
     --run_edge \
     --run_animation
 -->
+## Render objects:
+
+Run render.py
+```
+python3 scripts/render.py \
+    --id_file_path "src/three_groups.json" \
+    --save_path "src/object_database/" \
+    --num_of_gpus 2 \
+    --output_dir "results/" \
+    --num_images 12 \
+    --azimuth_aug  1      \
+    --elevation_aug 0     \
+    --resolution 256      \
+    --mode_multi 1        \
+    --mode_static 0       \
+    --mode_front_view 0   \
+    --mode_four_view 0
+
+```
