@@ -65,7 +65,23 @@ scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_e
     --run_edge \
     --run_animation
 -->
-## Render objects:
+
+### render.py
+
+Download Blender:
+```
+cd scripts
+
+wget https://download.blender.org/release/Blender3.2/blender-3.2.2-linux-x64.tar.xz && \
+    tar -xf blender-3.2.2-linux-x64.tar.xz && \
+    rm blender-3.2.2-linux-x64.tar.xz
+```
+
+If you're on a headless Linux server, install Xorg and start it:
+```
+sudo apt-get install xserver-xorg -y && \
+  sudo python3 start_x_server.py start
+```
 
 Run render.py
 ```
@@ -84,3 +100,5 @@ python3 scripts/render.py \
     --mode_four_view 0
 
 ```
+    --engine "CYCLES" \
+    --only_northern_hemisphere

@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import random
+import time
 import logging
 
 import concurrent.futures
@@ -17,11 +18,16 @@ def parse_arguments():
         type=str, 
         default="src/three_groups.json",
         help="Path to json file containing groups of ids to download and render, objects in a group to be rendered in one scene")
-    parser.add_argument( #--obj_save_path
-        "--obj_save_path", 
+    parser.add_argument( #--save_path
+        "--save_path", 
         type=str, 
         default="src/object_database/",
-        help="Path to store and/or download glb files. ")
+        help="Path to store and/or download glb files, and/or find json with object paths. < download.py argument >")
+    parser.add_argument( #--store_in_save_path
+        "--store_in_save_path",
+        type=int, 
+        default=0,
+        help="download.py argument")
     parser.add_argument( #--num_of_gpus
         "--num_of_gpus",
         type=int,
@@ -36,15 +42,6 @@ def parse_arguments():
         type=int, 
         default=16,
         help="number of images to take")
-    parser.add_argument("--azimuth_aug",  type=int, default=0)
-    parser.add_argument("--elevation_aug", type=int, default=0,)
-    parser.add_argument("--resolution", default=256)
-    parser.add_argument("--mode_multi",  type=int, default=0)
-    parser.add_argument("--mode_static", type=int, default=0)
-    parser.add_argument("--mode_front_view",  type=int, default=0)
-    parser.add_argument("--mode_four_view", type=int, default=0)
-    
-    """
     parser.add_argument( #--engine
         "--engine", 
         type=str, 
@@ -53,13 +50,22 @@ def parse_arguments():
         help="")
     parser.add_argument( #--only_northern_hemisphere
         "--only_northern_hemisphere",
-        action="store_true",
+        type=int,
         help="Only render the northern hemisphere of the object.",
-        default=False)
-    parser.add_argument(
+        default=0)
+    parser.add_argument("--azimuth_aug",  type=int, default=0)
+    parser.add_argument("--elevation_aug", type=int, default=0,)
+    parser.add_argument("--resolution", default=256)
+    parser.add_argument("--mode_multi",  type=int, default=0)
+    parser.add_argument("--mode_static", type=int, default=0)
+    parser.add_argument("--mode_front_view",  type=int, default=0)
+    parser.add_argument("--mode_four_view", type=int, default=0)
+  
+    """parser.add_argument(
         "--scale", 
         type=float, 
         default=0.8)
+    
     parser.add_argument( #--camera_dist ## lehet nem kell
         "--camera_dist",
         type=int,
@@ -68,22 +74,65 @@ def parse_arguments():
         "--camera_movement",
         type=str, 
         default=None,
-        help="file path to camera coordinates json")
-        
-    """
+        help="file path to camera coordinates json")"""
+    
     return parser.parse_args()
 
 def download_groups(args):
-    # downloading the glb files to separate folders as groups
+    # downloading and/or locating the glb files 
+
+    # run download.py
     current_dir = os.path.dirname(os.path.abspath(__file__))
     download_py_path = os.path.join(current_dir, "download.py")
-    download_args = ["--id_file_path", args.id_file_path, "--obj_save_path", args.obj_save_path]
-    # run download.py
-    return subprocess.run(["python3", download_py_path] + download_args)
+    download_args = [   "--id_file_path", args.id_file_path, 
+                        "--save_path", args.save_path, 
+                        "--store_in_save_path", str(args.store_in_save_path)]
+    subprocess.run(["python3", download_py_path] + download_args)
+
+    
+    id_file_name = os.path.basename(args.id_file_path).split('.')[-2]
+    output_json_dir = os.path.join(args.save_path, id_file_name+"_paths")
+
+    """ # Wait for the output directory and files
+    max_wait_time = 30  # seconds
+    elapsed_time = 0
+    while not os.path.exists(output_json_dir) or not os.listdir(output_json_dir):
+        time.sleep(1)
+        elapsed_time += 1
+        if elapsed_time > max_wait_time:
+            print("Error: Timeout while waiting for the download to complete.")
+            exit(1)"""
+
+    groups = []
+    group_names = []
+    separates = []
+    separate_names = []
+
+
+    path_files = os.listdir(output_json_dir)
+    for json_file in path_files:
+        json_file_path = os.path.join(output_json_dir, json_file)
+        group_name = json_file.split('.')[0]
+        with open(json_file_path, "r") as f:
+            data = json.load(f)
+        
+        for separate_key, objects_paths in data.items():
+            separate = int(separate_key) 
+            if separate:  # to render separately
+                separates.append(objects_paths)
+                separate_names.append(group_name)
+            else:  # to render in one scene
+                groups.append(objects_paths)
+                group_names.append(group_name)
+
+    return groups, group_names, separates, separate_names
+            
+    
+
     
 # Render command execution function for multiprocessing
 # def execute_command(args, objects_paths, gpu_id, separate_render):
-def execute_command( args, objects_paths, gpu_id, separate_render):
+def execute_command(objects_paths, save_file_name, gpu_id, separate_render):
     
     output_dir_name = args.id_file_path.split('.')[-2]
     
@@ -100,7 +149,7 @@ def execute_command( args, objects_paths, gpu_id, separate_render):
         elevation=0
 
     # output dir + name of json file + elevation/azimuth
-    output_dir_path = os.path.join(args.output_dir,  output_dir_name)
+    output_dir_path = os.path.join(args.output_dir,  output_dir_name, save_file_name)
 
     command = f'CUDA_VISIBLE_DEVICES={gpu_id} export DISPLAY=:0.1 && scripts/blender-3.2.2-linux-x64/blender \
         --background --python scripts/blender_render.py -- \
@@ -115,13 +164,10 @@ def execute_command( args, objects_paths, gpu_id, separate_render):
             --mode_multi {args.mode_multi}\
             --mode_static {args.mode_static}\
             --mode_front {args.mode_front_view}\
-            --mode_four_view {args.mode_four_view}'
+            --mode_four_view {args.mode_four_view}\
+            --engine {args.engine} \
+            --only_northern_hemisphere {args.only_northern_hemisphere}'
 
-    #--engine {args.engine} \
-    #--only_northern_hemisphere {args.only_northern_hemisphere}
-     
-    # print('command:',command)
-    
     # Setting up logger
     logger = logging.getLogger("my_logger")
     # TODO task id ami összeáll a group name-ből vagy az obj id-ből
@@ -132,10 +178,6 @@ def execute_command( args, objects_paths, gpu_id, separate_render):
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
 
-    # Üzenetek logolása
-    # logger.info("Ez egy információs üzenet.")
-    # logger.warning("Ez egy figyelmeztető üzenet.")
-
     #running
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     logger.info(f"Executing command: {command}")
@@ -145,37 +187,16 @@ def execute_command( args, objects_paths, gpu_id, separate_render):
    
     
 
-
-def main():
+if __name__ == "__main__":
     args = parse_arguments()
     
-    #checking if object id-s are available
-    try:
-        with open(args.id_file_path, "r") as json_file:
-            grouped_ids = json.load(json_file)
-    except (FileNotFoundError, json.JSONDecodeError):
+    #downloading objects
+
+    if not os.path.exists(args.id_file_path):
         print(f"The given --id_file_path file does not exist: {args.id_file_path}")
         exit(1)
 
-    #downloading objects
-    download_groups(args)
-    
-    # preparing to distribute objects, saving download_folder:separately
-    results = {} 
-    for group, ids in grouped_ids.items():
-        group_save_path = os.path.join(args.obj_save_path, group, "glbs", "000-023")
-        results[group_save_path]=ids[0]
-
-    groups = []
-    separates = []
-
-    for path, sep in results.items():
-        objects = [os.path.join(path, f) for f in os.listdir(path) if f.endswith(('.glb', '.fbx'))]
-        
-        if sep == 1:  # to render separately
-            separates.extend(objects)
-        else:  # to render in one scene
-            groups.append(objects)
+    groups, group_names, separates, separate_names = download_groups(args)
 
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -184,30 +205,17 @@ def main():
 
     # Assign each group (non-separated) to a specific GPU
     for i, group in enumerate(groups):
-        # render_tasks.append((group, i % args.num_of_gpus, False))
-        render_tasks.append((args, group, i % args.num_of_gpus, 0))
+        render_tasks.append((group, group_names[i], i % args.num_of_gpus, False))
 
     # Assign each separate object to a GPU
-    for i, obj in enumerate(separates):
-        # render_tasks.append(([obj], i % args.num_of_gpus, True))
-        render_tasks.append((args, [obj], i % args.num_of_gpus, 1))
+    k = 0
+    for i, sep_objects in enumerate(separates):
+        for obj in sep_objects:
+            k=k+1
+            render_tasks.append(([obj], separate_names[i], k % args.num_of_gpus, True))
 
-    # print("render_task: ",render_tasks[0])
-    # print("render_task: ",render_tasks[-1])
-    
-    """
-    with concurrent.futures.ProcessPoolExecutor(max_workers=args.num_of_gpus) as executor:
-        futures = [executor.submit(execute_command, args, glb_list, gpu_id, sep) for glb_list, gpu_id, sep in render_tasks]
-        logging.basicConfig(level=logging.INFO)
-        concurrent.futures.wait(futures)
-    """
     # Execute rendering tasks in parallel on available GPUs
     with multiprocessing.Pool(processes=gpu_count) as pool:
-        logging.basicConfig(level=logging.INFO)
         pool.starmap(execute_command, render_tasks)
         
     print("Rendering process completed.")
-    
-
-if __name__ == "__main__":
-    main()
