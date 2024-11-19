@@ -21,15 +21,19 @@ The ```download.py``` script downloads 3D objects from Objaverse based on a spec
 python3 scripts/download.py    --id_file_path src/three_groups.json\
                                 --save_path src/\
                                 --store_in_save_path 0
-<<<<<<< HEAD
-## metadata_extractor
+
+
+### metadata_extractor
+The ```metadata_extractor``` script uses Blender to extract and save metadata for a given set of objects. The key feature of this script is its flexibility in easily adding new rendering parameters or metadata extraction criteria. You can customize what metadata to extract for each 3D object and how to organize the output, making it simple to adapt the process to new requirements.
+
 ```
-python3 scripts/download2.py    --id_file_path src/metadata_test.json\
+python3 scripts/download.py    --id_file_path src/metadata_test.json\
                                 --save_path src/\
                                 --store_in_save_path 0
 ```
+This script is designed to be extended, allowing you to add additional metadata extraction features or render parameters at any point in the process.
 
-Download Blender:
+### Download Blender:
 ```
 cd scripts
 
@@ -48,11 +52,10 @@ Run metadata_extractor
 ```
 cd ..
 
-scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_multiproc.py -- \
+scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_extractor.py -- \
         --save_path metadata/ \
         --objects_path src/metadata_test_paths/
-```
-<!-- \
+```<!-- \
     --cpu_count 16 \
     --run_vertex \
     --run_armature \
@@ -62,6 +65,3 @@ scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_m
     --run_edge \
     --run_animation
 -->
-=======
-```
->>>>>>> Downloading
