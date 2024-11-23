@@ -2,7 +2,6 @@
 ### *Web application for Objaverse Tooling*
 
 PiQuick_Objects is a toolkit and web application designed for preparing datasets for large machine learning models. It allows users to download, process, and analyze 3D objects and their metadata from the Objaverse database, making it easier to curate and organize data for machine learning and other data-driven applications.
-<<<<<<< HEAD
 
 ## Main Features:
 
@@ -21,17 +20,18 @@ The ```download.py``` script downloads 3D objects from Objaverse based on a spec
 python3 scripts/download.py     --id_file_path src/three_groups.json\
                                 --obj_save_path src/three_groups/
 ```
+---------------------------
+
+
 ### metadata_extractor
 The ```metadata_extractor``` script uses Blender to extract and save metadata for a given set of objects. The key feature of this script is its flexibility in easily adding new rendering parameters or metadata extraction criteria. You can customize what metadata to extract for each 3D object and how to organize the output, making it simple to adapt the process to new requirements.
 
 ```
-python3 scripts/download.py     --id_file_path src/metadata_test_glbs.json\
-                                --obj_save_path src/metadata_test/
+python3 scripts/download.py    --id_file_path src/metadata_test.json\
+                                --save_path src/\
+                                --store_in_save_path 0
 ```
 This script is designed to be extended, allowing you to add additional metadata extraction features or render parameters at any point in the process.
-
-
-
 
 ### Download Blender:
 ```
@@ -54,7 +54,7 @@ cd ..
 
 scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_extractor.py -- \
         --save_path metadata/ \
-        --objects_path src/metadata_test/group_1/glbs/000-023/
+        --objects_path src/metadata_test_paths/
 ```
 <!-- \
     --cpu_count 16 \
@@ -66,46 +66,11 @@ scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_e
     --run_edge \
     --run_animation
 -->
-=======
->>>>>>> Metadata_Extraction
-
+------------
 ### render.py
-
-<<<<<<< HEAD
-Download Blender:
-```
-=======
-**Metadata Collection**: Gather specific metadata from the Objaverse dataset with configurable extraction options.
-
-**Object Organization and Rendering**: Utilize Blender to render 3D objects and arrange them in scenes, including handling multi-object scenes for large-scale rendering tasks.
-
-
-**Web Interface**: Enables browsing, filtering, and customized downloads, allowing users to select and flag objects of interest based on metadata, 3D previews, and other features.
-
-## Setup and Installation
-
-### download.py
-The ```download.py``` script downloads 3D objects from Objaverse based on a specified list of object IDs. This script checks existing files to avoid redundant downloads, handles missing objects, and supports multiprocessing to improve speed by leveraging available CPU cores.
-
-```                             
-python3 scripts/download.py    --id_file_path src/three_groups.json\
-                                --save_path src/\
-                                --store_in_save_path 0
-
-
-### metadata_extractor
-The ```metadata_extractor``` script uses Blender to extract and save metadata for a given set of objects. The key feature of this script is its flexibility in easily adding new rendering parameters or metadata extraction criteria. You can customize what metadata to extract for each 3D object and how to organize the output, making it simple to adapt the process to new requirements.
-
-```
-python3 scripts/download.py    --id_file_path src/metadata_test.json\
-                                --save_path src/\
-                                --store_in_save_path 0
-```
-This script is designed to be extended, allowing you to add additional metadata extraction features or render parameters at any point in the process.
 
 ### Download Blender:
 ```
->>>>>>> Metadata_Extraction
 cd scripts
 
 wget https://download.blender.org/release/Blender3.2/blender-3.2.2-linux-x64.tar.xz && \
@@ -119,7 +84,6 @@ sudo apt-get install xserver-xorg -y && \
   sudo python3 start_x_server.py start
 ```
 
-<<<<<<< HEAD
 Run render.py
 ```
 python3 scripts/render.py \
@@ -139,22 +103,3 @@ python3 scripts/render.py \
 ```
     --engine "CYCLES" \
     --only_northern_hemisphere
-=======
-Run metadata_extractor
-```
-cd ..
-
-scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_extractor.py -- \
-        --save_path metadata/ \
-        --objects_path src/metadata_test_paths/
-```<!-- \
-    --cpu_count 16 \
-    --run_vertex \
-    --run_armature \
-    --run_mesh \
-    --run_poly \
-    --run_material \
-    --run_edge \
-    --run_animation
--->
->>>>>>> Metadata_Extraction
