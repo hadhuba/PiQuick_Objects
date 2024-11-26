@@ -25,7 +25,7 @@ web/
 *.flutter-plugins-dependencies
 
 # glb fájlok
-.glb
+*.glb
 
 # Platformfüggő fájlok
 *.log
