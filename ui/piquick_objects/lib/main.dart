@@ -4,7 +4,7 @@ import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'Viewer3D.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import 'objectNotifier.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,11 +30,9 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
-  String currentObj = 'assets/persian_lamassu_gates_of_all_nations_persepolis.glb';
   var history = <String>[];
-  
-  GlobalKey? historyListKey;
 
+  GlobalKey? historyListKey;
   List<dynamic> filteredFiles = [
     
   ];
@@ -49,20 +47,11 @@ class MyAppState extends ChangeNotifier {
     'assets/toy_freddy.glb',
   ];  
 
-
   var filters = <String, Map<String, dynamic>>{
     'armature': {'min': null, 'max': null},
     'weight': {'min': null, 'max': null},
     'height': {'min': null, 'max': null},
   };
-
-
-  //ezt átírni egy kattintásra, getPrev(){}
-  void setToCurrent(String file) {
-    history.insert(0, currentObj!);
-    currentObj = file;
-    notifyListeners();
-  }
 
   void setFilter(String property, {dynamic min, dynamic max}) {
     if (filters.containsKey(property)) {
@@ -122,11 +111,8 @@ class MyAppState extends ChangeNotifier {
   }
 }
 
-
-
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
   final String title;
 
   @override
@@ -140,7 +126,6 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) { 
 
     var colorScheme = Theme.of(context).colorScheme;
-
 
     Widget page;
     switch (selectedIndex) {
@@ -166,7 +151,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-          // Navigációs gombok a lap alján
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -194,7 +178,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ],
           ),
-          // Alsó navigációs sáv
           BottomNavigationBar(
             items: const [
               BottomNavigationBarItem(
@@ -229,159 +212,118 @@ class ObjectPickerPage extends StatefulWidget {
 class _ObjectPickerPageState extends State<ObjectPickerPage> {
   
   //fields for this particular page
-  late Flutter3DController controller= Flutter3DController();
+  
+  
   String? chosenAnimation;
   String? chosenTexture;
-
-  // void update3DModel(String newObj) {
-  //   controller.resetAnimation(); // Előző animáció leállítása
-  //   controller.resetCameraOrbit(); // Kamera visszaállítása
-  //   controller.setTexture(textureName: ''); // Textúra alaphelyzetbe
-  //   setState(() {
-  //     obj = newObj; // Frissítjük az aktuális modellt
-  //   });
-  // }
-
+  
   @override
   void initState() {
     super.initState();
-
-    // Flutter3DController inicializálása
-    controller;
-    controller.onModelLoaded.addListener(() {
-      debugPrint('Model is loaded: ${controller.onModelLoaded.value}');
-    });
+    
   }
-  Future<String?> showPickerDialog(String title, List<String> inputList,
-      [String? chosenItem]) async {
-    return await showModalBottomSheet<String>(
-      context: context,
-      builder: (ctx) {
-        return SizedBox(
-          height: 250,
-          child: inputList.isEmpty
-              ? Center(
-                  child: Text('$title list is empty'),
-                )
-              : ListView.separated(
-                  itemCount: inputList.length,
-                  padding: const EdgeInsets.only(top: 16),
-                  itemBuilder: (ctx, index) {
-                    return InkWell(
-                      onTap: () {
-                        Navigator.pop(context, inputList[index]);
-                      },
-                      child: Container(
-                        height: 50,
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('${index + 1}'),
-                            Text(inputList[index]),
-                            Icon(
-                              chosenItem == inputList[index]
-                                  ? Icons.check_box
-                                  : Icons.check_box_outline_blank,
-                            )
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                  separatorBuilder: (ctx, index) {
-                    return const Divider(
-                      color: Colors.grey,
-                      thickness: 0.6,
-                      indent: 10,
-                      endIndent: 10,
-                    );
-                  },
-                ),
-        );
-      },
-    );
-  }
+  
+  void saveObjToHistory(String newObj) {
+      context.read<MyAppState>().history.insert(0, newObj);
+      debugPrint('button clicked, Object updated to: $newObj');
+    }  
 
+
+  
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    var obj = appState.currentObj;
 
-    return Scaffold(
-      body: LayoutBuilder(
-        builder:(context, constraints) {
-          if (constraints.maxWidth < 500){
-            return Column(
-              children: [
-                Expanded(child: Scaffold( 
-                  body: Viewer3D(
-                  controller: controller,
-                  obj: obj!, // Az aktuális megjelenítendő modell
-                  showPickerDialog: showPickerDialog,
-                  chosenAnimation: chosenAnimation,
-                  chosenTexture: chosenTexture)
-                  )),
-                Flexible( child:Scaffold(
-                    appBar: AppBar(title: const Text("Group List")),
-                    body: ListView(
-                      children: appState.groups.entries.map((entry) {
-                        String groupName = entry.key; // Csoport neve
-                        List<String> items = entry.value; // Csoport elemei
+    return ChangeNotifierProvider(
+      create: (_) => ObjectNotifier('assets/legendary_chicken_warrior_animated_35_motions.glb','',''),
+      child: Scaffold(
+      // body: LayoutBuilder(
+      //   builder:(context, constraints) {
+      //     if (constraints.maxWidth < 500){
+      //       return Column(
+      //         children: [
+      //           Expanded(child: Scaffold( 
+      //             body: Viewer3D(
+      //             controller: controller,
+      //             showPickerDialog: showPickerDialog,
+      //             objectNotifier: _objectNotifier,)
+      //             )),
+      //           Flexible(child: Scaffold(
+      //               appBar: AppBar(title: const Text("Listed Objects")),
+      //               body: ListView.builder(
+      //                 itemCount: appState.listedObjects.length,
+      //                 itemBuilder: (context, index) {
+      //                   final file = appState.listedObjects[index];
+      //                   return ListTile(
+      //                     title: Text(file.split('.')[0].split('/')[1]),
+      //                     onTap: () => updateObj(file)
+      //                   );
+      //                 } ,
+      //               ),
+      //             ),),
+      //           Flexible( child:Scaffold(
+      //               appBar: AppBar(title: const Text("Group List")),
+      //               body: ListView(
+      //                 children: appState.groups.entries.map((entry) {
+      //                   String groupName = entry.key; // Csoport neve
+      //                   List<String> items = entry.value; // Csoport elemei
 
-                        return ExpansionTile(
-                          title: Text(groupName),
-                          children: items.map((item) {
-                            return ListTile(
-                              title: Text(item),
-                              onTap: () {
-                                // Kezeljük az egyedi elemek kiválasztását
-                                //button to remove from group
-                                //button to select to view in 3D
-                              },
-                            );
-                          }).toList(),
-                        );
-                      }).toList(),
-                    ),
-                  ),)
+      //                   return ExpansionTile(
+      //                     title: Text(groupName),
+      //                     children: items.map((item) {
+      //                       return ListTile(
+      //                         title: Text(item),
+      //                         onTap: () {
+      //                           // Kezeljük az egyedi elemek kiválasztását
+      //                           //button to remove from group
+      //                           //button to select to view in 3D
+      //                         },
+      //                       );
+      //                     }).toList(),
+      //                   );
+      //                 }).toList(),
+      //               ),
+      //             ),)
                 
-              ],
-            );
-          } else {
-            return Row(
+      //         ],
+      //       );
+      //     } else {
+      //       return 
+            body: Row(
               children: [                
-                  Expanded(child:Scaffold( 
-                    body: Viewer3D(
-                      controller: controller,
-                      obj: obj!, // Az aktuális megjelenítendő modell
-                      showPickerDialog: showPickerDialog,
-                      chosenAnimation: chosenAnimation,
-                      chosenTexture: chosenTexture)
-                    )
-                  ),
+                  Expanded(child: Scaffold( 
+                    body: Viewer3D()
+                    ) ),
                   Flexible(child: Column(children: [
-                    Flexible( child:Scaffold(
+                    Flexible(child: Scaffold(
                     appBar: AppBar(title: const Text("Group List")),
                     body: ListView(
                       children: appState.groups.entries.map((entry) {
-                        String groupName = entry.key; // Csoport neve
-                        List<String> items = entry.value; // Csoport elemei
-
+                        String groupName = entry.key;
+                        List<String> items = entry.value;
                         return ExpansionTile(
                           title: Text(groupName),
                           children: items.map((item) {
                             return ListTile(
-                              title: Text(item),
-                              onTap: () {
-
-                                setState(() {
-                                  appState.currentObj = item;
-                                },);
-                                // Kezeljük az egyedi elemek kiválasztását
-                                //button to remove from group
-                                //button to select to view in 3D
-                              },
+                              title: Row(
+                                children: [
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        saveObjToHistory(item);
+                                        context.read<ObjectNotifier>().updateObj(item);},
+                                      child: Text(item),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                                    onPressed: () {
+                                      debugPrint('Remove button clicked for: $item');
+                                      appState.remFromGroup(groupName, item);
+                                    },
+                                  ),
+                                ],
+                              ),
                             );
                           }).toList(),
                         );
@@ -412,7 +354,9 @@ class _ObjectPickerPageState extends State<ObjectPickerPage> {
                         final file = appState.listedObjects[index];
                         return ListTile(
                           title: Text(file.split('.')[0].split('/')[1]),
-                          onTap: () => appState.setToCurrent(file),
+                          onTap: () {
+                            saveObjToHistory(file);
+                            context.read<ObjectNotifier>().updateObj(file);}
                         );
                       } ,
                     ),
@@ -420,11 +364,12 @@ class _ObjectPickerPageState extends State<ObjectPickerPage> {
                   ],)
                   )                  
                 ]
-            );
-          }
-        }
-      ), 
-    );
+            )
+          // }
+        // }
+      )
+      ); 
+    // );
   }
 
 }
