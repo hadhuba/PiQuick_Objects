@@ -18,14 +18,14 @@ PiQuick_Objects is a toolkit and web application designed for preparing datasets
 The ```download.py``` script downloads 3D objects from Objaverse based on a specified list of object IDs. This script checks existing files to avoid redundant downloads, handles missing objects, and supports multiprocessing to improve speed by leveraging available CPU cores.
 ```
 python3 scripts/download.py     --id_file_path src/three_groups.json\
-                                --obj_save_path src/three_groups/
+                                --save_path src/three_groups/
 ```
 ### metadata_extractor
 The ```metadata_extractor``` script uses Blender to extract and save metadata for a given set of objects. The key feature of this script is its flexibility in easily adding new rendering parameters or metadata extraction criteria. You can customize what metadata to extract for each 3D object and how to organize the output, making it simple to adapt the process to new requirements.
 
 ```
 python3 scripts/download.py     --id_file_path src/metadata_test_glbs.json\
-                                --obj_save_path src/metadata_test/
+                                --save_path src/metadata_test/
 ```
 This script is designed to be extended, allowing you to add additional metadata extraction features or render parameters at any point in the process.
 
