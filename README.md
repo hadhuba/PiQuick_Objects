@@ -23,8 +23,8 @@ python3 scripts/download.py    --id_file_path src/three_groups.json\
                                 --store_in_save_path 0
 
 
-### metadata_extractor
-The ```metadata_extractor``` script uses Blender to extract and save metadata for a given set of objects. The key feature of this script is its flexibility in easily adding new rendering parameters or metadata extraction criteria. You can customize what metadata to extract for each 3D object and how to organize the output, making it simple to adapt the process to new requirements.
+### metadata_multiproc
+The ```metadata_multiproc``` script uses Blender to extract and save metadata for a given set of objects. The key feature of this script is its flexibility in easily adding new rendering parameters or metadata extraction criteria. You can customize what metadata to extract for each 3D object and how to organize the output, making it simple to adapt the process to new requirements.
 
 ```
 python3 scripts/download.py    --id_file_path src/metadata_test.json\
@@ -48,11 +48,12 @@ sudo apt-get install xserver-xorg -y && \
   sudo python3 start_x_server.py start
 ```
 
-Run metadata_extractor
+EITHER
+Run metadata_multiproc
 ```
 cd ..
 
-scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_extractor.py -- \
+scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_multiproc.py -- \
         --save_path metadata/ \
         --objects_path src/metadata_test_paths/
 ```<!-- \
@@ -65,3 +66,5 @@ scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_e
     --run_edge \
     --run_animation
 -->
+OR
+run_metadata

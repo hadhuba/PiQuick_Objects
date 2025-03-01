@@ -21,7 +21,7 @@ from metadata_scripts.metad_edge import count_edge
 def parse_args():
     parser = argparse.ArgumentParser(description="Process metadata extraction arguments.")
 
-    # Alapértelmezett mentési útvonal beállítása
+    # Setting default save path
     # default_save_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "metadata/")
     # default_objects_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src/glb_files/group_1/glbs/000-023/")
 
