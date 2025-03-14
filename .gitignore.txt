@@ -1,0 +1,50 @@
+# Flutter által generált fájlok és mappák
+build/
+.android/
+.ios/
+.macos/
+.web/
+windows/
+linux/
+web/
+
+# Harmadik féltől származó csomagok
+.dart_tool/
+.packages/
+
+# Flutter IDE specifikus fájlok
+.vscode/
+.idea/
+*.iml
+
+# Privát adatok és tokenek
+*.keystore
+*.jks
+.env
+*.flutter-plugins
+*.flutter-plugins-dependencies
+
+# glb fájlok
+*.glb
+
+# Platformfüggő fájlok
+*.log
+*.lock
+*.pyc
+*.pyo
+*.DS_Store
+
+# MacOS és Linux ideiglenes fájlok
+*.swp
+*.class
+
+# Képernyőképek és generált fájlok
+screenshot.png
+coverage/
+
+# Node.js és más fejlesztési fájlok, ha vannak
+node_modules/
+
+# Helyi konfigurációs fájlok
+*.local
+*.cache
