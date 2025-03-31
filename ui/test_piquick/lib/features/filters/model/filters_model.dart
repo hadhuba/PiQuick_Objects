@@ -27,7 +27,7 @@ class Filters {
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{'filters': filters.map((x) => x.toMap()).toList()};
+    return {'filters': filters.map((filter) => filter.toMap()).toList()};
   }
 
   factory Filters.fromMap(Map<String, dynamic> map) {

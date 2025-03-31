@@ -6,21 +6,12 @@ class Filter {
   num? minValue;
   num? maxValue;
 
-  Filter({
-    required this.type,
-    this.minValue,
-    this.maxValue,
-  }) {
+  Filter({required this.type, this.minValue, this.maxValue}) {
     minValue = minValue ?? null;
     maxValue = maxValue ?? null;
   }
 
-
-  Filter copyWith({
-    String? type,
-    num? minValue,
-    num? maxValue,
-  }) {
+  Filter copyWith({String? type, num? minValue, num? maxValue}) {
     return Filter(
       type: type ?? this.type,
       minValue: minValue ?? this.minValue,
@@ -46,19 +37,20 @@ class Filter {
 
   String toJson() => json.encode(toMap());
 
-  factory Filter.fromJson(String source) => Filter.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory Filter.fromJson(String source) =>
+      Filter.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() => 'Filter(type: $type, minValue: $minValue, maxValue: $maxValue)';
+  String toString() =>
+      'Filter(type: $type, minValue: $minValue, maxValue: $maxValue)';
 
   @override
   bool operator ==(covariant Filter other) {
     if (identical(this, other)) return true;
-  
-    return 
-      other.type == type &&
-      other.minValue == minValue &&
-      other.maxValue == maxValue;
+
+    return other.type == type &&
+        other.minValue == minValue &&
+        other.maxValue == maxValue;
   }
 
   @override

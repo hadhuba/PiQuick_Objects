@@ -4,10 +4,12 @@ import 'package:test_piquick/features/filters/model/filter.dart';
 import 'package:test_piquick/features/filters/model/filters_model.dart';
 
 class FiltersState {
-  final Filters filters;
+  final AsyncValue<Filters> filters;
   final AsyncValue<List<ThreeDObject>> objects;
-  final Future<void> Function()  applyFiltersCallback; // Callback to call ViewModel function
-  final void Function({required String type, num? minValue, num? maxValue})  updateFilterCallback; // Callback to call ViewModel function
+  final Future<void> Function()
+  applyFiltersCallback; // Callback to call ViewModel function
+  final void Function({required String type, num? minValue, num? maxValue})
+  updateFilterCallback; // Callback to call ViewModel function
   FiltersState({
     required this.filters,
     required this.objects,
@@ -16,7 +18,7 @@ class FiltersState {
   });
 
   FiltersState copyWith({
-    Filters? filters,
+    AsyncValue<Filters>? filters,
     AsyncValue<List<ThreeDObject>>? objects,
     Future<void> Function()? applyFiltersCallback,
     void Function({required String type, num? minValue, num? maxValue})?
@@ -30,6 +32,15 @@ class FiltersState {
     );
   }
 
-  List<Filter> get filtersList => filters.filters;
-  bool get isLoading => objects is AsyncLoading;
+  // Getter to extract the filters list from AsyncValue<Filters>
+  List<Filter>? get filtersList {
+    return filters.when(
+      data:
+          (filters) =>
+              filters
+                  .filters, // Return the list of filters if data is available
+      loading: () => null, // Return null if loading
+      error: (error, stackTrace) => null, // Return null if there's an error
+    );
+  }
 }

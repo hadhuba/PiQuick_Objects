@@ -27,7 +27,9 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = ref.watch(filtersViewModelProvider).isLoading == true;
+    final isLoading =
+        ref.watch(filtersViewModelProvider).filters.isLoading == true;
+
     final filtersList = ref.watch(filtersViewModelProvider).filtersList;
 
     // ref.listen(filtersViewModelProvider, (previous, next){
@@ -76,16 +78,19 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                         Expanded(
                           // Ensure ListView.builder has a constrained height
                           child: ListView.builder(
-                            itemCount: filtersList.length,
+                            itemCount: filtersList!.length, //TODO null check
+
                             itemBuilder: (context, index) {
                               final filter = filtersList[index];
                               return ListTile(
                                 title: Text(filter.type),
                                 subtitle: Row(
                                   children: [
-                                    Text('Min: '),
+                                    const Text('Min: '),
                                     DropdownButton<int>(
-                                      value: filter.minValue as int?,
+                                      value:
+                                          filter.minValue
+                                              as int?, // Show current minValue as placeholder
                                       items:
                                           List.generate(10, (i) => i).map((
                                             int value,
@@ -96,19 +101,23 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                             );
                                           }).toList(),
                                       onChanged: (value) {
-                                        ref
-                                            .read(filtersViewModelProvider)
-                                            .updateFilterCallback(
-                                              type: filter.type,
-                                              minValue: value!,
-                                              maxValue:
-                                                  filter.maxValue as int? ?? 0,
-                                            );
+                                        if (value != null) {
+                                          ref
+                                              .read(filtersViewModelProvider)
+                                              .updateFilterCallback(
+                                                type: filter.type,
+                                                minValue:
+                                                    value, // Update the minValue
+                                                maxValue: filter.maxValue,
+                                              );
+                                        }
                                       },
                                     ),
-                                    Text(' Max: '),
+                                    const Text(' Max: '),
                                     DropdownButton<int>(
-                                      value: filter.maxValue as int?,
+                                      value:
+                                          filter.maxValue
+                                              as int?, // Show current maxValue as placeholder
                                       items:
                                           List.generate(10, (i) => i).map((
                                             int value,
@@ -119,14 +128,16 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                             );
                                           }).toList(),
                                       onChanged: (value) {
-                                        ref
-                                            .read(filtersViewModelProvider)
-                                            .updateFilterCallback(
-                                              type: filter.type,
-                                              minValue:
-                                                  filter.minValue as int? ?? 0,
-                                              maxValue: value!,
-                                            );
+                                        if (value != null) {
+                                          ref
+                                              .read(filtersViewModelProvider)
+                                              .updateFilterCallback(
+                                                type: filter.type,
+                                                maxValue:
+                                                    value, // Update the maxValue
+                                                minValue: filter.minValue,
+                                              );
+                                        }
                                       },
                                     ),
                                   ],
