@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'view/filters_view.dart';
+import 'view/filters_page.dart';
 import 'view/render_view.dart';
 
 void main() {
@@ -40,10 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _showFiltersView() {
-    showDialog(
-      context: context,
-      builder: (context) => FiltersView(),
-    );
+    showDialog(context: context, builder: (context) => FiltersPage());
   }
 
   void _navigateToRenderView() {
