@@ -47,61 +47,31 @@ class FilterRemoteRepository {
     }
   }
 
-  Future<Either<AppFailure, Filters>> getFilterOptions() async {
-    try {
-      // Mocked example data
-      final Map<String, dynamic> mockResponse = {
-        "filters": [
-          {"type": "vertex", "minValue": null, "maxValue": null},
-          {"type": "bones", "minValue": null, "maxValue": null},
-          {"type": "edges", "minValue": null, "maxValue": null},
-          {"type": "poly", "minValue": null, "maxValue": null},
-          {"type": "mesh", "minValue": null, "maxValue": null},
-          {"type": "armature", "minValue": null, "maxValue": null},
-        ],
-      };
-
-      // Simulate a delay to mimic network latency
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      // Parse the mocked data into Filters
-      final List<Filter> filtersList =
-          mockResponse['filters']
-              .map<Filter>(
-                (filter) => Filter.fromMap(filter as Map<String, dynamic>),
-              )
-              .toList();
-
-      final Filters filters = Filters(filters: filtersList);
-
-      return Right(filters);
-    } catch (e) {
-      return Left(AppFailure(e.toString()));
-    }
-  }
-
-  // You can add more filter-related API methods here
   // Future<Either<AppFailure, Filters>> getFilterOptions() async {
   //   try {
-  //     final response = await http.get(
-  //       Uri.parse('${ServerConstants.serverUrl}/filters/options'),
-  //       headers: {'Content-Type': 'application/json'},
-  //     );
+  //     // Mocked example data
+  //     final Map<String, dynamic> mockResponse = {
+  //       "filters": [
+  //         {"type": "vertex", "minValue": null, "maxValue": null},
+  //         {"type": "bones", "minValue": null, "maxValue": null},
+  //         {"type": "edges", "minValue": null, "maxValue": null},
+  //         {"type": "poly", "minValue": null, "maxValue": null},
+  //         {"type": "mesh", "minValue": null, "maxValue": null},
+  //         {"type": "armature", "minValue": null, "maxValue": null},
+  //       ],
+  //     };
 
-  //     final responseBody = jsonDecode(response.body);
+  //     // Simulate a delay to mimic network latency
+  //     await Future.delayed(const Duration(milliseconds: 500));
 
-  //     if (response.statusCode != 200) {
-  //       return Left(
-  //         AppFailure(responseBody['detail'] ?? 'Failed to get filter options'),
-  //       );
-  //     }
-
+  //     // Parse the mocked data into Filters
   //     final List<Filter> filtersList =
-  //         responseBody['filters']
-  //             .map((filter) => Filter.fromMap(filter as Map<String, dynamic>))
+  //         mockResponse['filters']
+  //             .map<Filter>(
+  //               (filter) => Filter.fromMap(filter as Map<String, dynamic>),
+  //             )
   //             .toList();
 
-  //     // Wrap the filters list in a Filters object
   //     final Filters filters = Filters(filters: filtersList);
 
   //     return Right(filters);
@@ -109,4 +79,34 @@ class FilterRemoteRepository {
   //     return Left(AppFailure(e.toString()));
   //   }
   // }
+
+  // You can add more filter-related API methods here
+  Future<Either<AppFailure, Filters>> getFilterOptions() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ServerConstants.serverUrl}/filters/options'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      final responseBody = jsonDecode(response.body);
+
+      if (response.statusCode != 200) {
+        return Left(
+          AppFailure(responseBody['detail'] ?? 'Failed to get filter options'),
+        );
+      }
+
+      final List<Filter> filtersList =
+          responseBody['filters']
+              .map((filter) => Filter.fromMap(filter as Map<String, dynamic>))
+              .toList();
+
+      // Wrap the filters list in a Filters object
+      final Filters filters = Filters(filters: filtersList);
+
+      return Right(filters);
+    } catch (e) {
+      return Left(AppFailure(e.toString()));
+    }
+  }
 }
