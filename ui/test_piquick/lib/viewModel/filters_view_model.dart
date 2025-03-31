@@ -1,3 +1,4 @@
+import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/model/filters_model.dart';
 import 'package:test_piquick/repository/filter_remote_repository.dart';
@@ -30,35 +31,20 @@ class FiltersViewModel extends _$FiltersViewModel {
     }
   }
 
-  // Future<void> applyFilters() async {
-  //   state.objects = const AsyncValue.loading();
-
-  //   final response = await _filterRemoteRepository.applyFilters(
-  //     filters: _filters,
-  //   );
-
-  //   final val = switch (response) {
-  //     Right(value: final r) => state = AsyncValue.data(r),
-  //     Left(value: final l) =>
-  //       state = AsyncValue.error(l.message, StackTrace.current),
-  //   };
-  //   print(val);
-  // }
   Future<void> applyFilters() async {
-  // Állapot frissítése betöltési állapotra
-  state = state.copyWith(objects: const AsyncValue.loading());
+    state = state.copyWith(objects: const AsyncValue.loading());
 
-  try {
-    // Szerverhívás a szűrők alkalmazásához
     final response = await _filterRemoteRepository.applyFilters(
       filters: state.filters,
     );
-
-    // Sikeres válasz esetén az állapot frissítése az adatokkal
-    state = state.copyWith(objects: AsyncValue.data(response));
-  } catch (error, stackTrace) {
-    // Hiba esetén az állapot frissítése hibaüzenettel
-    state = state.copyWith(objects: AsyncValue.error(error, stackTrace));
+    final val = switch (response) {
+      Right(value: final r) =>
+        state = state.copyWith(objects: AsyncValue.data(r)),
+      Left(value: final l) =>
+        state = state.copyWith(
+          objects: AsyncValue.error(l.message, StackTrace.current),
+        ),
+    };
+    print(val);
   }
-}
 }

@@ -20,4 +20,5 @@ class FiltersState {
   }
 
   List<Filter> get filtersList => filters.filters;
+  bool get isLoading => objects is AsyncLoading;
 }
