@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:test_piquick/model/render_model.dart';
+import 'package:test_piquick/features/rendering/model/render_model.dart';
 
 class RenderViewModel with ChangeNotifier {
   final RenderModel _renderModel;

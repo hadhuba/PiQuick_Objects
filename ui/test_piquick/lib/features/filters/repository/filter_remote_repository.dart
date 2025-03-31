@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/core/constants/server_constants.dart';
 import 'package:test_piquick/core/failure/failure.dart';
-import 'package:test_piquick/model/3d_object.dart';
-import 'package:test_piquick/model/filters_model.dart';
+import 'package:test_piquick/features/filters/model/3d_object.dart';
+import 'package:test_piquick/features/filters/model/filters_model.dart';
 
 // Using a simple Either class since you seem to be using fpdart
 

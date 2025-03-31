@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:test_piquick/model/piquick_model.dart';
+import 'package:test_piquick/features/home/model/piquick_model.dart';
 
 class PiquickViewModel with ChangeNotifier {
   final PiquickModel _piquickModel;

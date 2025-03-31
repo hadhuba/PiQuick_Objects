@@ -1,8 +1,8 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:test_piquick/model/filters_model.dart';
-import 'package:test_piquick/repository/filter_remote_repository.dart';
-import 'package:test_piquick/viewModel/filters_state.dart';
+import 'package:test_piquick/features/filters/model/filters_model.dart';
+import 'package:test_piquick/features/filters/repository/filter_remote_repository.dart';
+import 'package:test_piquick/features/filters/viewModel/filters_state.dart';
 
 part 'filters_view_model.g.dart';
 
@@ -20,10 +20,12 @@ class FiltersViewModel extends _$FiltersViewModel {
     return FiltersState(
       filters: Filters(filters: []),
       objects: const AsyncValue.loading(),
+      applyFiltersCallback: applyFilters,
+      updateFilterCallback: updateFilter,
     );
   }
 
-  void updateFilter(String type, num minValue, num maxValue) {
+  void updateFilter({required String type, num? minValue, num? maxValue}) {
     final index = state.filtersList.indexWhere((filter) => filter.type == type);
     if (index != -1) {
       state.filtersList[index].minValue = minValue;

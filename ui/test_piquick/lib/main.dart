@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'view/filters_page.dart';
-import 'view/render_view.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
+import 'features/filters/view/filters_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ProviderScope( // Add ProviderScope at the root
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -39,14 +43,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _showFiltersView() {
-    showDialog(context: context, builder: (context) => FiltersPage());
-  }
-
-  void _navigateToRenderView() {
+  void _navigateToFiltersPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => RenderView()),
+      MaterialPageRoute(builder: (context) => const FiltersPage()),
     );
   }
 
@@ -68,13 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _showFiltersView,
+              onPressed: _navigateToFiltersPage, // Navigate to FiltersPage
               child: const Text('Show Filters View'),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _navigateToRenderView,
-              child: const Text('Go to Render View'),
             ),
           ],
         ),

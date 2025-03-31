@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test_piquick/core/widgets/loader.dart';
-import 'package:test_piquick/viewModel/filters_view_model.dart';
+import 'package:test_piquick/features/filters/viewModel/filters_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FiltersPage extends ConsumerStatefulWidget {
@@ -96,11 +96,14 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                             );
                                           }).toList(),
                                       onChanged: (value) {
-                                        viewModel.updateFilter(
-                                          filter.type,
-                                          value!,
-                                          filter.maxValue as int? ?? 0,
-                                        );
+                                        ref
+                                            .read(filtersViewModelProvider)
+                                            .updateFilterCallback(
+                                              type: filter.type,
+                                              minValue: value!,
+                                              maxValue:
+                                                  filter.maxValue as int? ?? 0,
+                                            );
                                       },
                                     ),
                                     Text(' Max: '),
@@ -116,11 +119,14 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                             );
                                           }).toList(),
                                       onChanged: (value) {
-                                        viewModel.updateFilter(
-                                          filter.type,
-                                          filter.minValue as int? ?? 0,
-                                          value!,
-                                        );
+                                        ref
+                                            .read(filtersViewModelProvider)
+                                            .updateFilterCallback(
+                                              type: filter.type,
+                                              minValue:
+                                                  filter.minValue as int? ?? 0,
+                                              maxValue: value!,
+                                            );
                                       },
                                     ),
                                   ],
@@ -131,7 +137,9 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                         ),
                         ElevatedButton(
                           onPressed: () async {
-                            context.read<FiltersViewModel>().applyFilters();
+                            ref
+                                .read(filtersViewModelProvider)
+                                .applyFiltersCallback();
                             // Handle the fetched IDs
                           },
                           child: const Text('Apply Filters'),
