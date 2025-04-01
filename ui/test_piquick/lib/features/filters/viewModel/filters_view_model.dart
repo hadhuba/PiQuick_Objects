@@ -21,8 +21,6 @@ class FiltersViewModel extends _$FiltersViewModel {
     final initialState = FiltersState(
       filters: const AsyncValue.loading(),
       objectsList: const AsyncValue.loading(),
-      applyFiltersCallback: applyFilters,
-      updateFilterCallback: updateFilter,
     );
 
     // Defer the call to fetchFilters() until after the state is initialized

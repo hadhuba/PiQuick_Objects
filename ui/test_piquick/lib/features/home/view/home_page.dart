@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_piquick/features/home/view/picker_widget.dart';
+import 'package:test_piquick/features/home/view/picker_page.dart';
 import '../../filters/view/filters_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -14,18 +14,15 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   int selectedIndex = 0;
 
-  final Flutter3DController controller = Flutter3DController();
-
   @override
   Widget build(BuildContext context) {
-
     final pages = [
-      _buildHomeContent(), // Home content with PickerWidget and Filters button.
+      PickerPage(), // PickerPage widget for 3D object selection.
       // const RenderPage(), // Render page.
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
+      appBar: AppBar(title: const Text('Piquick Objects')),
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       body: pages[selectedIndex], // Display the selected page.
       bottomNavigationBar: BottomNavigationBar(
@@ -36,7 +33,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           });
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'PickerPage'),
           BottomNavigationBarItem(
             icon: Icon(Icons.view_in_ar),
             label: 'Render',
@@ -52,7 +49,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Expanded(
-          child: PickerWidget(controller: controller), // PickerWidget.
+          child: PickerPage(controller: controller), // PickerWidget.
         ),
         const SizedBox(height: 16),
         ElevatedButton(

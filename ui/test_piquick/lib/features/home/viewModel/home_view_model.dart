@@ -115,5 +115,8 @@ class HomeViewModel extends _$HomeViewModel {
         objectsList.map((obj) => ThreeDObject(id: obj)).toList(),
       ),
     );
+    print(
+      'Objects updated Im at home view model bottom: ${state.objects.value}',
+    );
   }
 }

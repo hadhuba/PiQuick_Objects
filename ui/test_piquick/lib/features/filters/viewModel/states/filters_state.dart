@@ -5,16 +5,8 @@ import 'package:test_piquick/features/filters/model/filter.dart';
 class FiltersState {
   final AsyncValue<List<Filter>> filters;
   final AsyncValue<List<String>> objectsList;
-  final Future<void> Function() applyFiltersCallback;
-  final void Function({required String type, num? minValue, num? maxValue})
-  updateFilterCallback;
 
-  FiltersState({
-    required this.filters,
-    required this.objectsList,
-    required this.applyFiltersCallback,
-    required this.updateFilterCallback,
-  });
+  FiltersState({required this.filters, required this.objectsList});
 
   FiltersState copyWith({
     AsyncValue<List<Filter>>? filters,
@@ -26,8 +18,6 @@ class FiltersState {
     return FiltersState(
       filters: filters ?? this.filters,
       objectsList: objectsList ?? this.objectsList,
-      applyFiltersCallback: applyFiltersCallback ?? this.applyFiltersCallback,
-      updateFilterCallback: updateFilterCallback ?? this.updateFilterCallback,
     );
   }
 

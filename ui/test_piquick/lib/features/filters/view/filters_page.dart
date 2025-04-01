@@ -129,8 +129,8 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                       onChanged: (value) {
                                         if (value != null) {
                                           ref
-                                              .read(filtersViewModelProvider)
-                                              .updateFilterCallback(
+                                              .read(filtersViewModelProvider.notifier)
+                                              .updateFilter(
                                                 type: filter.type,
                                                 minValue:
                                                     value, // Update the minValue
@@ -156,8 +156,8 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                       onChanged: (value) {
                                         if (value != null) {
                                           ref
-                                              .read(filtersViewModelProvider)
-                                              .updateFilterCallback(
+                                              .read(filtersViewModelProvider.notifier)
+                                              .updateFilter(
                                                 type: filter.type,
                                                 maxValue:
                                                     value, // Update the maxValue
@@ -175,8 +175,8 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                         ElevatedButton(
                           onPressed: () async {
                             ref
-                                .read(filtersViewModelProvider)
-                                .applyFiltersCallback();
+                                .read(filtersViewModelProvider.notifier)
+                                .applyFilters();
                             // Handle the fetched IDs
                           },
                           child: const Text('Apply Filters'),
