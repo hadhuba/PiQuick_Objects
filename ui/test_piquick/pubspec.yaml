@@ -38,6 +38,7 @@ dependencies:
   flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.6.1
   http: ^1.3.0
+  flutter_3d_controller: ^2.0.2
 
 dev_dependencies:
   flutter_test:
