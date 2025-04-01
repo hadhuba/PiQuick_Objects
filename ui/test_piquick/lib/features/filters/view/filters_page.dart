@@ -11,16 +11,11 @@ class FiltersPage extends ConsumerStatefulWidget {
 }
 
 class _FiltersPageState extends ConsumerState<FiltersPage> {
-  final typeController = TextEditingController();
-  final maxValController = TextEditingController();
-  final minValController = TextEditingController();
-  final formKey = GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>(); //is it necessary?
 
+  //TODO necessary?
   @override
   void dispose() {
-    typeController.dispose();
-    maxValController.dispose();
-    minValController.dispose();
     super.dispose();
     formKey.currentState!.validate();
   }

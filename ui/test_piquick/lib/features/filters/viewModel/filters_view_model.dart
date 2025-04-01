@@ -20,7 +20,7 @@ class FiltersViewModel extends _$FiltersViewModel {
     // Initialize the state
     final initialState = FiltersState(
       filters: const AsyncValue.loading(),
-      objects: const AsyncValue.loading(),
+      objectsList: const AsyncValue.loading(),
       applyFiltersCallback: applyFilters,
       updateFilterCallback: updateFilter,
     );
@@ -33,11 +33,11 @@ class FiltersViewModel extends _$FiltersViewModel {
 
   void updateFilter({required String type, num? minValue, num? maxValue}) {
     state.filters.whenData((filters) {
-      final index = filters.filters.indexWhere((filter) => filter.type == type);
+      final index = filters.indexWhere((filter) => filter.type == type);
       if (index != -1) {
         // Update the filter values
-        filters.filters[index].minValue = minValue;
-        filters.filters[index].maxValue = maxValue;
+        filters[index].minValue = minValue;
+        filters[index].maxValue = maxValue;
 
         // Update the state with the modified filters
         state = state.copyWith(filters: AsyncValue.data(filters));
@@ -45,18 +45,6 @@ class FiltersViewModel extends _$FiltersViewModel {
       print(state.filters);
     });
   }
-
-  //   void updateFilter({required String type, num? minValue, num? maxValue}) {
-  //   state.filters.whenData((filters) {
-  //     final index = filters.filters.indexWhere((filter) => filter.type == type);
-  //     if (index != -1) {
-  //       filters.filters[index].minValue = minValue;
-  //       filters.filters[index].maxValue = maxValue;
-
-  //       state = state.copyWith(filters: AsyncValue.data(filters));
-  //     }
-  //   });
-  // }
 
   Future<void> fetchFilters() async {
     state = state.copyWith(filters: const AsyncValue.loading());
@@ -75,20 +63,36 @@ class FiltersViewModel extends _$FiltersViewModel {
 
   Future<void> applyFilters() async {
     state.filters.whenData((filters) async {
-      state = state.copyWith(objects: const AsyncValue.loading());
+      state = state.copyWith(objectsList: const AsyncValue.loading());
 
       final response = await _filterRemoteRepository.applyFilters(
         filters: filters,
       );
-      final val = switch (response) {
-        Right(value: final r) =>
-          state = state.copyWith(objects: AsyncValue.data(r)),
-        Left(value: final l) =>
-          state = state.copyWith(
-            objects: AsyncValue.error(l.message, StackTrace.current),
-          ),
+      state = switch (response) {
+        Right(value: final r) => state.copyWith(
+          objectsList: AsyncValue.data(r),
+        ),
+        Left(value: final l) => state.copyWith(
+          objectsList: AsyncValue.error(l.message, StackTrace.current),
+        ),
       };
-      print(val.objects);
+
+      // state.objects.whenData( (final r) {
+      //     state.onFiltersApplied?.call(r);
+      //   }
+      // );
+      // state.objects.when(
+      //   data: (final r) {
+      //     state.onFiltersApplied?.call(r);
+      //   },
+      //   error: (error, stackTrace) {
+      //     //TODO handle error properly
+      //     print('Error: $error');
+      //   },
+      //   loading: () {
+      //     print('Loading...');
+      //   },
+      // );
     });
   }
 }
