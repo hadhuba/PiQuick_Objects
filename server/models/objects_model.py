@@ -5,4 +5,4 @@ class ThreeDObject(BaseModel):
     id: str
 
 class ThreeDObjectsModel(BaseModel):
-    objects: List[ThreeDObject]
+    object_ids: List[str]

@@ -67,7 +67,6 @@ class FilterRemoteRepository {
         headers: {'Content-Type': 'application/json'},
       );
       print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode != 200) {

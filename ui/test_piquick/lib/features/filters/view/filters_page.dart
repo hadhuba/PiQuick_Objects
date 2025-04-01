@@ -17,7 +17,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
   @override
   void dispose() {
     super.dispose();
-    formKey.currentState!.validate();
+    // formKey.currentState!.validate();
   }
 
   @override
@@ -26,7 +26,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
         ref.watch(filtersViewModelProvider).filters.isLoading == true;
 
     final filtersList = ref.watch(filtersViewModelProvider).filtersList;
-    final objects = ref.watch(filtersViewModelProvider).objects;
+    final objects = ref.watch(filtersViewModelProvider).objectsList;
 
     // ref.listen(filtersViewModelProvider, (previous, next){
     //   //(prev, next) {
@@ -80,7 +80,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                   itemBuilder: (context, index) {
                                     final object = objectsList[index];
                                     return Text(
-                                      object.id,
+                                      object,
                                     ); // Display the ID of each object
                                   },
                                 ),

@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/filters/repository/filter_remote_repository.dart';
-import 'package:test_piquick/features/filters/viewModel/filters_state.dart';
+import 'package:test_piquick/features/filters/viewModel/states/filters_state.dart';
 
 part 'filters_view_model.g.dart';
 
@@ -42,7 +42,6 @@ class FiltersViewModel extends _$FiltersViewModel {
         // Update the state with the modified filters
         state = state.copyWith(filters: AsyncValue.data(filters));
       }
-      print(state.filters);
     });
   }
 
@@ -58,7 +57,6 @@ class FiltersViewModel extends _$FiltersViewModel {
           filters: AsyncValue.error(l.message, StackTrace.current),
         ),
     };
-    print(val.filters);
   }
 
   Future<void> applyFilters() async {
@@ -76,7 +74,7 @@ class FiltersViewModel extends _$FiltersViewModel {
           objectsList: AsyncValue.error(l.message, StackTrace.current),
         ),
       };
-
+      
       // state.objects.whenData( (final r) {
       //     state.onFiltersApplied?.call(r);
       //   }

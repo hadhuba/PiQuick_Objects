@@ -7,7 +7,7 @@ class ThreeDObject {
   late bool? isSelected;
 
   ThreeDObject({required this.id, this.path, this.isSelected}) {
-    path = 'assets/3d_objects/$id.glb';
+    path = 'http.../3d_objects/$id.glb';
     isSelected = false;
   }
 

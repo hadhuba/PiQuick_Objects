@@ -16,5 +16,6 @@ HomeRemoteRepository homeRemoteRepository(HomeRemoteRepositoryRef ref) {
 }
 
 class HomeRemoteRepository {
+  void fetchThisObject(String newObj) {}
 
 }

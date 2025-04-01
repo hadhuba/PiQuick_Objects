@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../viewModel/viewer_3d_view_model.dart';
+import 'package:test_piquick/core/widgets/loader.dart';
+import 'package:test_piquick/features/home/viewModel/home_view_model.dart';
 import 'viewer_3d_widget.dart';
 
 class PickerWidget extends ConsumerWidget {
@@ -11,24 +12,24 @@ class PickerWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final objectSrc = ref.watch(viewer3DProvider);
+    final isLoading =
+        ref.watch(homeViewModelProvider).viewer3DState.isLoading == true;
 
-    return Expanded(
-      child: Viewer3DWidget(
-        controller: controller,
-        objectSrc: objectSrc,
-        onProgress: (progress) => debugPrint('Progress: $progress'),
-        onLoad: (model) => debugPrint('Model loaded: $model'),
-        onError: (error) => debugPrint('Error: $error'),
-      ),
+    return Scaffold(
+      body:
+          isLoading
+              ? Loader()
+              : Viewer3DWidget(
+                controller: controller,
+                objectSrc: ref.watch(
+                  homeViewModelProvider.select(
+                    (state) => state.viewer3DState.value?.currentObj ?? '',
+                  ),
+                ),
+                onProgress: (progress) => debugPrint('Progress: $progress'),
+                onLoad: (model) => debugPrint('Model loaded: $model'),
+                onError: (error) => debugPrint('Error: $error'),
+              ),
     );
   }
-} 
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () {
-      //     ref
-      //         .read(viewer3DProvider.notifier)
-      //         .updateObject('new_object_path.obj');
-      //   },
-      //   child: const Icon(Icons.refresh),
-      // ),
+}
