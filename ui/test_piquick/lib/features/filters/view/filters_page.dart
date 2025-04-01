@@ -23,7 +23,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
   @override
   Widget build(BuildContext context) {
     final isLoading =
-        ref.watch(filtersViewModelProvider).filters.isLoading == true;
+        ref.watch(filtersViewModelProvider).filters.isLoading;
 
     final filtersList = ref.watch(filtersViewModelProvider).filtersList;
     final objects = ref.watch(filtersViewModelProvider).objectsList;

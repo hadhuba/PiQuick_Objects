@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:test_piquick/features/home/view/picker_page.dart';
-import '../../filters/view/filters_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -33,37 +31,13 @@ class _HomePageState extends ConsumerState<HomePage> {
           });
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'PickerPage'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'PickerPage'),
           BottomNavigationBarItem(
             icon: Icon(Icons.view_in_ar),
             label: 'Render',
           ),
         ],
       ),
-    );
-  }
-
-  // Build the content for the HomePage.
-  Widget _buildHomeContent() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Expanded(
-          child: PickerPage(controller: controller), // PickerWidget.
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: () {
-            // Navigate to FiltersPage when the button is pressed.
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const FiltersPage()),
-            );
-          },
-          child: const Text('Go to Filters'),
-        ),
-        const SizedBox(height: 16),
-      ],
     );
   }
 }

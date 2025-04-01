@@ -109,6 +109,23 @@ class HomeViewModel extends _$HomeViewModel {
     );
   }
 
+  void removeFromGroup({
+    required String groupname,
+    required String objectId,
+  }) {
+    state.groupedObjects.whenData(
+      (groups) =>
+          (state = state.copyWith(
+            groupedObjects: AsyncValue.data(
+              groups.removeFromGroup(
+                groupName: groupname,
+                objectId: objectId,
+              ),
+            ),
+          )),
+    );
+  }
+
   void updateObjectsList({required List<String> objectsList}) {
     state = state.copyWith(
       objects: AsyncValue.data(

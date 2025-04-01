@@ -5,12 +5,15 @@ class ObjectGroup {
 
   ObjectGroup({required this.groups});
 
+  // Getter to access the entries of the groups map
+  Iterable<MapEntry<String, List<String>>> get entries => groups.entries;
+
   // Method to convert GroupsOfObjects to JSON
   Map<String, dynamic> toJson() {
     return groups;
   }
 
- // Method to modify or add a group
+  // Method to modify or add a group
   ObjectGroup modifyOrAddGroup({
     required String groupName,
     List<ThreeDObject>? objects,
