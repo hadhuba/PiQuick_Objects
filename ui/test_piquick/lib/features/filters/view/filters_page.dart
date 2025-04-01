@@ -31,6 +31,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
         ref.watch(filtersViewModelProvider).filters.isLoading == true;
 
     final filtersList = ref.watch(filtersViewModelProvider).filtersList;
+    final objects = ref.watch(filtersViewModelProvider).objects;
 
     // ref.listen(filtersViewModelProvider, (previous, next){
     //   //(prev, next) {
@@ -67,6 +68,36 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        const Text(
+                          'Objects',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: objects.when(
+                            data:
+                                (objectsList) => ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: objectsList.length,
+                                  itemBuilder: (context, index) {
+                                    final object = objectsList[index];
+                                    return Text(
+                                      object.id,
+                                    ); // Display the ID of each object
+                                  },
+                                ),
+                            loading:
+                                () =>
+                                    const CircularProgressIndicator(), // Show a loader while loading
+                            error:
+                                (error, stackTrace) =>
+                                    Text('Error: $error'), // Show error message
+                          ),
+                        ),
+                        const SizedBox(height: 20),
                         const Text(
                           'Filters',
                           style: TextStyle(

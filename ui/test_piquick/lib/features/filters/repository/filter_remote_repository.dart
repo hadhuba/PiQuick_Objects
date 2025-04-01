@@ -36,49 +36,26 @@ class FilterRemoteRepository {
         );
       }
 
-      // Assuming your API returns a list of object IDs as strings
-      final List<dynamic> idsList = responseBody['object_ids'];
+      // // Assuming your API returns a list of object IDs as strings
+      // final List<dynamic> idsList = responseBody['object_ids'];
+      // final List<ThreeDObject> objectsList =
+      //     idsList.map((id) => ThreeDObject(id: id.toString())).toList();
+
+      // Assuming your API returns a list of objects with "id" keys
+      final List<dynamic> objectsDynamicList = responseBody['objects'];
       final List<ThreeDObject> objectsList =
-          idsList.map((id) => ThreeDObject(id: id.toString())).toList();
+          objectsDynamicList
+              .map(
+                (object) =>
+                    ThreeDObject(id: (object as Map<String, dynamic>)['id']),
+              )
+              .toList();
 
       return Right(objectsList);
     } catch (e) {
       return Left(AppFailure(e.toString()));
     }
   }
-
-  // Future<Either<AppFailure, Filters>> getFilterOptions() async {
-  //   try {
-  //     // Mocked example data
-  //     final Map<String, dynamic> mockResponse = {
-  //       "filters": [
-  //         {"type": "vertex", "minValue": null, "maxValue": null},
-  //         {"type": "bones", "minValue": null, "maxValue": null},
-  //         {"type": "edges", "minValue": null, "maxValue": null},
-  //         {"type": "poly", "minValue": null, "maxValue": null},
-  //         {"type": "mesh", "minValue": null, "maxValue": null},
-  //         {"type": "armature", "minValue": null, "maxValue": null},
-  //       ],
-  //     };
-
-  //     // Simulate a delay to mimic network latency
-  //     await Future.delayed(const Duration(milliseconds: 500));
-
-  //     // Parse the mocked data into Filters
-  //     final List<Filter> filtersList =
-  //         mockResponse['filters']
-  //             .map<Filter>(
-  //               (filter) => Filter.fromMap(filter as Map<String, dynamic>),
-  //             )
-  //             .toList();
-
-  //     final Filters filters = Filters(filters: filtersList);
-
-  //     return Right(filters);
-  //   } catch (e) {
-  //     return Left(AppFailure(e.toString()));
-  //   }
-  // }
 
   // You can add more filter-related API methods here
   Future<Either<AppFailure, Filters>> getFilterOptions() async {
@@ -87,7 +64,8 @@ class FilterRemoteRepository {
         Uri.parse('${ServerConstants.serverUrl}/filters/options'),
         headers: {'Content-Type': 'application/json'},
       );
-
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode != 200) {
@@ -96,8 +74,9 @@ class FilterRemoteRepository {
         );
       }
 
+      final List<dynamic> filtersDynamicList = responseBody['filters'];
       final List<Filter> filtersList =
-          responseBody['filters']
+          filtersDynamicList
               .map((filter) => Filter.fromMap(filter as Map<String, dynamic>))
               .toList();
 
