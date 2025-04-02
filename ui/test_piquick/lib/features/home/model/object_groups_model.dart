@@ -1,5 +1,3 @@
-import 'package:test_piquick/features/shared_model/3d_object.dart';
-
 class ObjectGroup {
   final Map<String, List<String>> groups;
 
@@ -13,15 +11,29 @@ class ObjectGroup {
     return groups;
   }
 
-  // Method to modify or add a group
-  ObjectGroup modifyOrAddGroup({
-    required String groupName,
-    List<ThreeDObject>? objects,
-  }) {
-    final objectIds = objects?.map((object) => object.id).toList() ?? [];
-
+  // Method to create a new group
+  ObjectGroup createGroup({required String groupName, List<String>? objects}) {
+    final objectIds = objects?.map((object) => object).toList() ?? [];
     final updatedGroups = Map<String, List<String>>.from(groups);
-    updatedGroups[groupName] = objectIds; // Add or overwrite the group
+    updatedGroups[groupName] = objectIds; // Create the group
+
+    return ObjectGroup(groups: updatedGroups);
+  }
+
+  // Method to add an ID to a group (create the group if it doesn't exist)
+  ObjectGroup addToGroup({
+    required String groupName,
+    required String objectId,
+  }) {
+    final updatedGroups = Map<String, List<String>>.from(groups);
+
+    // If the group doesn't exist, create it
+    if (!updatedGroups.containsKey(groupName)) {
+      updatedGroups[groupName] = [];
+    }
+
+    // Add the ID to the group
+    updatedGroups[groupName]!.add(objectId);
 
     return ObjectGroup(groups: updatedGroups);
   }

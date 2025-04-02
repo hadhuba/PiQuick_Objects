@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:test_piquick/core/theme/app_pallete.dart';
+import 'package:test_piquick/features/home/viewModel/home_view_model.dart';
 
 class Viewer3D extends StatefulWidget {
   final Flutter3DController controller;
@@ -38,7 +39,7 @@ class _Viewer3DState extends State<Viewer3D> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('Viewer3D build called');
+    debugPrint(widget.currentObj);
 
     Future<String?> showPickerDialog(
       String title,
@@ -98,84 +99,86 @@ class _Viewer3DState extends State<Viewer3D> {
         backgroundColor: Pallete.objectBackgroundColor,
         title: const Text("3D Viewer", style: TextStyle(color: Colors.white)),
       ),
-      // floatingActionButton: Column(
-      //   mainAxisAlignment: MainAxisAlignment.end,
-      //   mainAxisSize: MainAxisSize.min,
-      //   children: [
-      //     IconButton(
-      //       onPressed: () {
-      //         controller.playAnimation();
-      //       },
-      //       icon: const Icon(Icons.play_arrow),
-      //     ),
-      //     const SizedBox(height: 4),
-      //     IconButton(
-      //       onPressed: () {
-      //         controller.pauseAnimation();
-      //       },
-      //       icon: const Icon(Icons.pause),
-      //     ),
-      //     const SizedBox(height: 4),
-      //     IconButton(
-      //       onPressed: () {
-      //         controller.resetAnimation();
-      //       },
-      //       icon: const Icon(Icons.replay_circle_filled),
-      //     ),
-      //     const SizedBox(height: 4),
-      //     IconButton(
-      //       onPressed: () async {
-      //         List<String> availableAnimations =
-      //             await controller.getAvailableAnimations();
-      //         String? selectedAnimation = await showPickerDialog(
-      //           'Animations',
-      //           availableAnimations,
-      //           widget.currentAnimation,
-      //         );
-      //         if (selectedAnimation != null) {
-      //           widget.ref
-      //               .read(homeViewModelProvider.notifier)
-      //               .updateAnimation(selectedAnimation);
-      //           controller.playAnimation(animationName: widget.currentAnimation);
-      //         }
-      //       },
-      //       icon: const Icon(Icons.format_list_bulleted_outlined),
-      //     ),
-      //     const SizedBox(height: 4),
-      //     IconButton(
-      //       onPressed: () async {
-      //         List<String> availableTextures =
-      //             await controller.getAvailableTextures();
-      //         String? selectedTexture = await showPickerDialog(
-      //           'Textures',
-      //           availableTextures,
-      //           currentTexture,
-      //         );
-      //         if (selectedTexture != null) {
-      //           ref
-      //               .read(homeViewModelProvider.notifier)
-      //               .updateTexture(selectedTexture);
-      //           controller.setTexture(textureName: currentTexture ?? '');
-      //         }
-      //       },
-      //       icon: const Icon(Icons.list_alt_rounded),
-      //     ),
-      //     const SizedBox(height: 4),
-      //     IconButton(
-      //       onPressed: () {
-      //         controller.setCameraOrbit(20, 20, 5);
-      //       },
-      //       icon: const Icon(Icons.camera_alt),
-      //     ),
-      //     const SizedBox(height: 4),
-      //     IconButton(
-      //       onPressed: () {
-      //         controller.resetCameraOrbit();
-      //       },
-      //       icon: const Icon(Icons.cameraswitch_outlined),
-      //     ),
-      //   ],
-      // ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            onPressed: () {
+              controller.playAnimation();
+            },
+            icon: const Icon(Icons.play_arrow),
+          ),
+          const SizedBox(height: 4),
+          IconButton(
+            onPressed: () {
+              controller.pauseAnimation();
+            },
+            icon: const Icon(Icons.pause),
+          ),
+          const SizedBox(height: 4),
+          IconButton(
+            onPressed: () {
+              controller.resetAnimation();
+            },
+            icon: const Icon(Icons.replay_circle_filled),
+          ),
+          const SizedBox(height: 4),
+          IconButton(
+            onPressed: () async {
+              List<String> availableAnimations =
+                  await controller.getAvailableAnimations();
+              String? selectedAnimation = await showPickerDialog(
+                'Animations',
+                availableAnimations,
+                widget.currentAnimation,
+              );
+              if (selectedAnimation != null) {
+                widget.ref
+                    .read(homeViewModelProvider.notifier)
+                    .updateAnimation(selectedAnimation);
+                controller.playAnimation(
+                  animationName: widget.currentAnimation,
+                );
+              }
+            },
+            icon: const Icon(Icons.format_list_bulleted_outlined),
+          ),
+          const SizedBox(height: 4),
+          IconButton(
+            onPressed: () async {
+              List<String> availableTextures =
+                  await controller.getAvailableTextures();
+              String? selectedTexture = await showPickerDialog(
+                'Textures',
+                availableTextures,
+                widget.currentTexture,
+              );
+              if (selectedTexture != null) {
+                widget.ref
+                    .read(homeViewModelProvider.notifier)
+                    .updateTexture(selectedTexture);
+                controller.setTexture(textureName: widget.currentTexture ?? '');
+              }
+            },
+            icon: const Icon(Icons.list_alt_rounded),
+          ),
+          const SizedBox(height: 4),
+          IconButton(
+            onPressed: () {
+              controller.setCameraOrbit(20, 20, 5);
+            },
+            icon: const Icon(Icons.camera_alt),
+          ),
+          const SizedBox(height: 4),
+          IconButton(
+            onPressed: () {
+              controller.resetCameraOrbit();
+            },
+            icon: const Icon(Icons.cameraswitch_outlined),
+          ),
+        ],
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return
@@ -207,8 +210,7 @@ class _Viewer3DState extends State<Viewer3D> {
                 debugPrint('Model failed to load: $error');
               },
               controller: controller,
-              src: //currentObj ??
-                  'assets/Astronaut.glb',
+              src: widget.currentObj ?? 'ui/test_piquick/assets/Astronaut.glb',
             ),
           );
         },

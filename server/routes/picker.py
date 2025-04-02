@@ -10,7 +10,7 @@ def host_object(newObj: str = Query(...)):
     Simulate applying the host object and return the .glb file.
     """
     try:
-        glb_file_path = os.path.join("assets", "persian_lamassu_gates_of_all_nations_persepolis.glb")
+        glb_file_path = os.path.join("assets", "chicken_warrior.glb")
         print(f"Applying host object: {newObj}")
         print(f"GLB file path: {os.path.abspath(glb_file_path)}")
 

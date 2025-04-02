@@ -5,7 +5,6 @@ import 'package:test_piquick/features/filters/viewModel/filters_view_model.dart'
 import 'package:test_piquick/features/home/repository/home_remote_repository.dart';
 import 'package:test_piquick/features/home/viewModel/states/home_state.dart';
 import 'package:test_piquick/features/home/viewModel/states/viewer_3d_state.dart';
-import 'package:test_piquick/features/shared_model/3d_object.dart';
 
 part 'home_view_model.g.dart';
 
@@ -33,7 +32,7 @@ class HomeViewModel extends _$HomeViewModel {
       groupedObjects: AsyncValue.loading(),
       viewer3DState: AsyncValue.data(
         Viewer3DState(
-          currentObj: 'assets/Astronaut.glb',
+          currentObj: 'ui/test_piquick/assets/Astronaut.glb',
           // 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
           currentAnimation: null,
           currentTexture: null,
@@ -42,21 +41,21 @@ class HomeViewModel extends _$HomeViewModel {
     );
   }
 
-  Future<void> updateObj(String newObj) async {
+  void updateObj(String newObj) {
+    print('pressed id: ${newObj}');
+
     // Set the state to loading while the object is being fetched
     state = state.copyWith(viewer3DState: const AsyncValue.loading());
 
     // Fetch the object from the remote repository
-    final response = await _homeRemoteRepository.fetchThisObject(
-      newObj: newObj,
-    );
+    final response = _homeRemoteRepository.fetchThisObject(newObj: newObj);
 
     // Handle the response using a switch expression
     state = switch (response) {
-      Right(value: final r) => state.copyWith(
+      Right(value: final newObjUrl) => state.copyWith(
         viewer3DState: AsyncValue.data(
           Viewer3DState(
-            currentObj: newObj, //TODO currentObj to be a http link
+            currentObj: newObjUrl,
             currentAnimation: null,
             currentTexture: null,
           ),
@@ -101,12 +100,12 @@ class HomeViewModel extends _$HomeViewModel {
     );
   }
 
-  void addToGroup({required String groupname}) {
+  void addToGroup({required String groupname, required String objectId}) {
     state.groupedObjects.whenData(
       (groups) =>
           (state = state.copyWith(
             groupedObjects: AsyncValue.data(
-              groups.modifyOrAddGroup(groupName: groupname),
+              groups.addToGroup(groupName: groupname, objectId: objectId),
             ),
           )),
     );
@@ -117,7 +116,7 @@ class HomeViewModel extends _$HomeViewModel {
       (groups) =>
           (state = state.copyWith(
             groupedObjects: AsyncValue.data(
-              groups.modifyOrAddGroup(groupName: groupname),
+              groups.createGroup(groupName: groupname),
             ),
           )),
     );
@@ -135,11 +134,7 @@ class HomeViewModel extends _$HomeViewModel {
   }
 
   void updateObjectsList({required List<String> objectsList}) {
-    state = state.copyWith(
-      objects: AsyncValue.data(
-        objectsList.map((obj) => ThreeDObject(id: obj)).toList(),
-      ),
-    );
+    state = state.copyWith(objects: AsyncValue.data(objectsList));
     print(
       'Objects updated Im at home view model bottom: ${state.objects.value}',
     );

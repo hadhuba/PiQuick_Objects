@@ -13,29 +13,30 @@ HomeRemoteRepository homeRemoteRepository(HomeRemoteRepositoryRef ref) {
 }
 
 class HomeRemoteRepository {
-  Future<Either<AppFailure, bool>> fetchThisObject({
-    required String newObj,
-  }) async {
+  Either<AppFailure, String> fetchThisObject({required String newObj}) {
     try {
-            // Construct the URL with the query parameter
-      final url = Uri.parse('${ServerConstants.serverUrl}/picker/updateobj')
-          .replace(queryParameters: {'newObj': newObj});
+      // Construct the URL with the query parameter
+      final url = 'https://modelviewer.dev/shared-assets/models/Astronaut.glb';
+      // Uri.parse(
+      //   '${ServerConstants.serverUrl}/picker/updateobj',
+      // ).replace(queryParameters: {'newObj': newObj}).toString();
 
-      // Make the HTTP POST request
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'}, // Content-Type updated
-      );
+      // check if obj is available
+      // // Make the HTTP POST request
+      // final response = await http.post(
+      //   url,
+      //   headers: {'Content-Type': 'application/json'}, // Content-Type updated
+      // );
 
-      final responseBody = jsonDecode(response.body);
+      // final responseBody = jsonDecode(response.body);
 
-      if (response.statusCode != 200) {
-        return Left(
-          AppFailure(responseBody['detail'] ?? 'Failed to fetch new object'),
-        );
-      }
+      // if (response.statusCode != 200) {
+      //   return Left(
+      //     AppFailure(responseBody['detail'] ?? 'Failed to fetch new object'),
+      //   );
+      // }
 
-      return Right(true);
+      return Right(url);
     } catch (e) {
       return Left(AppFailure(e.toString()));
     }

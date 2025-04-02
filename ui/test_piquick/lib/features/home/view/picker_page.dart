@@ -51,7 +51,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                   ref: ref, // Pass ref to Viewer3D
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 4),
 
               ElevatedButton(
                 onPressed: () {
@@ -63,6 +63,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                 },
                 child: const Text('Go to Filters'),
               ),
+              const SizedBox(height: 4),
             ],
           ),
         ),
@@ -159,12 +160,12 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                               itemBuilder: (context, index) {
                                 final file = objects[index];
                                 return ListTile(
-                                  title: Text(file.id),
+                                  title: Text(file),
                                   onTap: () {
                                     // saveObjToHistory(file);
                                     ref
                                         .read(homeViewModelProvider.notifier)
-                                        .updateObj(file.id);
+                                        .updateObj(file);
                                   },
                                 );
                               },

@@ -1,10 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:test_piquick/features/shared_model/3d_object.dart';
 import 'package:test_piquick/features/home/model/object_groups_model.dart';
 import 'package:test_piquick/features/home/viewModel/states/viewer_3d_state.dart';
 
 class HomeState {
-  final AsyncValue<List<ThreeDObject>> objects;
+  final AsyncValue<List<String>> objects;
   final AsyncValue<ObjectGroup> groupedObjects; // Optional filtered objects
   final AsyncValue<Viewer3DState> viewer3DState;
   // string currentGroup
@@ -17,7 +16,7 @@ class HomeState {
   });
 
   HomeState copyWith({
-    AsyncValue<List<ThreeDObject>>? objects,
+    AsyncValue<List<String>>? objects,
     AsyncValue<ObjectGroup>? groupedObjects,
     AsyncValue<Viewer3DState>? viewer3DState,
   }) {
