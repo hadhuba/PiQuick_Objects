@@ -33,8 +33,8 @@ class HomeViewModel extends _$HomeViewModel {
       groupedObjects: AsyncValue.loading(),
       viewer3DState: AsyncValue.data(
         Viewer3DState(
-          currentObj:
-              'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+          currentObj: 'assets/Astronaut.glb',
+          // 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
           currentAnimation: null,
           currentTexture: null,
         ),
@@ -42,19 +42,33 @@ class HomeViewModel extends _$HomeViewModel {
     );
   }
 
-  void updateObj(String newObj) {
-    //somehow import a glb
-    _homeRemoteRepository.fetchThisObject(newObj);
+  Future<void> updateObj(String newObj) async {
+    // Set the state to loading while the object is being fetched
+    state = state.copyWith(viewer3DState: const AsyncValue.loading());
 
-    Viewer3DState newState = Viewer3DState(
-      currentObj: newObj,
-      currentAnimation: null,
-      currentTexture: null,
+    // Fetch the object from the remote repository
+    final response = await _homeRemoteRepository.fetchThisObject(
+      newObj: newObj,
     );
 
-    state = state.copyWith(viewer3DState: AsyncValue.data(newState));
-    //state update
+    // Handle the response using a switch expression
+    state = switch (response) {
+      Right(value: final r) => state.copyWith(
+        viewer3DState: AsyncValue.data(
+          Viewer3DState(
+            currentObj: newObj, //TODO currentObj to be a http link
+            currentAnimation: null,
+            currentTexture: null,
+          ),
+        ),
+      ),
+      Left(value: final l) => state.copyWith(
+        viewer3DState: AsyncValue.error(l.message, StackTrace.current),
+      ),
+    };
   }
+
+  //state update
 
   void updateAnimation(String? newAnimation) {
     state.viewer3DState.whenData(
@@ -109,18 +123,12 @@ class HomeViewModel extends _$HomeViewModel {
     );
   }
 
-  void removeFromGroup({
-    required String groupname,
-    required String objectId,
-  }) {
+  void removeFromGroup({required String groupname, required String objectId}) {
     state.groupedObjects.whenData(
       (groups) =>
           (state = state.copyWith(
             groupedObjects: AsyncValue.data(
-              groups.removeFromGroup(
-                groupName: groupname,
-                objectId: objectId,
-              ),
+              groups.removeFromGroup(groupName: groupname, objectId: objectId),
             ),
           )),
     );
