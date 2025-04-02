@@ -17,10 +17,14 @@ class HomeRemoteRepository {
     required String newObj,
   }) async {
     try {
+            // Construct the URL with the query parameter
+      final url = Uri.parse('${ServerConstants.serverUrl}/picker/updateobj')
+          .replace(queryParameters: {'newObj': newObj});
+
+      // Make the HTTP POST request
       final response = await http.post(
-        Uri.parse('${ServerConstants.serverUrl}/picker/updateobj'),
-        headers: {'Content-Type': 'text/plain'},
-        body: newObj,
+        url,
+        headers: {'Content-Type': 'application/json'}, // Content-Type updated
       );
 
       final responseBody = jsonDecode(response.body);
