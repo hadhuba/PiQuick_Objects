@@ -16,13 +16,13 @@ class HomeRemoteRepository {
   Either<AppFailure, String> fetchThisObject({required String newObj}) {
     try {
       // Construct the URL with the query parameter
-      final url = 'https://modelviewer.dev/shared-assets/models/Astronaut.glb';
-      // Uri.parse(
-      //   '${ServerConstants.serverUrl}/picker/updateobj',
-      // ).replace(queryParameters: {'newObj': newObj}).toString();
+      final url = 
+      Uri.parse(
+        '${ServerConstants.serverUrl}/picker/updateobj',
+      ).replace(queryParameters: {'newObj': newObj}).toString();
 
-      // check if obj is available
-      // // Make the HTTP POST request
+      //check if obj is available
+      // Make the HTTP POST request
       // final response = await http.post(
       //   url,
       //   headers: {'Content-Type': 'application/json'}, // Content-Type updated
