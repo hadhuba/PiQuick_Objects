@@ -65,9 +65,9 @@ class HomeRemoteRepository {
     }
   }
 
-  ObjectGroup fetchGroupedObjects() {
+  ObjectGroups fetchGroupedObjects() {
     // Return an empty ObjectGroup initially
-    final emptyGroup = ObjectGroup(groups: {});
+    final emptyGroup = ObjectGroups(groups: {});
 
     // Skeleton code for fetching from an in-app repository
     // This could be a local database, shared preferences, or any other storage

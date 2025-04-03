@@ -122,12 +122,25 @@ class HomeViewModel extends _$HomeViewModel {
     );
   }
 
-  void addToGroup({required String groupname, required String objectId}) {
+  void selectGroup(String groupName) {
+    state.groupedObjects.whenData(
+      (groups) =>
+          (state = state.copyWith(
+            selectedGroup: groupName,
+          )),
+    );
+  }
+
+  void addToGroup({required String objectId}) {
+    if (state.selectedGroup == null) {
+      return; // No group selected, do nothing
+    }
+    
     state.groupedObjects.whenData(
       (groups) =>
           (state = state.copyWith(
             groupedObjects: AsyncValue.data(
-              groups.addToGroup(groupName: groupname, objectId: objectId),
+              groups.addToGroup(groupName: state.selectedGroup!, objectId: objectId),
             ),
           )),
     );

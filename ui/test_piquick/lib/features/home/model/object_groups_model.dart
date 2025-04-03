@@ -1,7 +1,7 @@
-class ObjectGroup {
+class ObjectGroups {
   final Map<String, List<String>> groups;
 
-  ObjectGroup({required this.groups});
+  ObjectGroups({required this.groups});
 
   // Getter to access the entries of the groups map
   Iterable<MapEntry<String, List<String>>> get entries => groups.entries;
@@ -12,16 +12,16 @@ class ObjectGroup {
   }
 
   // Method to create a new group
-  ObjectGroup createGroup({required String groupName, List<String>? objects}) {
+  ObjectGroups createGroup({required String groupName, List<String>? objects}) {
     final objectIds = objects?.map((object) => object).toList() ?? [];
     final updatedGroups = Map<String, List<String>>.from(groups);
     updatedGroups[groupName] = objectIds; // Create the group
 
-    return ObjectGroup(groups: updatedGroups);
+    return ObjectGroups(groups: updatedGroups);
   }
 
   // Method to add an ID to a group (create the group if it doesn't exist)
-  ObjectGroup addToGroup({
+  ObjectGroups addToGroup({
     required String groupName,
     required String objectId,
   }) {
@@ -35,11 +35,11 @@ class ObjectGroup {
     // Add the ID to the group
     updatedGroups[groupName]!.add(objectId);
 
-    return ObjectGroup(groups: updatedGroups);
+    return ObjectGroups(groups: updatedGroups);
   }
 
   // Method to remove an element from a group
-  ObjectGroup removeFromGroup({
+  ObjectGroups removeFromGroup({
     required String groupName,
     required String objectId,
   }) {
@@ -53,14 +53,14 @@ class ObjectGroup {
       // }
     }
 
-    return ObjectGroup(groups: updatedGroups);
+    return ObjectGroups(groups: updatedGroups);
   }
 
   // Method to remove an entire group
-  ObjectGroup removeGroup(String groupName) {
+  ObjectGroups removeGroup(String groupName) {
     final updatedGroups = Map<String, List<String>>.from(groups);
     updatedGroups.remove(groupName);
 
-    return ObjectGroup(groups: updatedGroups);
+    return ObjectGroups(groups: updatedGroups);
   }
 }

@@ -140,58 +140,26 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                       groupedObjects.entries.map((entry) {
                                         String groupName = entry.key;
                                         List<String> items = entry.value;
-                                        // return ExpansionTile(
-                                        //   title: Text(groupName),
-                                        //   children:
-                                        //       items.map((item) {
-                                        //         return ListTile(
-                                        //           title: Row(
-                                        //             children: [
-                                        //               Expanded(
-                                        //                 child: GestureDetector(
-                                        //                   onTap: () {
-                                        //                     // saveObjToHistory(item);
-                                        //                     ref
-                                        //                         .read(
-                                        //                           homeViewModelProvider
-                                        //                               .notifier,
-                                        //                         )
-                                        //                         .updateObj(
-                                        //                           item,
-                                        //                         );
-                                        //                   },
-                                        //                   child: Text(item),
-                                        //                 ),
-                                        //               ),
-                                        //               IconButton(
-                                        //                 icon: const Icon(
-                                        //                   Icons
-                                        //                       .remove_circle_outline,
-                                        //                   color: Colors.red,
-                                        //                 ),
-                                        //                 onPressed: () {
-                                        //                   debugPrint(
-                                        //                     'Remove button clicked for: $item',
-                                        //                   );
-                                        //                   ref
-                                        //                       .read(
-                                        //                         homeViewModelProvider
-                                        //                             .notifier,
-                                        //                       )
-                                        //                       .removeFromGroup(
-                                        //                         groupname:
-                                        //                             groupName,
-                                        //                         objectId: item,
-                                        //                       );
-                                        //                 },
-                                        //               ),
-                                        //             ],
-                                        //           ),
-                                        //         );
-                                        //       }).toList(),
-                                        // );
                                         return CustomExpansionTile(
-                                          title: Text(groupName),
+                                          // title: Text(groupName),
+                                          groupId: groupName,
+                                          selectedGroup: ref.read(homeViewModelProvider).selectedGroup,
+                                          onGroupSelected: ref.read(homeViewModelProvider.notifier)
+                                              .selectGroup,
+                                          onRemove: () {
+                                            debugPrint(
+                                              'Remove button clicked for group: $groupName',
+                                            );
+                                            // Add logic to remove the entire group
+                                            ref
+                                                .read(
+                                                  homeViewModelProvider
+                                                      .notifier,
+                                                )
+                                                .removeGroup(
+                                                  groupname: groupName,
+                                                );
+                                          },
                                           children:
                                               items.map((item) {
                                                 return ListTile(
@@ -239,20 +207,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                                   ),
                                                 );
                                               }).toList(),
-                                          onRemove: () {
-                                            debugPrint(
-                                              'Remove button clicked for group: $groupName',
-                                            );
-                                            // Add logic to remove the entire group
-                                            ref
-                                                .read(
-                                                  homeViewModelProvider
-                                                      .notifier,
-                                                )
-                                                .removeGroup(
-                                                  groupname: groupName,
-                                                );
-                                          },
+                            
                                         );
                                       }).toList(),
                                 ),
