@@ -1,49 +1,44 @@
+import 'package:test_piquick/features/picker/model/object_groups_model.dart';
+import 'package:test_piquick/features/rendering/model/render_settings.dart';
+
 class RenderModel {
-  int numImages;
-  bool azimuthAug;
-  bool elevationAug;
-  int resolution;
-  bool modeMulti;
-  bool modeStatic;
-  bool modeFrontView;
-  bool modeFourView;
-  String engine;
-  bool onlyNorthernHemisphere;
+  final Map<String, RenderSettings> renderGroups;
 
-  RenderModel({
-    required this.numImages,
-    required this.azimuthAug,
-    required this.elevationAug,
-    required this.resolution,
-    required this.modeMulti,
-    required this.modeStatic,
-    required this.modeFrontView,
-    required this.modeFourView,
-    required this.engine,
-    required this.onlyNorthernHemisphere,
-  });
+  RenderModel({required this.renderGroups});
 
-  void updateSettings({
-    required int numImages,
-    required bool azimuthAug,
-    required bool elevationAug,
-    required int resolution,
-    required bool modeMulti,
-    required bool modeStatic,
-    required bool modeFrontView,
-    required bool modeFourView,
-    required String engine,
-    required bool onlyNorthernHemisphere,
-  }) {
-    this.numImages = numImages;
-    this.azimuthAug = azimuthAug;
-    this.elevationAug = elevationAug;
-    this.resolution = resolution;
-    this.modeMulti = modeMulti;
-    this.modeStatic = modeStatic;
-    this.modeFrontView = modeFrontView;
-    this.modeFourView = modeFourView;
-    this.engine = engine;
-    this.onlyNorthernHemisphere = onlyNorthernHemisphere;
+  RenderModel copyWith({Map<String, RenderSettings>? renderGroups}) {
+    return RenderModel(
+      renderGroups: renderGroups ?? this.renderGroups,
+    );
   }
+
+  static RenderModel fromObjects(ObjectGroups objects) {
+    return RenderModel(
+      renderGroups: {
+        for (var group in objects.groups.entries)
+          group.key: RenderSettings(
+            numImages: 12,
+            azimuthAug: true,
+            elevationAug: false,
+            resolution: 256,
+            modeMulti: true,
+            modeStatic: false,
+            modeFrontView: false,
+            modeFourView: false,
+            engine: "CYCLES",
+            onlyNorthernHemisphere: true,
+          ),
+      },
+    );
+  }
+
+  RenderModel setGroupSetting(String groupName, RenderSettings settings) {
+    return RenderModel(
+      renderGroups: {
+        ...renderGroups,
+        groupName: settings,
+      },
+    );
+  }
+
 }

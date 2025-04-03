@@ -130,7 +130,7 @@ class PickerViewModel extends _$PickerViewModel {
 
   void addToGroup(String objectId) {
     if (state.selectedGroup == null) {
-      setNotification('Please select a group first');
+      // setNotification('Please select a group first');
       return; // No group selected, do nothing
     }
 
@@ -185,11 +185,11 @@ class PickerViewModel extends _$PickerViewModel {
     );
   }
 
-  void setNotification(String message) {
-    state = state.copyWith(notification: message);
-  }
+  // void setNotification(String message) {
+  //   state = state.copyWith(notification: message);
+  // }
 
-  void clearNotification() {
-    state = state.copyWith(notification: null);
-  }
+  // void clearNotification() {
+  //   state = state.copyWith(notification: null);
+  // }
 }

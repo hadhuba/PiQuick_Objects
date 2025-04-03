@@ -1,106 +1,234 @@
 import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
 import 'package:test_piquick/features/rendering/model/render_model.dart';
+import 'package:test_piquick/features/rendering/model/render_settings.dart';
+import 'package:test_piquick/features/rendering/repository/render_remote_repository.dart';
+import 'package:test_piquick/features/rendering/viewModel/states/render_state.dart';
 
-class RenderViewModel with ChangeNotifier {
-  final RenderModel _renderModel;
+import '../../picker/viewModel/picker_view_model.dart';
 
-  int _numImages;
-  bool _azimuthAug;
-  bool _elevationAug;
-  int _resolution;
-  bool _modeMulti;
-  bool _modeStatic;
-  bool _modeFrontView;
-  bool _modeFourView;
-  String _engine;
-  bool _onlyNorthernHemisphere;
+part 'render_view_model.g.dart';
 
-  RenderViewModel(this._renderModel)
-      : _numImages = _renderModel.numImages,
-        _azimuthAug = _renderModel.azimuthAug,
-        _elevationAug = _renderModel.elevationAug,
-        _resolution = _renderModel.resolution,
-        _modeMulti = _renderModel.modeMulti,
-        _modeStatic = _renderModel.modeStatic,
-        _modeFrontView = _renderModel.modeFrontView,
-        _modeFourView = _renderModel.modeFourView,
-        _engine = _renderModel.engine,
-        _onlyNorthernHemisphere = _renderModel.onlyNorthernHemisphere;
+@riverpod
+class RenderViewModel extends _$RenderViewModel {
+  late RenderRemoteRepository _renderRemoteRepository;
 
-  int get numImages => _numImages;
-  bool get azimuthAug => _azimuthAug;
-  bool get elevationAug => _elevationAug;
-  int get resolution => _resolution;
-  bool get modeMulti => _modeMulti;
-  bool get modeStatic => _modeStatic;
-  bool get modeFrontView => _modeFrontView;
-  bool get modeFourView => _modeFourView;
-  String get engine => _engine;
-  bool get onlyNorthernHemisphere => _onlyNorthernHemisphere;
+  @override
+  RenderState build() {
+    _renderRemoteRepository =
+        RenderRemoteRepository(); // we cant continously track the changes in authremoterepo
+    _renderRemoteRepository = ref.watch(
+      renderRemoteRepositoryProvider,
+    ); // if it changes the latest comes, build runs again
+
+    final initialState = RenderState(
+      renderModel: AsyncValue.loading(), // Initialize the state with loading
+      groupedObjects: AsyncValue.loading(),
+    );
+
+    Future.microtask(() => initRender());
+
+    return initialState;
+  }
+
+  Future<void> initRender() async {
+    // Fetch the initial list of objects from the remote repository
+
+    final groups =
+        ref.read<PickerState>(pickerViewModelProvider).groupedObjects;
+
+    // Handle the response using a switch expression
+    groups.when(
+      data: (data) {
+        state = state.copyWith(
+          renderModel: AsyncValue.data(RenderModel.fromObjects(data)),
+          groupedObjects: AsyncValue.data(data),
+        );
+      },
+      error: (error, stackTrace) {
+        // Handle the error state
+        state = state.copyWith(
+          renderModel: AsyncValue.error(error, stackTrace),
+        );
+      },
+      loading: () {
+        // Handle the loading state
+        state = state.copyWith(
+          renderModel: AsyncValue.loading(),
+          groupedObjects: AsyncValue.loading(),
+        );
+      },
+    );
+  }
 
   void setNumImages(int value) {
-    _numImages = value;
-    notifyListeners();
+    if (state.selectedGroup == null) {
+      return;
+    }
+
+    state = state.copyWith(
+      renderModel: state.renderModel.whenData(
+        (renderModel) => renderModel.setGroupSetting(
+          state.selectedGroup!,
+          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
+            numImages: value,
+          ),
+        ),
+      ),
+    );
   }
 
   void setAzimuthAug(bool value) {
-    _azimuthAug = value;
-    notifyListeners();
+    if (state.selectedGroup == null) {
+      return;
+    }
+
+    state = state.copyWith(
+      renderModel: state.renderModel.whenData(
+        (renderModel) => renderModel.setGroupSetting(
+          state.selectedGroup!,
+          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
+            azimuthAug: value,
+          ),
+        ),
+      ),
+    );
   }
 
   void setElevationAug(bool value) {
-    _elevationAug = value;
-    notifyListeners();
+    if (state.selectedGroup == null) {
+      return;
+    }
+
+    state = state.copyWith(
+      renderModel: state.renderModel.whenData(
+        (renderModel) => renderModel.setGroupSetting(
+          state.selectedGroup!,
+          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
+            elevationAug: value,
+          ),
+        ),
+      ),
+    );
   }
 
   void setResolution(int value) {
-    _resolution = value;
-    notifyListeners();
+    if (state.selectedGroup == null) {
+      return;
+    }
+
+    state = state.copyWith(
+      renderModel: state.renderModel.whenData(
+        (renderModel) => renderModel.setGroupSetting(
+          state.selectedGroup!,
+          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
+            resolution: value,
+          ),
+        ),
+      ),
+    );
   }
 
   void setModeMulti(bool value) {
-    _modeMulti = value;
-    notifyListeners();
+    if (state.selectedGroup == null) {
+      return;
+    }
+
+    state = state.copyWith(
+      renderModel: state.renderModel.whenData(
+        (renderModel) => renderModel.setGroupSetting(
+          state.selectedGroup!,
+          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
+            modeMulti: value,
+          ),
+        ),
+      ),
+    );
   }
 
   void setModeStatic(bool value) {
-    _modeStatic = value;
-    notifyListeners();
+    if (state.selectedGroup == null) {
+      return;
+    }
+
+    state = state.copyWith(
+      renderModel: state.renderModel.whenData(
+        (renderModel) => renderModel.setGroupSetting(
+          state.selectedGroup!,
+          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
+            modeStatic: value,
+          ),
+        ),
+      ),
+    );
   }
 
   void setModeFrontView(bool value) {
-    _modeFrontView = value;
-    notifyListeners();
+    if (state.selectedGroup == null) {
+      return;
+    }
+
+    state = state.copyWith(
+      renderModel: state.renderModel.whenData(
+        (renderModel) => renderModel.setGroupSetting(
+          state.selectedGroup!,
+          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
+            modeFrontView: value,
+          ),
+        ),
+      ),
+    );
   }
 
   void setModeFourView(bool value) {
-    _modeFourView = value;
-    notifyListeners();
+    if (state.selectedGroup == null) {
+      return;
+    }
+
+    state = state.copyWith(
+      renderModel: state.renderModel.whenData(
+        (renderModel) => renderModel.setGroupSetting(
+          state.selectedGroup!,
+          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
+            modeFourView: value,
+          ),
+        ),
+      ),
+    );
   }
 
   void setEngine(String value) {
-    _engine = value;
-    notifyListeners();
+    if (state.selectedGroup == null) {
+      return;
+    }
+
+    state = state.copyWith(
+      renderModel: state.renderModel.whenData(
+        (renderModel) => renderModel.setGroupSetting(
+          state.selectedGroup!,
+          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
+            engine: value,
+          ),
+        ),
+      ),
+    );
   }
 
   void setOnlyNorthernHemisphere(bool value) {
-    _onlyNorthernHemisphere = value;
-    notifyListeners();
-  }
+    if (state.selectedGroup == null) {
+      return;
+    }
 
-  void saveSettings() {
-    _renderModel.updateSettings(
-      numImages: _numImages,
-      azimuthAug: _azimuthAug,
-      elevationAug: _elevationAug,
-      resolution: _resolution,
-      modeMulti: _modeMulti,
-      modeStatic: _modeStatic,
-      modeFrontView: _modeFrontView,
-      modeFourView: _modeFourView,
-      engine: _engine,
-      onlyNorthernHemisphere: _onlyNorthernHemisphere,
+    state = state.copyWith(
+      renderModel: state.renderModel.whenData(
+        (renderModel) => renderModel.setGroupSetting(
+          state.selectedGroup!,
+          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
+            onlyNorthernHemisphere: value,
+          ),
+        ),
+      ),
     );
-    notifyListeners();
   }
 }

@@ -28,23 +28,6 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
     final filtersList = ref.watch(filtersViewModelProvider).filtersList;
     final objects = ref.watch(filtersViewModelProvider).objectsList;
 
-    // ref.listen(filtersViewModelProvider, (previous, next){
-    //   //(prev, next) {
-    //   next?.when(
-    //     data: (data) {
-    //       //TODO make homepage
-    //       // Navigator.push(
-    //       //   context,
-    //       //   MaterialPageRoute(builder: (context) => const LoginPage()),
-    //       // );
-    //     },
-    //     error: (error, st) {
-    //       showSnackBar(context, error.toString());
-    //     },
-    //     loading:
-    //         () {}, //why do i use watch, why i dont instead here? cant return a widget. ref is of type void.
-    //   );
-    // })
     return Scaffold(
       appBar: AppBar(),
       body:

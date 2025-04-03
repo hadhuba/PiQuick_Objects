@@ -1,48 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:test_piquick/core/widgets/loader.dart';
 import 'package:test_piquick/features/rendering/viewModel/render_view_model.dart';
-import 'package:test_piquick/features/rendering/model/render_model.dart';
 
-class RenderPage extends StatelessWidget {
-  const RenderPage({Key? key}) : super(key: key);
+class RenderPage extends ConsumerStatefulWidget {
+  const RenderPage({super.key});
 
   @override
+  ConsumerState<RenderPage> createState() => _RenderPageState();
+}
+
+class _RenderPageState extends ConsumerState<RenderPage> {
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => RenderViewModel(RenderModel(
-        numImages: 12,
-        azimuthAug: true,
-        elevationAug: false,
-        resolution: 256,
-        modeMulti: true,
-        modeStatic: false,
-        modeFrontView: false,
-        modeFourView: false,
-        engine: "CYCLES",
-        onlyNorthernHemisphere: true,
-      )),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Render Settings'),
-        ),
-        body: const RenderSettingsForm(),
-      ),
+    final isLoading = ref.watch(renderViewModelProvider).renderModel.isLoading;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Render Settings')),
+      body: isLoading
+          ? const Loader()
+          : RenderSettingsForm(viewModel: ref.read(renderViewModelProvider.notifier)),
     );
   }
 }
 
 class RenderSettingsForm extends StatelessWidget {
-  const RenderSettingsForm({Key? key}) : super(key: key);
+  final RenderViewModel viewModel;
+
+  const RenderSettingsForm({super.key, required this.viewModel});
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<RenderViewModel>(context);
+    final selectedGroup = viewModel.state.selectedGroup;
+    if (selectedGroup == null) {
+      return const Center(child: Text('No group selected.'));
+    }
+
+    final settings = viewModel.state.renderModel.whenData(
+      (renderModel) => renderModel.renderGroups[selectedGroup],
+    );
+
+    if (settings == null) {
+      return const Center(child: Text('No settings available for the selected group.'));
+    }
 
     return ListView(
       padding: const EdgeInsets.all(16.0),
       children: [
         TextFormField(
-          initialValue: viewModel.numImages.toString(),
+          initialValue: settings.numImages.toString(),
           decoration: const InputDecoration(labelText: 'Number of Images'),
           keyboardType: TextInputType.number,
           onChanged: (value) {
@@ -54,16 +60,16 @@ class RenderSettingsForm extends StatelessWidget {
         ),
         SwitchListTile(
           title: const Text('Azimuth Augmentation'),
-          value: viewModel.azimuthAug,
+          value: settings.azimuthAug,
           onChanged: viewModel.setAzimuthAug,
         ),
         SwitchListTile(
           title: const Text('Elevation Augmentation'),
-          value: viewModel.elevationAug,
+          value: settings.elevationAug,
           onChanged: viewModel.setElevationAug,
         ),
         TextFormField(
-          initialValue: viewModel.resolution.toString(),
+          initialValue: settings.resolution.toString(),
           decoration: const InputDecoration(labelText: 'Resolution'),
           keyboardType: TextInputType.number,
           onChanged: (value) {
@@ -75,32 +81,32 @@ class RenderSettingsForm extends StatelessWidget {
         ),
         SwitchListTile(
           title: const Text('Mode Multi'),
-          value: viewModel.modeMulti,
+          value: settings.modeMulti,
           onChanged: viewModel.setModeMulti,
         ),
         SwitchListTile(
           title: const Text('Mode Static'),
-          value: viewModel.modeStatic,
+          value: settings.modeStatic,
           onChanged: viewModel.setModeStatic,
         ),
         SwitchListTile(
           title: const Text('Mode Front View'),
-          value: viewModel.modeFrontView,
+          value: settings.modeFrontView,
           onChanged: viewModel.setModeFrontView,
         ),
         SwitchListTile(
           title: const Text('Mode Four View'),
-          value: viewModel.modeFourView,
+          value: settings.modeFourView,
           onChanged: viewModel.setModeFourView,
         ),
         TextFormField(
-          initialValue: viewModel.engine,
+          initialValue: settings.engine,
           decoration: const InputDecoration(labelText: 'Engine'),
           onChanged: viewModel.setEngine,
         ),
         SwitchListTile(
           title: const Text('Only Northern Hemisphere'),
-          value: viewModel.onlyNorthernHemisphere,
+          value: settings.onlyNorthernHemisphere,
           onChanged: viewModel.setOnlyNorthernHemisphere,
         ),
         const SizedBox(height: 20),
