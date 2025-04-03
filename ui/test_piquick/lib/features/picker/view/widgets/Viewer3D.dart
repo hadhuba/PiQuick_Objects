@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:test_piquick/core/theme/app_pallete.dart';
-import 'package:test_piquick/features/home/viewModel/home_view_model.dart';
+import 'package:test_piquick/features/picker/viewModel/picker_view_model.dart';
 
 class Viewer3D extends StatefulWidget {
   final Flutter3DController controller;
@@ -135,7 +135,7 @@ class _Viewer3DState extends State<Viewer3D> {
               );
               if (selectedAnimation != null) {
                 widget.ref
-                    .read(homeViewModelProvider.notifier)
+                    .read(pickerViewModelProvider.notifier)
                     .updateAnimation(selectedAnimation);
                 controller.playAnimation(
                   animationName: widget.currentAnimation,
@@ -156,7 +156,7 @@ class _Viewer3DState extends State<Viewer3D> {
               );
               if (selectedTexture != null) {
                 widget.ref
-                    .read(homeViewModelProvider.notifier)
+                    .read(pickerViewModelProvider.notifier)
                     .updateTexture(selectedTexture);
                 controller.setTexture(textureName: widget.currentTexture ?? '');
               }

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_piquick/core/theme/app_pallete.dart';
 import 'package:test_piquick/core/utils.dart';
 import 'package:test_piquick/core/widgets/loader.dart';
 import 'package:test_piquick/features/filters/view/filters_page.dart';
-import 'package:test_piquick/features/home/view/widgets/Viewer3D.dart';
-import 'package:test_piquick/features/home/view/widgets/custom_expansion_tile.dart';
-import 'package:test_piquick/features/home/view/widgets/custom_list_tile.dart';
-import 'package:test_piquick/features/home/viewModel/home_view_model.dart';
+import 'package:test_piquick/features/picker/view/widgets/Viewer3D.dart';
+import 'package:test_piquick/features/picker/view/widgets/custom_expansion_tile.dart';
+import 'package:test_piquick/features/picker/view/widgets/custom_list_tile.dart';
+import 'package:test_piquick/features/picker/viewModel/picker_view_model.dart';
 
 class PickerPage extends ConsumerStatefulWidget {
   const PickerPage({super.key});
@@ -31,12 +30,17 @@ class _PickerPageState extends ConsumerState<PickerPage> {
   @override
   Widget build(BuildContext context) {
     final currentObj =
-        ref.watch(homeViewModelProvider).viewer3DState.value?.currentObj;
+        ref.watch(pickerViewModelProvider).viewer3DState.value?.currentObj;
     final currentAnimation =
-        ref.watch(homeViewModelProvider).viewer3DState.value?.currentAnimation;
+        ref
+            .watch(pickerViewModelProvider)
+            .viewer3DState
+            .value
+            ?.currentAnimation;
     final currentTexture =
-        ref.watch(homeViewModelProvider).viewer3DState.value?.currentTexture;
-    final isLoading = ref.watch(homeViewModelProvider).viewer3DState.isLoading;
+        ref.watch(pickerViewModelProvider).viewer3DState.value?.currentTexture;
+    final isLoading =
+        ref.watch(pickerViewModelProvider).viewer3DState.isLoading;
 
     return Row(
       children: [
@@ -76,7 +80,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                 child: Scaffold(
                   appBar: AppBar(title: const Text("Group List")),
                   body: ref
-                      .watch(homeViewModelProvider)
+                      .watch(pickerViewModelProvider)
                       .groupedObjects
                       .when(
                         data: (groupedObjects) {
@@ -116,7 +120,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                                 if (groupName.isNotEmpty) {
                                                   ref
                                                       .read(
-                                                        homeViewModelProvider
+                                                        pickerViewModelProvider
                                                             .notifier,
                                                       )
                                                       .newGroup(
@@ -146,12 +150,12 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                           groupId: groupName,
                                           selectedGroup:
                                               ref
-                                                  .read(homeViewModelProvider)
+                                                  .read(pickerViewModelProvider)
                                                   .selectedGroup,
                                           onGroupSelected:
                                               ref
                                                   .read(
-                                                    homeViewModelProvider
+                                                    pickerViewModelProvider
                                                         .notifier,
                                                   )
                                                   .selectGroup,
@@ -162,7 +166,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                             // Add logic to remove the entire group
                                             ref
                                                 .read(
-                                                  homeViewModelProvider
+                                                  pickerViewModelProvider
                                                       .notifier,
                                                 )
                                                 .removeGroup(
@@ -180,7 +184,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                                             // saveObjToHistory(item);
                                                             ref
                                                                 .read(
-                                                                  homeViewModelProvider
+                                                                  pickerViewModelProvider
                                                                       .notifier,
                                                                 )
                                                                 .updateObj(
@@ -202,7 +206,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                                           );
                                                           ref
                                                               .read(
-                                                                homeViewModelProvider
+                                                                pickerViewModelProvider
                                                                     .notifier,
                                                               )
                                                               .removeFromGroup(
@@ -236,14 +240,14 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                 child: Scaffold(
                   appBar: AppBar(title: const Text("Listed Objects")),
                   body: ref
-                      .watch(homeViewModelProvider)
+                      .watch(pickerViewModelProvider)
                       .objects
                       .when(
                         data:
                             (objects) => ListView.builder(
                               itemCount:
                                   ref
-                                      .read(homeViewModelProvider)
+                                      .read(pickerViewModelProvider)
                                       .objects
                                       .value
                                       ?.length ??
@@ -255,7 +259,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                 //   onTap: () {
                                 //     // saveObjToHistory(file);
                                 //     ref
-                                //         .read(homeViewModelProvider.notifier)
+                                //         .read(pickerViewModelProvider.notifier)
                                 //         .updateObj(file);
                                 //   },
                                 // );
@@ -263,7 +267,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                   fileName: file,
                                   onAddToGroup: () {
                                     if (ref
-                                            .read(homeViewModelProvider)
+                                            .read(pickerViewModelProvider)
                                             .selectedGroup ==
                                         null) {
                                       showSnackBar(
@@ -273,7 +277,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                       return;
                                     }
                                     ref
-                                        .read(homeViewModelProvider.notifier)
+                                        .read(pickerViewModelProvider.notifier)
                                         .addToGroup(
                                           file,
                                         ); //TODO not add multiple times
@@ -282,7 +286,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                     // saveObjToHistory(file);
 
                                     ref
-                                        .read(homeViewModelProvider.notifier)
+                                        .read(pickerViewModelProvider.notifier)
                                         .updateObj(file);
                                   },
                                 );

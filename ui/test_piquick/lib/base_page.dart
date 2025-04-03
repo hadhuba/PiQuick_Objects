@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_piquick/features/home/view/picker_page.dart';
+import 'package:test_piquick/features/picker/view/picker_page.dart';
 
-class HomePage extends ConsumerStatefulWidget {
-  const HomePage({super.key});
+class BasePage extends ConsumerStatefulWidget {
+  const BasePage({super.key});
 
   @override
-  ConsumerState<HomePage> createState() => _HomePageState();
+  ConsumerState<BasePage> createState() => _BasePageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> {
+class _BasePageState extends ConsumerState<BasePage> {
   int selectedIndex = 0;
 
   @override
@@ -31,7 +31,10 @@ class _HomePageState extends ConsumerState<HomePage> {
           });
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'PickerPage'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'PickerPage',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.view_in_ar),
             label: 'Render',

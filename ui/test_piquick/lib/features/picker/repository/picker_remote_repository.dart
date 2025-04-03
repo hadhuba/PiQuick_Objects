@@ -5,16 +5,16 @@ import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/core/constants/server_constants.dart';
 import 'package:test_piquick/core/failure/failure.dart';
-import 'package:test_piquick/features/home/model/object_groups_model.dart';
-part 'home_remote_repository.g.dart';
+import 'package:test_piquick/features/picker/model/object_groups_model.dart';
+part 'picker_remote_repository.g.dart';
 
 @riverpod
-HomeRemoteRepository homeRemoteRepository(HomeRemoteRepositoryRef ref) {
-  return HomeRemoteRepository();
+PickerRemoteRepository pickerRemoteRepository(PickerRemoteRepositoryRef ref) {
+  return PickerRemoteRepository();
 }
 
-class HomeRemoteRepository {
-  Either<AppFailure, String> fetchThisObject({required String newObj}) {
+class PickerRemoteRepository {
+  Either<AppFailure, String> hostThisObject({required String newObj}) {
     try {
       // Construct the URL with the query parameter
       final url =

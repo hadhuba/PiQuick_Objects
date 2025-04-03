@@ -1,27 +1,27 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'home_view_model.dart';
+part of 'picker_view_model.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$homeViewModelHash() => r'd81b26263ac010752ee8d4d8da2cf9ba81a218c5';
+String _$pickerViewModelHash() => r'9e6d120efe9e6bba39fbacb6bb0ab26e31d83331';
 
-/// See also [HomeViewModel].
-@ProviderFor(HomeViewModel)
-final homeViewModelProvider =
-    AutoDisposeNotifierProvider<HomeViewModel, HomeState>.internal(
-      HomeViewModel.new,
-      name: r'homeViewModelProvider',
+/// See also [PickerViewModel].
+@ProviderFor(PickerViewModel)
+final pickerViewModelProvider =
+    AutoDisposeNotifierProvider<PickerViewModel, PickerState>.internal(
+      PickerViewModel.new,
+      name: r'pickerViewModelProvider',
       debugGetCreateSourceHash:
           const bool.fromEnvironment('dart.vm.product')
               ? null
-              : _$homeViewModelHash,
+              : _$pickerViewModelHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$HomeViewModel = AutoDisposeNotifier<HomeState>;
+typedef _$PickerViewModel = AutoDisposeNotifier<PickerState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

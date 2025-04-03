@@ -2,22 +2,22 @@ import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/filters/viewModel/states/filters_state.dart';
 import 'package:test_piquick/features/filters/viewModel/filters_view_model.dart';
-import 'package:test_piquick/features/home/repository/home_remote_repository.dart';
-import 'package:test_piquick/features/home/viewModel/states/home_state.dart';
-import 'package:test_piquick/features/home/viewModel/states/viewer_3d_state.dart';
+import 'package:test_piquick/features/picker/repository/picker_remote_repository.dart';
+import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
+import 'package:test_piquick/features/picker/viewModel/states/viewer_3d_state.dart';
 
-part 'home_view_model.g.dart';
+part 'picker_view_model.g.dart';
 
 @riverpod
-class HomeViewModel extends _$HomeViewModel {
-  late HomeRemoteRepository _homeRemoteRepository;
+class PickerViewModel extends _$PickerViewModel {
+  late PickerRemoteRepository _pickerRemoteRepository;
 
   @override
-  HomeState build() {
-    _homeRemoteRepository =
-        HomeRemoteRepository(); // we cant continously track the changes in authremoterepo
-    _homeRemoteRepository = ref.watch(
-      homeRemoteRepositoryProvider,
+  PickerState build() {
+    _pickerRemoteRepository =
+        PickerRemoteRepository(); // we cant continously track the changes in authremoterepo
+    _pickerRemoteRepository = ref.watch(
+      pickerRemoteRepositoryProvider,
     ); // if it changes the latest comes, build runs again
 
     ref.listen<FiltersState>(filtersViewModelProvider, (_, next) {
@@ -28,7 +28,7 @@ class HomeViewModel extends _$HomeViewModel {
       });
     });
 
-    final initialState = HomeState(
+    final initialState = PickerState(
       objects: AsyncValue.loading(), // Initialize the state with loading
       groupedObjects: AsyncValue.loading(),
       viewer3DState: AsyncValue.data(
@@ -47,8 +47,8 @@ class HomeViewModel extends _$HomeViewModel {
 
   Future<void> initHome() async {
     // Fetch the initial list of objects from the remote repository
-    final objectsResponse = await _homeRemoteRepository.fetchObjects();
-    final groupResponse = _homeRemoteRepository.fetchGroupedObjects();
+    final objectsResponse = await _pickerRemoteRepository.fetchObjects();
+    final groupResponse = _pickerRemoteRepository.fetchGroupedObjects();
 
     // Handle the response using a switch expression
     state = switch (objectsResponse) {
@@ -70,7 +70,7 @@ class HomeViewModel extends _$HomeViewModel {
     state = state.copyWith(viewer3DState: const AsyncValue.loading());
 
     // Fetch the object from the remote repository
-    final response = _homeRemoteRepository.fetchThisObject(newObj: newObj);
+    final response = _pickerRemoteRepository.hostThisObject(newObj: newObj);
 
     // Handle the response using a switch expression
     state = switch (response) {
