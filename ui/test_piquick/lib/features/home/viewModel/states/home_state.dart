@@ -9,7 +9,6 @@ class HomeState {
   final String? selectedGroup;
   // string currentGroup
 
-
   HomeState({
     required this.objects,
     required this.groupedObjects,
@@ -22,6 +21,7 @@ class HomeState {
     AsyncValue<ObjectGroups>? groupedObjects,
     AsyncValue<Viewer3DState>? viewer3DState,
     String? selectedGroup,
+    String? notification,
   }) {
     return HomeState(
       objects: objects ?? this.objects,

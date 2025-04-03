@@ -124,23 +124,24 @@ class HomeViewModel extends _$HomeViewModel {
 
   void selectGroup(String groupName) {
     state.groupedObjects.whenData(
-      (groups) =>
-          (state = state.copyWith(
-            selectedGroup: groupName,
-          )),
+      (groups) => (state = state.copyWith(selectedGroup: groupName)),
     );
   }
 
-  void addToGroup({required String objectId}) {
+  void addToGroup(String objectId) {
     if (state.selectedGroup == null) {
+      setNotification('Please select a group first');
       return; // No group selected, do nothing
     }
-    
+
     state.groupedObjects.whenData(
       (groups) =>
           (state = state.copyWith(
             groupedObjects: AsyncValue.data(
-              groups.addToGroup(groupName: state.selectedGroup!, objectId: objectId),
+              groups.addToGroup(
+                groupName: state.selectedGroup!,
+                objectId: objectId,
+              ),
             ),
           )),
     );
@@ -182,5 +183,13 @@ class HomeViewModel extends _$HomeViewModel {
     print(
       'Objects updated Im at home view model bottom: ${state.objects.value}',
     );
+  }
+
+  void setNotification(String message) {
+    state = state.copyWith(notification: message);
+  }
+
+  void clearNotification() {
+    state = state.copyWith(notification: null);
   }
 }

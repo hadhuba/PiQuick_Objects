@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:test_piquick/core/theme/app_pallete.dart';
+import 'package:test_piquick/core/utils.dart';
 import 'package:test_piquick/core/widgets/loader.dart';
 import 'package:test_piquick/features/filters/view/filters_page.dart';
 import 'package:test_piquick/features/home/view/widgets/Viewer3D.dart';
 import 'package:test_piquick/features/home/view/widgets/custom_expansion_tile.dart';
+import 'package:test_piquick/features/home/view/widgets/custom_list_tile.dart';
 import 'package:test_piquick/features/home/viewModel/home_view_model.dart';
 
 class PickerPage extends ConsumerStatefulWidget {
@@ -34,8 +36,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
         ref.watch(homeViewModelProvider).viewer3DState.value?.currentAnimation;
     final currentTexture =
         ref.watch(homeViewModelProvider).viewer3DState.value?.currentTexture;
-    final isLoading =
-        ref.watch(homeViewModelProvider).viewer3DState.isLoading == true;
+    final isLoading = ref.watch(homeViewModelProvider).viewer3DState.isLoading;
 
     return Row(
       children: [
@@ -143,9 +144,17 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                         return CustomExpansionTile(
                                           // title: Text(groupName),
                                           groupId: groupName,
-                                          selectedGroup: ref.read(homeViewModelProvider).selectedGroup,
-                                          onGroupSelected: ref.read(homeViewModelProvider.notifier)
-                                              .selectGroup,
+                                          selectedGroup:
+                                              ref
+                                                  .read(homeViewModelProvider)
+                                                  .selectedGroup,
+                                          onGroupSelected:
+                                              ref
+                                                  .read(
+                                                    homeViewModelProvider
+                                                        .notifier,
+                                                  )
+                                                  .selectGroup,
                                           onRemove: () {
                                             debugPrint(
                                               'Remove button clicked for group: $groupName',
@@ -207,7 +216,6 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                                   ),
                                                 );
                                               }).toList(),
-                            
                                         );
                                       }).toList(),
                                 ),
@@ -242,10 +250,37 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                   0,
                               itemBuilder: (context, index) {
                                 final file = objects[index];
-                                return ListTile(
-                                  title: Text(file),
+                                // return ListTile(
+                                //   title: Text(file),
+                                //   onTap: () {
+                                //     // saveObjToHistory(file);
+                                //     ref
+                                //         .read(homeViewModelProvider.notifier)
+                                //         .updateObj(file);
+                                //   },
+                                // );
+                                return CustomListTile(
+                                  fileName: file,
+                                  onAddToGroup: () {
+                                    if (ref
+                                            .read(homeViewModelProvider)
+                                            .selectedGroup ==
+                                        null) {
+                                      showSnackBar(
+                                        context,
+                                        'Please select a group first',
+                                      );
+                                      return;
+                                    }
+                                    ref
+                                        .read(homeViewModelProvider.notifier)
+                                        .addToGroup(
+                                          file,
+                                        ); //TODO not add multiple times
+                                  },
                                   onTap: () {
                                     // saveObjToHistory(file);
+
                                     ref
                                         .read(homeViewModelProvider.notifier)
                                         .updateObj(file);
