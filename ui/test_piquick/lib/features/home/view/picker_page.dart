@@ -78,58 +78,121 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                       .groupedObjects
                       .when(
                         data: (groupedObjects) {
-                          return ListView(
-                            children:
-                                groupedObjects.entries.map((entry) {
-                                  String groupName = entry.key;
-                                  List<String> items = entry.value;
-                                  return ExpansionTile(
-                                    title: Text(groupName),
-                                    children:
-                                        items.map((item) {
-                                          return ListTile(
-                                            title: Row(
-                                              children: [
-                                                Expanded(
-                                                  child: GestureDetector(
-                                                    onTap: () {
-                                                      // saveObjToHistory(item);
-                                                      ref
-                                                          .read(
-                                                            homeViewModelProvider
-                                                                .notifier,
-                                                          )
-                                                          .updateObj(item);
-                                                    },
-                                                    child: Text(item),
-                                                  ),
-                                                ),
-                                                IconButton(
-                                                  icon: const Icon(
-                                                    Icons.remove_circle_outline,
-                                                    color: Colors.red,
-                                                  ),
-                                                  onPressed: () {
-                                                    debugPrint(
-                                                      'Remove button clicked for: $item',
-                                                    );
-                                                    ref
-                                                        .read(
-                                                          homeViewModelProvider
-                                                              .notifier,
-                                                        )
-                                                        .removeFromGroup(
-                                                          groupname: groupName,
-                                                          objectId: item,
-                                                        );
-                                                  },
-                                                ),
-                                              ],
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    // Logic to create a new group
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        TextEditingController
+                                        groupNameController =
+                                            TextEditingController();
+                                        return AlertDialog(
+                                          title: const Text('Create New Group'),
+                                          content: TextField(
+                                            controller: groupNameController,
+                                            decoration: const InputDecoration(
+                                              hintText: 'Enter group name',
                                             ),
-                                          );
-                                        }).toList(),
-                                  );
-                                }).toList(),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: const Text('Cancel'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                final groupName =
+                                                    groupNameController.text
+                                                        .trim();
+                                                if (groupName.isNotEmpty) {
+                                                  ref
+                                                      .read(
+                                                        homeViewModelProvider
+                                                            .notifier,
+                                                      )
+                                                      .newGroup(
+                                                        groupname: groupName,
+                                                      );
+                                                  Navigator.of(context).pop();
+                                                }
+                                              },
+                                              child: const Text('Create'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                  child: const Text('Make New Group'),
+                                ),
+                              ),
+                              Expanded(
+                                child: ListView(
+                                  children:
+                                      groupedObjects.entries.map((entry) {
+                                        String groupName = entry.key;
+                                        List<String> items = entry.value;
+                                        return ExpansionTile(
+                                          title: Text(groupName),
+                                          children:
+                                              items.map((item) {
+                                                return ListTile(
+                                                  title: Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: GestureDetector(
+                                                          onTap: () {
+                                                            // saveObjToHistory(item);
+                                                            ref
+                                                                .read(
+                                                                  homeViewModelProvider
+                                                                      .notifier,
+                                                                )
+                                                                .updateObj(
+                                                                  item,
+                                                                );
+                                                          },
+                                                          child: Text(item),
+                                                        ),
+                                                      ),
+                                                      IconButton(
+                                                        icon: const Icon(
+                                                          Icons
+                                                              .remove_circle_outline,
+                                                          color: Colors.red,
+                                                        ),
+                                                        onPressed: () {
+                                                          debugPrint(
+                                                            'Remove button clicked for: $item',
+                                                          );
+                                                          ref
+                                                              .read(
+                                                                homeViewModelProvider
+                                                                    .notifier,
+                                                              )
+                                                              .removeFromGroup(
+                                                                groupname:
+                                                                    groupName,
+                                                                objectId: item,
+                                                              );
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              }).toList(),
+                                        );
+                                      }).toList(),
+                                ),
+                              ),
+                            ],
                           );
                         },
                         error: (error, stackTrace) {

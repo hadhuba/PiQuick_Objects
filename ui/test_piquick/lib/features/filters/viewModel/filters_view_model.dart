@@ -24,7 +24,7 @@ class FiltersViewModel extends _$FiltersViewModel {
     );
 
     // Defer the call to fetchFilters() until after the state is initialized
-    Future.microtask(() => fetchFilters());
+    Future.microtask(() => initFilters());
 
     return initialState;
   }
@@ -43,17 +43,15 @@ class FiltersViewModel extends _$FiltersViewModel {
     });
   }
 
-  Future<void> fetchFilters() async {
+  Future<void> initFilters() async {
     state = state.copyWith(filters: const AsyncValue.loading());
 
     final response = await _filterRemoteRepository.getFilterOptions();
-    final val = switch (response) {
-      Right(value: final r) =>
-        state = state.copyWith(filters: AsyncValue.data(r)),
-      Left(value: final l) =>
-        state = state.copyWith(
-          filters: AsyncValue.error(l.message, StackTrace.current),
-        ),
+    state = switch (response) {
+      Right(value: final r) => state.copyWith(filters: AsyncValue.data(r)),
+      Left(value: final l) => state.copyWith(
+        filters: AsyncValue.error(l.message, StackTrace.current),
+      ),
     };
   }
 
@@ -72,7 +70,7 @@ class FiltersViewModel extends _$FiltersViewModel {
           objectsList: AsyncValue.error(l.message, StackTrace.current),
         ),
       };
-      
+
       // state.objects.whenData( (final r) {
       //     state.onFiltersApplied?.call(r);
       //   }

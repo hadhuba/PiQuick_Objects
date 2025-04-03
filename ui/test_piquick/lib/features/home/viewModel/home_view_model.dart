@@ -27,18 +27,40 @@ class HomeViewModel extends _$HomeViewModel {
         updateObjectsList(objectsList: objects);
       });
     });
-    return HomeState(
+
+    final initialState = HomeState(
       objects: AsyncValue.loading(), // Initialize the state with loading
       groupedObjects: AsyncValue.loading(),
       viewer3DState: AsyncValue.data(
         Viewer3DState(
-          currentObj: 'ui/test_piquick/assets/Astronaut.glb',
-          // 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+          currentObj: 'assets/Astronaut.glb',
           currentAnimation: null,
           currentTexture: null,
         ),
       ),
     );
+
+    Future.microtask(() => initHome());
+
+    return initialState;
+  }
+
+  Future<void> initHome() async {
+    // Fetch the initial list of objects from the remote repository
+    final objectsResponse = await _homeRemoteRepository.fetchObjects();
+    final groupResponse = _homeRemoteRepository.fetchGroupedObjects();
+
+    // Handle the response using a switch expression
+    state = switch (objectsResponse) {
+      Right(value: final objectsList) => state.copyWith(
+        objects: objectsList,
+        groupedObjects: AsyncValue.data(groupResponse),
+      ),
+      Left(value: final l) => state.copyWith(
+        objects: AsyncValue.error(l.message, StackTrace.current),
+        groupedObjects: AsyncValue.data(groupResponse),
+      ),
+    };
   }
 
   void updateObj(String newObj) {
