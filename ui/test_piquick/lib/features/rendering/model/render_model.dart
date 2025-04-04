@@ -6,12 +6,6 @@ class RenderModel {
 
   RenderModel({required this.renderGroups});
 
-  RenderModel copyWith({Map<String, RenderSettings>? renderGroups}) {
-    return RenderModel(
-      renderGroups: renderGroups ?? this.renderGroups,
-    );
-  }
-
   static RenderModel fromObjects(ObjectGroups objects) {
     return RenderModel(
       renderGroups: {

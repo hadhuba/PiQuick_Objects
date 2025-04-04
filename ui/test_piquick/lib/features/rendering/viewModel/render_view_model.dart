@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:test_piquick/features/picker/model/object_groups_model.dart';
 import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
 import 'package:test_piquick/features/rendering/model/render_model.dart';
-import 'package:test_piquick/features/rendering/model/render_settings.dart';
 import 'package:test_piquick/features/rendering/repository/render_remote_repository.dart';
 import 'package:test_piquick/features/rendering/viewModel/states/render_state.dart';
 
@@ -32,33 +31,26 @@ class RenderViewModel extends _$RenderViewModel {
     return initialState;
   }
 
-  Future<void> initRender() async {
+  void initRender() {
+    // Fetch the initial list of objects from the remote repository
+    ref.listen<PickerState>(pickerViewModelProvider, (_, next) {
+      print('PickerState changed: $next');
+      next.groupedObjects.whenData((objects) {
+        print(objects);
+        updateRender(groupedObjects: objects);
+      });
+    });
+  }
+
+  void updateRender({required ObjectGroups groupedObjects}) {
     // Fetch the initial list of objects from the remote repository
 
-    final groups =
-        ref.read<PickerState>(pickerViewModelProvider).groupedObjects;
-
-    // Handle the response using a switch expression
-    groups.when(
-      data: (data) {
-        state = state.copyWith(
-          renderModel: AsyncValue.data(RenderModel.fromObjects(data)),
-          groupedObjects: AsyncValue.data(data),
-        );
-      },
-      error: (error, stackTrace) {
-        // Handle the error state
-        state = state.copyWith(
-          renderModel: AsyncValue.error(error, stackTrace),
-        );
-      },
-      loading: () {
-        // Handle the loading state
-        state = state.copyWith(
-          renderModel: AsyncValue.loading(),
-          groupedObjects: AsyncValue.loading(),
-        );
-      },
+    state = state.copyWith(
+      renderModel: AsyncValue.data(RenderModel.fromObjects(groupedObjects)),
+      groupedObjects: AsyncValue.data(groupedObjects),
+    );
+    print(
+      'RENDER updated Im at home view model bottom: ${state.groupedObjects.value}',
     );
   }
 
@@ -230,5 +222,9 @@ class RenderViewModel extends _$RenderViewModel {
         ),
       ),
     );
+  }
+
+  void selectGroup(String? value) {
+    state = state.copyWith(selectedGroup: value);
   }
 }

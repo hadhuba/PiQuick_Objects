@@ -70,23 +70,6 @@ class FiltersViewModel extends _$FiltersViewModel {
           objectsList: AsyncValue.error(l.message, StackTrace.current),
         ),
       };
-
-      // state.objects.whenData( (final r) {
-      //     state.onFiltersApplied?.call(r);
-      //   }
-      // );
-      // state.objects.when(
-      //   data: (final r) {
-      //     state.onFiltersApplied?.call(r);
-      //   },
-      //   error: (error, stackTrace) {
-      //     //TODO handle error properly
-      //     print('Error: $error');
-      //   },
-      //   loading: () {
-      //     print('Loading...');
-      //   },
-      // );
     });
   }
 }

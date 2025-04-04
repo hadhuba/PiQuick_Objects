@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:test_piquick/features/picker/view/picker_page.dart';
+import 'package:test_piquick/features/rendering/view/render_page.dart';
 
 class BasePage extends ConsumerStatefulWidget {
   const BasePage({super.key});
@@ -16,7 +17,7 @@ class _BasePageState extends ConsumerState<BasePage> {
   Widget build(BuildContext context) {
     final pages = [
       PickerPage(), // PickerPage widget for 3D object selection.
-      // const RenderPage(), // Render page.
+      const RenderPage(), // Render page.
     ];
 
     return Scaffold(

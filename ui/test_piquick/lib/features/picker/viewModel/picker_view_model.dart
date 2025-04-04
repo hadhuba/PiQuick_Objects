@@ -89,8 +89,6 @@ class PickerViewModel extends _$PickerViewModel {
     };
   }
 
-  //state update
-
   void updateAnimation(String? newAnimation) {
     state.viewer3DState.whenData(
       (data) =>
