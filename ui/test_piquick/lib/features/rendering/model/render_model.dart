@@ -22,6 +22,7 @@ class RenderModel {
             modeFourView: false,
             engine: "CYCLES",
             onlyNorthernHemisphere: true,
+            finish: false
           ),
       },
     );
@@ -29,5 +30,9 @@ class RenderModel {
 
   RenderModel setGroupSetting(String groupName, RenderSettings settings) {
     return RenderModel(renderGroups: {...renderGroups, groupName: settings});
+  }
+
+  bool isDone(){
+    return renderGroups.values.every((settings) => settings.finish);
   }
 }

@@ -10,6 +10,7 @@ class RenderSettings {
   bool modeFourView;
   String engine;
   bool onlyNorthernHemisphere;
+  bool finish;
 
   RenderSettings({
     this.numImages = 12,
@@ -22,6 +23,7 @@ class RenderSettings {
     this.modeFourView = false,
     this.engine = 'CYCLES',
     this.onlyNorthernHemisphere = true,
+    this.finish = false,
   });
 
   RenderSettings copyWith({
@@ -35,6 +37,7 @@ class RenderSettings {
     bool? modeFourView,
     String? engine,
     bool? onlyNorthernHemisphere,
+    bool? finish,
   }) {
     return RenderSettings(
       numImages: numImages ?? this.numImages,
@@ -48,6 +51,19 @@ class RenderSettings {
       engine: engine ?? this.engine,
       onlyNorthernHemisphere:
           onlyNorthernHemisphere ?? this.onlyNorthernHemisphere,
+      finish: finish ?? this.finish,
     );
+  }
+
+  bool setDone() {
+    if (numImages > 0 &&
+        resolution > 0 &&
+        (modeMulti || modeStatic || modeFrontView || modeFourView) &&
+        engine.isNotEmpty) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 }

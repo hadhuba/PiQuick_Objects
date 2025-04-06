@@ -22,7 +22,6 @@ class RenderViewModel extends _$RenderViewModel {
 
     ref.listen<PickerState>(pickerViewModelProvider, (_, next) {
       next.groupedObjects.whenData((objects) {
-        print(objects);
         updateRender(groupedObjects: objects);
       });
     });
@@ -57,9 +56,6 @@ class RenderViewModel extends _$RenderViewModel {
     state = state.copyWith(
       renderModel: AsyncValue.data(RenderModel.fromObjects(groupedObjects)),
       groupedObjects: AsyncValue.data(groupedObjects),
-    );
-    print(
-      'RENDER updated Im at home view model bottom: ${state.groupedObjects.value?.groups}',
     );
   }
 
@@ -233,7 +229,56 @@ class RenderViewModel extends _$RenderViewModel {
     );
   }
 
+  void setFinish(bool value) {
+    if (state.selectedGroup == null) {
+      return;
+    }
+
+    state = state.copyWith(
+      renderModel: state.renderModel.whenData(
+        (renderModel) => renderModel.setGroupSetting(
+          state.selectedGroup!,
+          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
+            finish: value,
+          ),
+        ),
+      ),
+    );
+  }
+
   void selectGroup(String? value) {
     state = state.copyWith(selectedGroup: value);
   }
+
+  void setDone(selectedGroup) {
+    if (state.renderModel.isLoading) {
+      return;
+    }
+    state = state.copyWith(
+      renderModel: state.renderModel.whenData(
+        (renderModel) => renderModel.setGroupSetting(
+          selectedGroup,
+          renderModel.renderGroups[selectedGroup]!.copyWith(
+            finish: renderModel.renderGroups[selectedGroup]!.setDone(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void sendSettings() {
+    state.renderModel.whenData((renderModel) {
+      if (renderModel.isDone()) {
+        _renderRemoteRepository.sendSettings(renderModel.renderGroups!);
+      }
+    });
+  }
+
+  bool isDone() {
+    if (state.renderModel.isLoading) {
+      return false;
+    }
+    return state.renderModel.value!.isDone();
+  }
+  
 }
