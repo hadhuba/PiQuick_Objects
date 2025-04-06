@@ -45,43 +45,94 @@ class _RenderPageState extends ConsumerState<RenderPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('renderbuildstatred');
-    ref.read(renderViewModelProvider).renderModel.whenData((data) {
-      final renderGroups = data.renderGroups;
-      final groupNames = renderGroups.keys.toList();
+    final modelAsync = ref.watch(renderViewModelProvider).renderModel;
 
-      return Scaffold(
-        appBar: AppBar(title: const Text('Render Settings')),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              DropdownButton<String>(
-                value: selectedGroup,
-                hint: const Text('Select a Group'),
-                items:
-                    groupNames.map((groupName) {
-                      return DropdownMenuItem<String>(
-                        value: groupName,
-                        child: Text(groupName),
-                      );
-                    }).toList(),
-                onChanged: (value) {
-                  ref.read(renderViewModelProvider.notifier).selectGroup(value);
-                },
-              ),
-              const SizedBox(height: 20),
-              if (selectedGroup != null)
-                Expanded(
-                  child: RenderSettingsForm(selectedGroup: selectedGroup!),
+    //   print('renderbuildstatred');
+    //   modelAsync.whenData((data) {
+    //     print('renderbuild with data');
+    //     final renderGroups = data.renderGroups;
+    //     final groupNames = renderGroups.keys.toList();
+
+    //     return Scaffold(
+    //       appBar: AppBar(title: const Text('Render Settings')),
+    //       body: Padding(
+    //         padding: const EdgeInsets.all(16.0),
+    //         child: Column(
+    //           children: [
+    //             DropdownButton<String>(
+    //               value: selectedGroup,
+    //               hint: const Text('Select a Group'),
+    //               items:
+    //                   groupNames.map((groupName) {
+    //                     return DropdownMenuItem<String>(
+    //                       value: groupName,
+    //                       child: Text(groupName),
+    //                     );
+    //                   }).toList(),
+    //               onChanged: (value) {
+    //                 ref.read(renderViewModelProvider.notifier).selectGroup(value);
+    //               },
+    //             ),
+    //             const SizedBox(height: 20),
+    //             if (selectedGroup != null)
+    //               Expanded(
+    //                 child: RenderSettingsForm(selectedGroup: selectedGroup!),
+    //               ),
+    //           ],
+    //         ),
+    //       ),
+    //     );
+    //   });
+    //   print('renderbuild withOUT data');
+    //   // return const Scaffold(body: Loader());
+    // }
+    return modelAsync.when(
+      data: (data) {
+        print('renderbuild with data');
+        final renderGroups = data.renderGroups;
+        final groupNames = renderGroups.keys.toList();
+
+        return Scaffold(
+          appBar: AppBar(title: const Text('Render Settings')),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                DropdownButton<String>(
+                  value: selectedGroup,
+                  hint: const Text('Select a Group'),
+                  items:
+                      groupNames.map((groupName) {
+                        return DropdownMenuItem<String>(
+                          value: groupName,
+                          child: Text(groupName),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    // setState(() {
+                    //   selectedGroup = value;
+                    // });
+                    ref
+                        .read(renderViewModelProvider.notifier)
+                        .selectGroup(value);
+                  },
                 ),
-            ],
+                const SizedBox(height: 20),
+                if (selectedGroup != null)
+                  Expanded(
+                    child: RenderSettingsForm(selectedGroup: selectedGroup!),
+                  ),
+              ],
+            ),
           ),
-        ),
-      );
-    });
-
-    return const Scaffold(body: Loader());
+        );
+      },
+      loading: () => const Scaffold(body: Loader()),
+      error: (error, stack) {
+        print('renderbuild error: $error');
+        return const Scaffold(body: Center(child: Text('Hiba történt')));
+      },
+    );
   }
 }
 
@@ -95,7 +146,7 @@ class RenderSettingsForm extends StatelessWidget {
       builder: (context, ref, child) {
         final renderModelAsync = ref.watch(renderViewModelProvider).renderModel;
 
-        renderModelAsync.when(
+        return renderModelAsync.when(
           data: (renderModel) {
             final settings = renderModel.renderGroups[selectedGroup];
 
@@ -214,9 +265,11 @@ class RenderSettingsForm extends StatelessWidget {
             );
           },
           loading: () => const Loader(),
-          error: (error, stack) => Center(child: Text('Error: $error')),
+          error:
+              (error, stack) =>
+                  const Loader(), //Center(child: Text('Error: $error')),
         );
-        return const Loader();
+        // return const Loader();
       },
     );
   }

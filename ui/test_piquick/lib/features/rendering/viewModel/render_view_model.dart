@@ -21,7 +21,6 @@ class RenderViewModel extends _$RenderViewModel {
     ); // if it changes the latest comes, build runs again
 
     ref.listen<PickerState>(pickerViewModelProvider, (_, next) {
-      print('PickerState changed in RenderViewModel listener');
       next.groupedObjects.whenData((objects) {
         print(objects);
         updateRender(groupedObjects: objects);
@@ -33,24 +32,24 @@ class RenderViewModel extends _$RenderViewModel {
       groupedObjects: AsyncValue.loading(),
     );
 
-    Future.microtask(() => initRender());
+    // Future.microtask(() => initRender());
 
     return initialState;
   }
 
-  void initRender() {
-    print("initrender_called");
+  // void initRender() {
+  //   print("initrender_called");
 
-    // Fetch the initial list of objects from the remote repository
-    state = state.copyWith(
-      renderModel: AsyncValue.data(
-        RenderModel.empty(),
-      ), // Initialize the state with loading
-      groupedObjects: AsyncValue.data(ObjectGroups(groups: {})),
-    );
+  //   // Fetch the initial list of objects from the remote repository
+  //   state = state.copyWith(
+  //     renderModel: AsyncValue.data(
+  //       RenderModel.empty(),
+  //     ), // Initialize the state with loading
+  //     groupedObjects: AsyncValue.data(ObjectGroups(groups: {})),
+  //   );
 
-    print("initrender_finished");
-  }
+  //   print("initrender_finished");
+  // }
 
   void updateRender({required ObjectGroups groupedObjects}) {
     // Fetch the initial list of objects from the remote repository
@@ -60,7 +59,7 @@ class RenderViewModel extends _$RenderViewModel {
       groupedObjects: AsyncValue.data(groupedObjects),
     );
     print(
-      'RENDER updated Im at home view model bottom: ${state.groupedObjects.value}',
+      'RENDER updated Im at home view model bottom: ${state.groupedObjects.value?.groups}',
     );
   }
 
