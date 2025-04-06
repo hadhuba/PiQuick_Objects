@@ -45,6 +45,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
 
   @override
   Widget build(BuildContext context) {
+    print('renderbuildstatred');
     ref.read(renderViewModelProvider).renderModel.whenData((data) {
       final renderGroups = data.renderGroups;
       final groupNames = renderGroups.keys.toList();

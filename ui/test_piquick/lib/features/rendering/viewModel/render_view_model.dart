@@ -1,11 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/picker/model/object_groups_model.dart';
 import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
+import 'package:test_piquick/features/picker/viewModel/picker_view_model.dart';
 import 'package:test_piquick/features/rendering/model/render_model.dart';
 import 'package:test_piquick/features/rendering/repository/render_remote_repository.dart';
 import 'package:test_piquick/features/rendering/viewModel/states/render_state.dart';
-
-import '../../picker/viewModel/picker_view_model.dart';
 
 part 'render_view_model.g.dart';
 
@@ -21,8 +20,16 @@ class RenderViewModel extends _$RenderViewModel {
       renderRemoteRepositoryProvider,
     ); // if it changes the latest comes, build runs again
 
+    ref.listen<PickerState>(pickerViewModelProvider, (_, next) {
+      print('PickerState changed in RenderViewModel listener');
+      next.groupedObjects.whenData((objects) {
+        print(objects);
+        updateRender(groupedObjects: objects);
+      });
+    });
+
     final initialState = RenderState(
-      renderModel: AsyncValue.loading(), // Initialize the state with loading
+      renderModel: AsyncValue.loading(),
       groupedObjects: AsyncValue.loading(),
     );
 
@@ -32,14 +39,17 @@ class RenderViewModel extends _$RenderViewModel {
   }
 
   void initRender() {
+    print("initrender_called");
+
     // Fetch the initial list of objects from the remote repository
-    ref.listen<PickerState>(pickerViewModelProvider, (_, next) {
-      print('PickerState changed: $next');
-      next.groupedObjects.whenData((objects) {
-        print(objects);
-        updateRender(groupedObjects: objects);
-      });
-    });
+    state = state.copyWith(
+      renderModel: AsyncValue.data(
+        RenderModel.empty(),
+      ), // Initialize the state with loading
+      groupedObjects: AsyncValue.data(ObjectGroups(groups: {})),
+    );
+
+    print("initrender_finished");
   }
 
   void updateRender({required ObjectGroups groupedObjects}) {

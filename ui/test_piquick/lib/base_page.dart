@@ -16,14 +16,17 @@ class _BasePageState extends ConsumerState<BasePage> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      PickerPage(), // PickerPage widget for 3D object selection.
+      const PickerPage(), // PickerPage widget for 3D object selection.
       const RenderPage(), // Render page.
     ];
 
     return Scaffold(
       appBar: AppBar(title: const Text('Piquick Objects')),
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      body: pages[selectedIndex], // Display the selected page.
+      body: IndexedStack(
+        index: selectedIndex,
+        children: pages, // Keeps the state of each page intact.
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
         onTap: (value) {

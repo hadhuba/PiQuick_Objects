@@ -5,6 +5,7 @@ class RenderModel {
   final Map<String, RenderSettings> renderGroups;
 
   RenderModel({required this.renderGroups});
+  RenderModel.empty() : renderGroups = {};
 
   static RenderModel fromObjects(ObjectGroups objects) {
     return RenderModel(
@@ -27,12 +28,6 @@ class RenderModel {
   }
 
   RenderModel setGroupSetting(String groupName, RenderSettings settings) {
-    return RenderModel(
-      renderGroups: {
-        ...renderGroups,
-        groupName: settings,
-      },
-    );
+    return RenderModel(renderGroups: {...renderGroups, groupName: settings});
   }
-
 }

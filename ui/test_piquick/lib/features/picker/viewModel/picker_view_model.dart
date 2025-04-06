@@ -179,7 +179,7 @@ class PickerViewModel extends _$PickerViewModel {
   void updateObjectsList({required List<String> objectsList}) {
     state = state.copyWith(objects: AsyncValue.data(objectsList));
     print(
-      'Objects updated Im at home view model bottom: ${state.objects.value}',
+      'Objects updated Im at picker view model bottom: ${state.objects.value}',
     );
   }
 
