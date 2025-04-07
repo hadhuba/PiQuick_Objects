@@ -9,8 +9,7 @@ PiQuick_Objects is a toolkit and web application designed for preparing datasets
 
 **Object Organization and Rendering**: Utilize Blender to render 3D objects and arrange them in scenes, including handling multi-object scenes for large-scale rendering tasks.
 
-
-**Web Interface**: Enables browsing, filtering, and customized downloads, allowing users to select and flag objects of interest based on metadata, 3D previews, and other features.
+**Web Interface**: Enables browsing, filtering, and customized downloads, allowing users to select and group together objects of interest based on metadata, 3D previews, and other features.
 
 ## Setup and Installation
 
