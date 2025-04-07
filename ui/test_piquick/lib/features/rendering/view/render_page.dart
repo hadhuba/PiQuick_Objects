@@ -21,9 +21,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
 
     return modelAsync.when(
       data: (data) {
-        final renderGroups = data.renderGroups;
-        final groupNames = renderGroups.keys.toList();
-
+        final groupNames = data.getAllNames();
         return Scaffold(
           appBar: AppBar(title: const Text('Render Settings')),
           body: Padding(
@@ -54,14 +52,14 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    if (ref.read(renderViewModelProvider.notifier).isDone()) {
-                      ref.read(renderViewModelProvider.notifier).sendSettings();
-                    } else {
-                      showSnackBar(
-                        context,
-                        "Please complete all required fields",
-                      );
-                    }
+                    // if (ref.read(renderViewModelProvider.notifier).isDone()) {
+                    //   ref.read(renderViewModelProvider.notifier).sendSettings();
+                    // } else {
+                    //   showSnackBar(
+                    //     context,
+                    //     "Please complete all required fields",
+                    //   );
+                    // }
                   },
                   child: const Text('Save Settings'),
                 ),
@@ -91,7 +89,8 @@ class RenderSettingsForm extends StatelessWidget {
             .renderModel
             .when(
               data: (renderModel) {
-                final settings = renderModel.renderGroups[selectedGroup];
+                final settings =
+                    renderModel.get(selectedGroup)!.settings; // TODO null
 
                 if (settings == null) {
                   return const Center(
@@ -202,9 +201,9 @@ class RenderSettingsForm extends StatelessWidget {
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
-                        ref
-                            .read(renderViewModelProvider.notifier)
-                            .setDone(selectedGroup);
+                        // ref
+                        //     .read(renderViewModelProvider.notifier)
+                        //     .setDone(selectedGroup);
                       },
                       child: const Text('Save Settings for group'),
                     ),

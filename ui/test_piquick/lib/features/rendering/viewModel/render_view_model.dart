@@ -3,6 +3,7 @@ import 'package:test_piquick/features/picker/model/object_groups_model.dart';
 import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
 import 'package:test_piquick/features/picker/viewModel/picker_view_model.dart';
 import 'package:test_piquick/features/rendering/model/render_model.dart';
+import 'package:test_piquick/features/rendering/model/render_settings.dart';
 import 'package:test_piquick/features/rendering/repository/render_remote_repository.dart';
 import 'package:test_piquick/features/rendering/viewModel/states/render_state.dart';
 
@@ -26,10 +27,7 @@ class RenderViewModel extends _$RenderViewModel {
       });
     });
 
-    final initialState = RenderState(
-      renderModel: AsyncValue.loading(),
-      groupedObjects: AsyncValue.loading(),
-    );
+    final initialState = RenderState(renderModel: AsyncValue.loading());
 
     // Future.microtask(() => initRender());
 
@@ -53,10 +51,20 @@ class RenderViewModel extends _$RenderViewModel {
   void updateRender({required ObjectGroups groupedObjects}) {
     // Fetch the initial list of objects from the remote repository
 
-    state = state.copyWith(
-      renderModel: AsyncValue.data(RenderModel.fromObjects(groupedObjects)),
-      groupedObjects: AsyncValue.data(groupedObjects),
+    final newRenderModel = RenderModel.fromObjectGroupsAndSettings(
+      objectGroups: groupedObjects,
+      renderSettings: RenderSettings(), // Default settings
     );
+
+    state = state.copyWith(renderModel: AsyncValue.data(newRenderModel));
+    // state = state.copyWith(
+    //   renderModel: AsyncValue.data(
+    //     RenderModel.fromObjectGroupsAndSettings(
+    //       objectGroups: groupedObjects,
+    //       renderSettings: RenderSettings(),
+    //     ),
+    //   ),
+    // );
   }
 
   void setNumImages(int value) {
@@ -66,11 +74,12 @@ class RenderViewModel extends _$RenderViewModel {
 
     state = state.copyWith(
       renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSetting(
+        (renderModel) => renderModel.setGroupSettings(
           state.selectedGroup!,
-          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
-            numImages: value,
-          ),
+          renderModel
+              .get(state.selectedGroup!)!
+              .settings
+              .copyWith(numImages: value),
         ),
       ),
     );
@@ -83,11 +92,12 @@ class RenderViewModel extends _$RenderViewModel {
 
     state = state.copyWith(
       renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSetting(
+        (renderModel) => renderModel.setGroupSettings(
           state.selectedGroup!,
-          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
-            azimuthAug: value,
-          ),
+          renderModel
+              .get(state.selectedGroup!)!
+              .settings
+              .copyWith(azimuthAug: value),
         ),
       ),
     );
@@ -100,11 +110,12 @@ class RenderViewModel extends _$RenderViewModel {
 
     state = state.copyWith(
       renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSetting(
+        (renderModel) => renderModel.setGroupSettings(
           state.selectedGroup!,
-          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
-            elevationAug: value,
-          ),
+          renderModel
+              .get(state.selectedGroup!)!
+              .settings
+              .copyWith(elevationAug: value),
         ),
       ),
     );
@@ -117,11 +128,12 @@ class RenderViewModel extends _$RenderViewModel {
 
     state = state.copyWith(
       renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSetting(
+        (renderModel) => renderModel.setGroupSettings(
           state.selectedGroup!,
-          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
-            resolution: value,
-          ),
+          renderModel
+              .get(state.selectedGroup!)!
+              .settings
+              .copyWith(resolution: value),
         ),
       ),
     );
@@ -131,14 +143,14 @@ class RenderViewModel extends _$RenderViewModel {
     if (state.selectedGroup == null) {
       return;
     }
-
     state = state.copyWith(
       renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSetting(
+        (renderModel) => renderModel.setGroupSettings(
           state.selectedGroup!,
-          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
-            modeMulti: value,
-          ),
+          renderModel
+              .get(state.selectedGroup!)!
+              .settings
+              .copyWith(modeMulti: value),
         ),
       ),
     );
@@ -148,14 +160,14 @@ class RenderViewModel extends _$RenderViewModel {
     if (state.selectedGroup == null) {
       return;
     }
-
     state = state.copyWith(
       renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSetting(
+        (renderModel) => renderModel.setGroupSettings(
           state.selectedGroup!,
-          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
-            modeStatic: value,
-          ),
+          renderModel
+              .get(state.selectedGroup!)!
+              .settings
+              .copyWith(modeStatic: value),
         ),
       ),
     );
@@ -165,14 +177,14 @@ class RenderViewModel extends _$RenderViewModel {
     if (state.selectedGroup == null) {
       return;
     }
-
     state = state.copyWith(
       renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSetting(
+        (renderModel) => renderModel.setGroupSettings(
           state.selectedGroup!,
-          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
-            modeFrontView: value,
-          ),
+          renderModel
+              .get(state.selectedGroup!)!
+              .settings
+              .copyWith(modeFrontView: value),
         ),
       ),
     );
@@ -182,14 +194,14 @@ class RenderViewModel extends _$RenderViewModel {
     if (state.selectedGroup == null) {
       return;
     }
-
     state = state.copyWith(
       renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSetting(
+        (renderModel) => renderModel.setGroupSettings(
           state.selectedGroup!,
-          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
-            modeFourView: value,
-          ),
+          renderModel
+              .get(state.selectedGroup!)!
+              .settings
+              .copyWith(modeFourView: value),
         ),
       ),
     );
@@ -199,14 +211,14 @@ class RenderViewModel extends _$RenderViewModel {
     if (state.selectedGroup == null) {
       return;
     }
-
     state = state.copyWith(
       renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSetting(
+        (renderModel) => renderModel.setGroupSettings(
           state.selectedGroup!,
-          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
-            engine: value,
-          ),
+          renderModel
+              .get(state.selectedGroup!)!
+              .settings
+              .copyWith(engine: value),
         ),
       ),
     );
@@ -216,69 +228,53 @@ class RenderViewModel extends _$RenderViewModel {
     if (state.selectedGroup == null) {
       return;
     }
-
     state = state.copyWith(
       renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSetting(
+        (renderModel) => renderModel.setGroupSettings(
           state.selectedGroup!,
-          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
-            onlyNorthernHemisphere: value,
-          ),
+          renderModel
+              .get(state.selectedGroup!)!
+              .settings
+              .copyWith(onlyNorthernHemisphere: value),
         ),
       ),
     );
   }
 
-  void setFinish(bool value) {
-    if (state.selectedGroup == null) {
-      return;
-    }
-
-    state = state.copyWith(
-      renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSetting(
-          state.selectedGroup!,
-          renderModel.renderGroups[state.selectedGroup!]!.copyWith(
-            finish: value,
-          ),
-        ),
-      ),
-    );
-  }
+  // void setFinish(bool value) {}
 
   void selectGroup(String? value) {
     state = state.copyWith(selectedGroup: value);
   }
 
-  void setDone(selectedGroup) {
-    if (state.renderModel.isLoading) {
-      return;
-    }
-    state = state.copyWith(
-      renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSetting(
-          selectedGroup,
-          renderModel.renderGroups[selectedGroup]!.copyWith(
-            finish: renderModel.renderGroups[selectedGroup]!.setDone(),
-          ),
-        ),
-      ),
-    );
-  }
+  // void setDone(selectedGroup) {
+  //   if (state.renderModel.isLoading) {
+  //     return;
+  //   }
+  //   state = state.copyWith(
+  //     renderModel: state.renderModel.whenData(
+  //       (renderModel) => renderModel.setGroupSetting(
+  //         selectedGroup,
+  //         renderModel.renderGroups[selectedGroup]!.copyWith(
+  //           finish: renderModel.renderGroups[selectedGroup]!.setDone(),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   void sendSettings() {
     state.renderModel.whenData((renderModel) {
-      if (renderModel.isDone()) {
-        _renderRemoteRepository.sendSettings(renderModel.renderGroups);
-      }
+      // if (renderModel.isDone()) {
+      _renderRemoteRepository.sendSettings(renderModel);
+      // }
     });
   }
 
-  bool isDone() {
-    if (state.renderModel.isLoading) {
-      return false;
-    }
-    return state.renderModel.value!.isDone();
-  }
-  
+  // bool isDone() {
+  //   if (state.renderModel.isLoading) {
+  //     return false;
+  //   }
+  //   return state.renderModel.value!.isDone();
+  // }
 }

@@ -1,5 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:test_piquick/features/rendering/model/render_settings.dart';
+import 'package:test_piquick/features/rendering/model/render_model.dart';
 
 part 'render_remote_repository.g.dart';
 
@@ -9,5 +9,5 @@ RenderRemoteRepository renderRemoteRepository(RenderRemoteRepositoryRef ref) {
 }
 
 class RenderRemoteRepository {
-  void sendSettings(Map<String, RenderSettings> map) {}
+  void sendSettings(RenderModel renderModel) {}
 }
