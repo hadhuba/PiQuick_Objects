@@ -12,3 +12,8 @@ Az állapotkezelést például a
 vagy **Bloc**: 
 
 végzi, amely biztosítja, hogy a változások frissítsék az UI-t.
+
+
+ python3 -m venv venv
+
+ -m venv: tells the interpreter to run the venv module as a script

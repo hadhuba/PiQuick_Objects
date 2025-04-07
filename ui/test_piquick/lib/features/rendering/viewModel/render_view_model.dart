@@ -269,7 +269,7 @@ class RenderViewModel extends _$RenderViewModel {
   void sendSettings() {
     state.renderModel.whenData((renderModel) {
       if (renderModel.isDone()) {
-        _renderRemoteRepository.sendSettings(renderModel.renderGroups!);
+        _renderRemoteRepository.sendSettings(renderModel.renderGroups);
       }
     });
   }
