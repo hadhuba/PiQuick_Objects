@@ -85,7 +85,7 @@ class RenderModel {
           (group) => {
             'name': group.name,
             'object_ids': group.object_ids,
-            'settings': group.settings.toJson(),
+            'settings': group.settings.toMap(),
           },
         )
         .toList();

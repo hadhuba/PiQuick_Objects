@@ -53,7 +53,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                 ElevatedButton(
                   onPressed: () {
                     // if (ref.read(renderViewModelProvider.notifier).isDone()) {
-                    //   ref.read(renderViewModelProvider.notifier).sendSettings();
+                    ref.read(renderViewModelProvider.notifier).sendSettings();
                     // } else {
                     //   showSnackBar(
                     //     context,
