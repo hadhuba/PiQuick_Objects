@@ -1,0 +1,7 @@
+
+# server
+fastapi
+fastapi[standard]
+
+#backend
+objaverse
