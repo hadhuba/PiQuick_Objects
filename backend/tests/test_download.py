@@ -4,17 +4,8 @@ import json
 import sys
 from unittest.mock import patch, MagicMock, mock_open, call
 import argparse
-
-# Ahhoz, hogy a teszt megtalálja a 'scripts' és 'models' modulokat,
-# hozzá kell adni a projekt gyökerét a Python elérési úthoz.
-# Ezt megteheted a pytest konfigurációban (conftest.py) vagy itt ideiglenesen.
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.insert(0, project_root)
-
-# Most már importálhatjuk a tesztelendő modulokat és osztályokat
 from scripts import download
-from models.render_model import Group # Feltételezve, hogy ez az elérési út helyes
-
+from models.render_model import Group
 from utils.logging_config import setup_custom_logger
 
 logger = setup_custom_logger("test_download")
@@ -28,6 +19,7 @@ def mock_args(tmp_path):
     args.groups_json = str(tmp_path / "test_groups.json")
     args.save_path = str(tmp_path / "output_paths")
     args.store_path = str(tmp_path / "objects_database")
+    args.num_of_gpus = 2
     # Hozzunk létre egy dummy input json fájlt is
     dummy_group_data = [{"name": "group1", "object_ids": ["id1", "id2"]}]
     with open(args.groups_json, 'w') as f:
@@ -176,28 +168,6 @@ def test_write_group_to_json(mock_fs, tmp_path):
     written_data = json.loads(all_written_content)
 
     assert written_data == filepaths
-
-# def test_write_group_to_json(mock_fs, tmp_path):
-#     """Test writing the file paths to a JSON file."""
-#     group_name = "test_group"
-#     filepaths = ["/path/to/id1.glb", "/path/to/id2.glb"]
-#     save_path = str(tmp_path / "output")
-#     groups_json_path = str(tmp_path / "input/my_groups.json") # Dummy input path
-#     expected_output_dir = os.path.join(save_path, "my_groups_paths")
-#     expected_json_path = os.path.join(expected_output_dir, f"{group_name}.json")
-
-#     download.write_group_to_json(group_name, filepaths, save_path, groups_json_path)
-
-#     mock_fs["makedirs"].assert_called_once_with(expected_output_dir, exist_ok=True)
-#     mock_fs["open"].assert_called_once_with(expected_json_path, "w")
-#     # Get the file handle mock used in the 'with open(...)' statement
-#     file_handle_mock = mock_fs["open"]().__enter__()
-#     # Check if json.dump was called correctly
-#     # json.dump(data, json_file, indent=2)
-#     dump_args, dump_kwargs = file_handle_mock.write.call_args_list[0] # json.dump writes stringified json
-#     written_data = json.loads(dump_args[0]) # Parse the written string back to Python object
-#     assert written_data == filepaths
-
 
 # --- Tests for load_groups_from_json ---
 
