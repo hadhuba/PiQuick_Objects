@@ -40,17 +40,26 @@ class FiltersViewModel extends _$FiltersViewModel {
         // Update the state with the modified filters
         state = state.copyWith(filters: AsyncValue.data(filters));
       }
+      print('Updated filters: $filters');
     });
   }
 
   Future<void> initFilters() async {
     state = state.copyWith(filters: const AsyncValue.loading());
 
-    final response = await _filterRemoteRepository.getFilterOptions();
-    state = switch (response) {
+    final filterResponse = await _filterRemoteRepository.getFilterOptions();
+    state = switch (filterResponse) {
       Right(value: final r) => state.copyWith(filters: AsyncValue.data(r)),
       Left(value: final l) => state.copyWith(
         filters: AsyncValue.error(l.message, StackTrace.current),
+      ),
+    };
+
+    final objResponse = await _filterRemoteRepository.getObjectsList();
+    state = switch (objResponse) {
+      Right(value: final r) => state.copyWith(objectsList: AsyncValue.data(r)),
+      Left(value: final l) => state.copyWith(
+        objectsList: AsyncValue.error(l.message, StackTrace.current),
       ),
     };
   }

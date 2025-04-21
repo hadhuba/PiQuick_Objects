@@ -22,8 +22,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isLoading =
-        ref.watch(filtersViewModelProvider).filters.isLoading;
+    final isLoading = ref.watch(filtersViewModelProvider).filters.isLoading;
 
     final filtersList = ref.watch(filtersViewModelProvider).filtersList;
     final objects = ref.watch(filtersViewModelProvider).objectsList;
@@ -92,62 +91,76 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                             itemBuilder: (context, index) {
                               final filter = filtersList[index];
                               return ListTile(
-                                title: Text(filter.type),
+                                title: Tooltip(
+                                  message: filter.description ?? '',
+                                  child: Text(filter.type),
+                                ),
                                 subtitle: Row(
                                   children: [
                                     const Text('Min: '),
-                                    DropdownButton<int>(
-                                      value:
-                                          filter.minValue
-                                              as int?, // Show current minValue as placeholder
-                                      items:
-                                          List.generate(10, (i) => i).map((
-                                            int value,
-                                          ) {
-                                            return DropdownMenuItem<int>(
-                                              value: value,
-                                              child: Text(value.toString()),
-                                            );
-                                          }).toList(),
-                                      onChanged: (value) {
-                                        if (value != null) {
+                                    SizedBox(
+                                      width: 60,
+                                      child: TextFormField(
+                                        initialValue:
+                                            filter.minValue?.toString(),
+                                        decoration: const InputDecoration(
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.symmetric(
+                                            vertical: 8,
+                                            horizontal: 4,
+                                          ),
+                                        ),
+                                        keyboardType: TextInputType.number,
+                                        onChanged: (value) {
+                                          final num? newMin =
+                                              value.isEmpty
+                                                  ? null
+                                                  : num.tryParse(value);
                                           ref
-                                              .read(filtersViewModelProvider.notifier)
+                                              .read(
+                                                filtersViewModelProvider
+                                                    .notifier,
+                                              )
                                               .updateFilter(
                                                 type: filter.type,
-                                                minValue:
-                                                    value, // Update the minValue
+                                                minValue: newMin,
                                                 maxValue: filter.maxValue,
                                               );
-                                        }
-                                      },
+                                        },
+                                      ),
                                     ),
-                                    const Text(' Max: '),
-                                    DropdownButton<int>(
-                                      value:
-                                          filter.maxValue
-                                              as int?, // Show current maxValue as placeholder
-                                      items:
-                                          List.generate(10, (i) => i).map((
-                                            int value,
-                                          ) {
-                                            return DropdownMenuItem<int>(
-                                              value: value,
-                                              child: Text(value.toString()),
-                                            );
-                                          }).toList(),
-                                      onChanged: (value) {
-                                        if (value != null) {
+                                    const SizedBox(width: 12),
+                                    const Text('Max: '),
+                                    SizedBox(
+                                      width: 60,
+                                      child: TextFormField(
+                                        initialValue:
+                                            filter.maxValue?.toString(),
+                                        decoration: const InputDecoration(
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.symmetric(
+                                            vertical: 8,
+                                            horizontal: 4,
+                                          ),
+                                        ),
+                                        keyboardType: TextInputType.number,
+                                        onChanged: (value) {
+                                          final num? newMax =
+                                              value.isEmpty
+                                                  ? null
+                                                  : num.tryParse(value);
                                           ref
-                                              .read(filtersViewModelProvider.notifier)
+                                              .read(
+                                                filtersViewModelProvider
+                                                    .notifier,
+                                              )
                                               .updateFilter(
                                                 type: filter.type,
-                                                maxValue:
-                                                    value, // Update the maxValue
                                                 minValue: filter.minValue,
+                                                maxValue: newMax,
                                               );
-                                        }
-                                      },
+                                        },
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -160,14 +173,14 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                             ref
                                 .read(filtersViewModelProvider.notifier)
                                 .applyFilters();
+                            Navigator.of(context).pop();
                             // Handle the fetched IDs
                           },
                           child: const Text('Apply Filters'),
                         ),
-                        ElevatedButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Close'),
-                        ),
+                        // ElevatedButton(
+                        //   onPressed: () =>                           child: const Text('Close'),
+                        // ),
                       ],
                     ),
                   ),

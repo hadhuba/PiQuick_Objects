@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:fpdart/fpdart.dart';
 import 'package:http/http.dart' as http;
@@ -38,20 +39,9 @@ class FilterRemoteRepository {
         );
       }
 
-      // Assuming your API returns a list of object IDs as strings
       final List<dynamic> idsList = responseBody['object_ids'];
       final List<String> objectsList =
           idsList.map((id) => id.toString()).toList();
-
-      // // Assuming your API returns a list of objects with "id" keys
-      // final List<dynamic> objectsDynamicList = responseBody['objects'];
-      // final List<ThreeDObject> objectsList =
-      //     objectsDynamicList
-      //         .map(
-      //           (object) =>
-      //               ThreeDObject(id: (object as Map<String, dynamic>)['id']),
-      //         )
-      //         .toList();
 
       return Right(objectsList);
     } catch (e) {
@@ -85,6 +75,32 @@ class FilterRemoteRepository {
       // final Filters filters = Filters(filters: filtersList);
 
       return Right(filtersList);
+    } catch (e) {
+      return Left(AppFailure(e.toString()));
+    }
+  }
+
+  Future<Either<AppFailure, List<String>>> getObjectsList() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ServerConstants.serverUrl}/filters/allobjects'),
+      );
+
+      final responseBody = jsonDecode(response.body);
+
+      if (response.statusCode != 200) {
+        print(responseBody['detail'] ?? 'Failed to get objects list');
+        return Left(
+          AppFailure(responseBody['detail'] ?? 'Failed to fetch objects list'),
+        );
+      }
+
+      // Assuming your API returns a list of object IDs as strings
+      final List<dynamic> idsList = responseBody['object_ids'];
+      final List<String> objectsList =
+          idsList.map((id) => id.toString()).toList();
+
+      return Right(objectsList);
     } catch (e) {
       return Left(AppFailure(e.toString()));
     }

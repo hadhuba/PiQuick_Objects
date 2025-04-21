@@ -3,11 +3,16 @@ import os
 import multiprocessing
 from typing import List, Dict, Any
 import argparse
-import bpy
 import sys
 import json
-
 from concurrent.futures import ProcessPoolExecutor
+
+# Try importing bpy, which is only available in Blender
+try:
+    import bpy
+except ModuleNotFoundError:
+    # For testing environments or when running outside Blender
+    pass
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -29,12 +34,12 @@ def parse_args():
     parser.add_argument( # --save_path
         "--save_path",
         type=str,
-        # default=default_save_path,
+        default="./metadata/",
         help="A path where the output metadata will be saved.")
     parser.add_argument( # --objects_path
         "--objects_path",
         type=str,
-        # default=default_objects_path,
+        default="./objects/",
         help="The path to the folder of .json files containing object paths to work with.")
     parser.add_argument( # --cpu_count
         "--cpu_count",
@@ -76,8 +81,17 @@ def parse_args():
         action="store_true",
         default=True,
         help="Flag to indicate whether to run the animations metadata extraction.")
-    argv = sys.argv[sys.argv.index("--") + 1 :]
-    return parser.parse_args(argv)
+    
+    # Handle both direct script execution (with -- separator) and testing scenarios
+    try:
+        # When run via Blender: blender -b -P script.py -- [args]
+        separator_index = sys.argv.index("--")
+        argv = sys.argv[separator_index + 1:]
+        return parser.parse_args(argv)
+    except (ValueError, IndexError):
+        # When run via pytest or in other contexts without "--" separator
+        # Use defaults or parse only the script-specific args
+        return parser.parse_args([])  # Empty list means use defaults
 
 def save_to_file(results: list, attribute: str):
     """Write to file based on current attribute.
@@ -85,13 +99,13 @@ def save_to_file(results: list, attribute: str):
         result (list): metadata info gathered in task()
         attribute (str): name of attribute
     """
-    for result in results:
-        print(f"Writing attribute to file: {attribute}")
-
-        os.makedirs(args.save_path, exist_ok=True)
-        file_path = os.path.join(args.save_path, f"{attribute}.txt")
-
-        with open(file_path, "a") as f:
+    print(f"Writing attribute to file: {attribute}")
+    
+    os.makedirs(args.save_path, exist_ok=True)
+    file_path = os.path.join(args.save_path, f"{attribute}.txt")
+    
+    with open(file_path, "a") as f:
+        for result in results:
             for obj_id, value in result[attribute].items():
                 f.write(f"{obj_id}: {value}\n")
 
@@ -155,11 +169,6 @@ def task(object_files_chunk: List[str]):
         for image in bpy.data.images:
             bpy.data.images.remove(image, do_unlink=True)
 
-
-        # # Deleting loaded objects from memory
-        # bpy.ops.object.select_all(action='DESELECT')
-        # bpy.data.objects[obj_id].select_set(True)
-        # bpy.ops.object.delete()
 
 
     return {

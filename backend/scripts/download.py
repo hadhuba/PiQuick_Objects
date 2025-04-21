@@ -29,19 +29,23 @@ import os
 import json
 import argparse
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from models.render_model import Group
-# from server.models.render_model import Group
+
+from utils.setup_path import add_project_root
+add_project_root()
+
 from utils.logging_config import setup_custom_logger
-# from server.logger.logging_config import setup_custom_logger
+from models.render_model import Group
 
 logger = setup_custom_logger("download_script")
 
 def parse_arguments():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--groups_json", type=str, required=True)
-    parser.add_argument("--save_path", type=str)
-    parser.add_argument("--store_path", type=str)
+    parser = argparse.ArgumentParser(description="Objaverse Batch Downloader")
+    parser.add_argument("--groups_json", type=str, required=True,
+                        help="Path or JSON string containing grouped object IDs.")
+    parser.add_argument("--save_path", type=str, 
+                        help="Directory where JSON files with object paths will be saved. Defaults to the directory of groups_json.")
+    parser.add_argument("--store_path", type=str,
+                        help="Directory where downloaded objects will be stored. Defaults to '<project_root>/src/objects_database'.")
     return parser.parse_args()
 
 def search_in_database(storeFolder: str, ids):
@@ -76,7 +80,6 @@ def write_group_to_json(group, filepaths, save_path, groups_json):
     with open(group_json_path, "w") as json_file:
         json.dump(data, json_file, indent=2)
     logger.info(f"Json file with id paths written for group: {group} {group_json_path}\n")
-
 
 def process_groups(groups, args, cpu_count):
     for group in groups:
@@ -128,22 +131,13 @@ def load_groups_from_json(json_path_or_data):
         logger.error(f"Error loading groups: {e}")
         sys.exit(1)
 
-
 def main():
     logger.info("%s\n",objaverse.__version__)
 
     # Argument parsing for input and output file paths
-    args = parse_arguments()
+    args = parse_arguments() 
 
-    # if not args.groups_json or not os.path.isfile(args.groups_json):
-    #     logger.error(f"The specified groups_json file '{args.groups_json}' does not exist.")
-    #     raise FileNotFoundError(f"The specified groups_json file '{args.groups_json}' does not exist.")
-
-    # # Load object IDs from specified JSON file, convert to Group objects
-    # with open(args.groups_json, "r") as json_file:
-    #     raw_data = json.load(json_file)
-
-    groups =load_groups_from_json(args.groups_json) #[Group(**group_data) for group_data in raw_data]
+    groups = load_groups_from_json(args.groups_json) #[Group(**group_data) for group_data in raw_data]
 
     # Set default for save_path if not provided
     if args.save_path is None:

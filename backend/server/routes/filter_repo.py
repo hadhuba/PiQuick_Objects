@@ -2,12 +2,15 @@ from fastapi import HTTPException, APIRouter, Depends
 import uuid
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+from routes.utils.setup_path import add_project_root
+add_project_root()
+
 from models.filters_model import Filters
 from models.objects_model import ThreeDObjectsModel
 from utils.logging_config import setup_custom_logger
 
-logger = setup_custom_logger("picker")
+logger = setup_custom_logger("filter")
 
 router = APIRouter() # OFFERS ALL OF THE FUNCTIONALITY AS APP
 
@@ -16,18 +19,54 @@ logger.debug("Initializing filter repository router")
 
 example_filters = {
     "filters": [
-        {"type": "vertex_num", "minValue": None, "maxValue": None},
-        {"type": "animation_count", "minValue": None, "maxValue": None},
-        {"type": "material_count", "minValue": None, "maxValue": None},
-        {"type": "edge_count", "minValue": None, "maxValue": None},
-        {"type": "poly_count", "minValue": None, "maxValue": None},
-        {"type": "mesh_count", "minValue": None, "maxValue": None},
-        {"type": "armature_count", "minValue": None, "maxValue": None},
+        {
+            "type": "vertex_num",
+            "description": "Number of vertices in the 3D model",
+            "minValue": None,
+            "maxValue": None
+        },
+        {
+            "type": "animation_count",
+            "description": "Number of animations contained in the model",
+            "minValue": None,
+            "maxValue": None
+        },
+        {
+            "type": "material_count",
+            "description": "Count of distinct materials used",
+            "minValue": None,
+            "maxValue": None
+        },
+        {
+            "type": "edge_count",
+            "description": "Total number of edges in the mesh",
+            "minValue": None,
+            "maxValue": None
+        },
+        {
+            "type": "poly_count",
+            "description": "Number of polygons/faces",
+            "minValue": None,
+            "maxValue": None
+        },
+        {
+            "type": "mesh_count",
+            "description": "How many meshes the model contains",
+            "minValue": None,
+            "maxValue": None
+        },
+        {
+            "type": "armature_count",
+            "description": "Number of armatures/bones",
+            "minValue": None,
+            "maxValue": None
+        },
     ]
 }
 
 @router.get("/options", response_model=Filters, status_code=200)
 def fetch_filters():
+    logger.debug("filters/options called")
     return example_filters
 
 @router.post("/apply", response_model=ThreeDObjectsModel, status_code=200)
@@ -65,12 +104,29 @@ def apply_filters(filters: Filters):
     return ThreeDObjectsModel(object_ids=list(all_matching_ids))
 
 
+@router.get("/allobjects", response_model=ThreeDObjectsModel, status_code=200)
+def all_objects():
+    """
+    Give back all objects in the database.
+    """
+    logger.debug("filters/allobjects called")
+    try:
+        ids = get_all()
+        
+        if ids is None or len(ids) == 0:
+            raise HTTPException(status_code=404, detail="No objects found matching the filters.")
+        
+        return ThreeDObjectsModel(object_ids=list(ids))
+    except Exception as e:
+        logger.error(f"Error fetching all objects: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # function to list by metadata
 def list_by(min_val: float, max_val: float, attribute: str):
     current_file_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(current_file_dir, "../../metadata", f"{attribute}.txt")
     file_path = os.path.normpath(file_path)
+    
     
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"The file {file_path} does not exist.")
@@ -90,3 +146,29 @@ def list_by(min_val: float, max_val: float, attribute: str):
                     continue
     
     return matching_ids
+
+def get_all():
+    current_file_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.normpath(os.path.join(
+        current_file_dir,
+        "..", "..",
+        "src",
+        "objects_database",
+        "glbs",
+        "000-023"
+    ))
+    # file_path = os.path.normpath(file_path)
+    print(file_path)
+    
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"The file {file_path} does not exist.")
+    
+    ids = []
+    
+    paths = os.listdir(file_path)
+    for path in paths:
+        if path.endswith(".glb"):
+            id = path.split(".")[0]
+            ids.append(id)
+    
+    return ids
