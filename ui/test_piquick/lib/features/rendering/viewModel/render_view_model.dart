@@ -1,3 +1,4 @@
+import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/picker/model/object_groups_model.dart';
 import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
@@ -219,38 +220,24 @@ class RenderViewModel extends _$RenderViewModel {
       try {
         state = state.copyWith(downloadStatus: "Processing render request...");
 
-        // Check if we're running on the web
-        if (kIsWeb) {
-          final response = await _renderRemoteRepository.sendSettings(
-            renderModel,
-          );
+        final response = await _renderRemoteRepository.sendSettings(
+          renderModel,
+        );
 
-          // Even though we don't get a file back on web, we want to update the state
-          state = state.copyWith(
-            downloadedFile: const AsyncValue.data(null), // No file on web
-            downloadStatus: "Rendering complete! Download initiated.",
-          );
-
-          // The actual download is handled by the browser through web_download_helper.dart
-        } else {
-          // Mobile/Desktop platforms
-          final file = await _renderRemoteRepository.sendSettings(renderModel);
-
-          if (file != null) {
-            state = state.copyWith(
-              downloadedFile: AsyncValue.data(file),
-              downloadStatus: "Render complete! Ready for download.",
-            );
-          } else {
-            state = state.copyWith(
-              downloadedFile: const AsyncValue.error(
-                "Failed to download file",
-                StackTrace.empty,
-              ),
-              downloadStatus: "Rendering failed. Please try again.",
-            );
-          }
-        }
+        state = switch (response) {
+          Right(value: final r) => state.copyWith(
+            downloadedFile: AsyncValue.data(r),
+            downloadStatus: "Rendering successful! Download initiated.",
+          ),
+          Left(value: final l) => state.copyWith(
+            downloadedFile: const AsyncValue.error(
+              "Failed to send settings",
+              StackTrace.empty,
+            ),
+            downloadStatus: "Rendering failed. Please try again.",
+          ),
+        };
+        // in web mode The actual download is handled by the browser through web_download_helper.dart
       } catch (e, stack) {
         state = state.copyWith(
           downloadedFile: AsyncValue.error(e, stack),

@@ -315,7 +315,7 @@ class _RenderSettingsFormState extends ConsumerState<RenderSettingsForm> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-
+            
             // Download Status Text
             if (downloadStatus != null)
               Padding(
@@ -342,6 +342,26 @@ class _RenderSettingsFormState extends ConsumerState<RenderSettingsForm> {
                           child: Text(
                             'Your download has started. If it doesn\'t appear, check your browser\'s download folder.',
                             style: TextStyle(color: Colors.green),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => controller.resetDownload(),
+                          tooltip: 'Dismiss',
+                        ),
+                      ],
+                    );
+                  }
+
+                  // Handle non-201 status code errors
+                  if (downloadStatus?.contains("Error") == true) {
+                    return Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'An error occurred during the download. Please try again.',
+                            style: TextStyle(color: Colors.red),
                           ),
                         ),
                         const SizedBox(width: 8),

@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/core/constants/server_constants.dart';
+import 'package:test_piquick/core/failure/failure.dart';
 import 'package:test_piquick/features/rendering/model/render_model.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -17,7 +19,7 @@ RenderRemoteRepository renderRemoteRepository(Ref ref) {
 }
 
 class RenderRemoteRepository {
-  Future<File?> sendSettings(RenderModel renderModel) async {
+  Future<Either<AppFailure, File?>> sendSettings(RenderModel renderModel) async {
     try {
       final jsonBody = jsonEncode(renderModel.toJson());
       print(jsonBody);
@@ -31,7 +33,7 @@ class RenderRemoteRepository {
       if (response.statusCode == 201) {
         if (kIsWeb) {
           downloadFileWeb(response.bodyBytes, 'rendered_output.zip');
-          return null;
+          return Right(null);
         } else {
           final directory = await getApplicationDocumentsDirectory();
           final outputDir = Directory('${directory.path}/rendered_outputs');
@@ -46,15 +48,16 @@ class RenderRemoteRepository {
           final zipFile = File(zipFilePath);
           await zipFile.writeAsBytes(response.bodyBytes);
 
-          return zipFile;
+          return Right(zipFile);
         }
       } else {
-        print('Failed to send settings: ${response.statusCode} - ${response.body}');
-        return null;
+        return Left(AppFailure( 
+          'Failed to send settings: ${response.statusCode} - ${response.body}',
+        ));
       }
     } catch (e) {
       print('Error sending settings: $e');
-      return null;
+      return Left(AppFailure(e.toString()));
     }
   }
 }
