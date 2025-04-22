@@ -7,6 +7,7 @@ import 'package:test_piquick/features/rendering/model/render_settings.dart';
 import 'package:test_piquick/features/rendering/repository/render_remote_repository.dart';
 import 'package:test_piquick/features/rendering/viewModel/states/render_state.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:io';
 
 part 'render_view_model.g.dart';
 
@@ -16,11 +17,7 @@ class RenderViewModel extends _$RenderViewModel {
 
   @override
   RenderState build() {
-    _renderRemoteRepository =
-        RenderRemoteRepository(); // we cant continously track the changes in authremoterepo
-    _renderRemoteRepository = ref.watch(
-      renderRemoteRepositoryProvider,
-    ); // if it changes the latest comes, build runs again
+    _renderRemoteRepository = ref.watch(renderRemoteRepositoryProvider);
 
     ref.listen<PickerState>(pickerViewModelProvider, (_, next) {
       next.groupedObjects.whenData((objects) {
@@ -28,222 +25,63 @@ class RenderViewModel extends _$RenderViewModel {
       });
     });
 
-    final initialState = RenderState(renderModel: AsyncValue.loading());
-
-    // Future.microtask(() => initRender());
-
-    return initialState;
+    return RenderState(renderModel: AsyncValue.loading());
   }
 
-  // void initRender() {
-  //   print("initrender_called");
-
-  //   // Fetch the initial list of objects from the remote repository
-  //   state = state.copyWith(
-  //     renderModel: AsyncValue.data(
-  //       RenderModel.empty(),
-  //     ), // Initialize the state with loading
-  //     groupedObjects: AsyncValue.data(ObjectGroups(groups: {})),
-  //   );
-
-  //   print("initrender_finished");
-  // }
-
   void updateRender({required ObjectGroups groupedObjects}) {
-    // Fetch the initial list of objects from the remote repository
-
     final newRenderModel = RenderModel.fromObjectGroupsAndSettings(
       objectGroups: groupedObjects,
       renderSettings: RenderSettings(), // Default settings
     );
 
     state = state.copyWith(renderModel: AsyncValue.data(newRenderModel));
-    // state = state.copyWith(
-    //   renderModel: AsyncValue.data(
-    //     RenderModel.fromObjectGroupsAndSettings(
-    //       objectGroups: groupedObjects,
-    //       renderSettings: RenderSettings(),
-    //     ),
-    //   ),
-    // );
   }
 
-  void setNumImages(int value) {
-    if (state.selectedGroup == null) {
-      return;
-    }
-
-    state = state.copyWith(
-      renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSettings(
-          state.selectedGroup!,
-          renderModel
-              .get(state.selectedGroup!)!
-              .settings
-              .copyWith(numImages: value),
-        ),
-      ),
-    );
+  // Query methods
+  List<String> getGroupNames() {
+    return state.renderModel
+            .whenData((renderModel) => renderModel.getAllNames())
+            .valueOrNull ??
+        [];
   }
 
-  void setAzimuthAug(bool value) {
-    if (state.selectedGroup == null) {
-      return;
-    }
-
-    state = state.copyWith(
-      renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSettings(
-          state.selectedGroup!,
-          renderModel
-              .get(state.selectedGroup!)!
-              .settings
-              .copyWith(azimuthAug: value),
-        ),
-      ),
-    );
+  String? getSelectedGroup() {
+    return state.selectedGroup;
   }
 
-  void setElevationAug(bool value) {
-    if (state.selectedGroup == null) {
-      return;
-    }
-
-    state = state.copyWith(
-      renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSettings(
-          state.selectedGroup!,
-          renderModel
-              .get(state.selectedGroup!)!
-              .settings
-              .copyWith(elevationAug: value),
-        ),
-      ),
-    );
+  RenderSettings? getSettingsForGroup(String groupName) {
+    return state.renderModel
+        .whenData((renderModel) => renderModel.get(groupName)?.settings)
+        .valueOrNull;
   }
 
-  void setResolution(int value) {
-    if (state.selectedGroup == null) {
-      return;
-    }
-
-    state = state.copyWith(
-      renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSettings(
-          state.selectedGroup!,
-          renderModel
-              .get(state.selectedGroup!)!
-              .settings
-              .copyWith(resolution: value),
-        ),
-      ),
-    );
+  RenderSettings? getSelectedGroupSettings() {
+    if (state.selectedGroup == null) return null;
+    return getSettingsForGroup(state.selectedGroup!);
   }
 
-  void setModeMulti(bool value) {
-    if (state.selectedGroup == null) {
-      return;
-    }
-    state = state.copyWith(
-      renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSettings(
-          state.selectedGroup!,
-          renderModel
-              .get(state.selectedGroup!)!
-              .settings
-              .copyWith(modeMulti: value),
-        ),
-      ),
-    );
+  bool isDownloading() {
+    return state.downloadedFile.isLoading;
   }
 
-  void setModeStatic(bool value) {
-    if (state.selectedGroup == null) {
-      return;
-    }
-    state = state.copyWith(
-      renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSettings(
-          state.selectedGroup!,
-          renderModel
-              .get(state.selectedGroup!)!
-              .settings
-              .copyWith(modeStatic: value),
-        ),
-      ),
-    );
+  String? getDownloadStatus() {
+    return state.downloadStatus;
   }
 
-  void setModeFrontView(bool value) {
-    if (state.selectedGroup == null) {
-      return;
-    }
-    state = state.copyWith(
-      renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSettings(
-          state.selectedGroup!,
-          renderModel
-              .get(state.selectedGroup!)!
-              .settings
-              .copyWith(modeFrontView: value),
-        ),
-      ),
-    );
+  File? getDownloadedFile() {
+    return state.downloadedFile.valueOrNull;
   }
 
-  void setModeFourView(bool value) {
-    if (state.selectedGroup == null) {
-      return;
-    }
-    state = state.copyWith(
-      renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSettings(
-          state.selectedGroup!,
-          renderModel
-              .get(state.selectedGroup!)!
-              .settings
-              .copyWith(modeFourView: value),
-        ),
-      ),
-    );
+  bool hasDownloadError() {
+    return state.downloadedFile.hasError;
   }
 
-  void setEngine(String value) {
-    if (state.selectedGroup == null) {
-      return;
-    }
-    state = state.copyWith(
-      renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSettings(
-          state.selectedGroup!,
-          renderModel
-              .get(state.selectedGroup!)!
-              .settings
-              .copyWith(engine: value),
-        ),
-      ),
-    );
+  String? getDownloadError() {
+    if (!state.downloadedFile.hasError) return null;
+    return state.downloadedFile.error.toString();
   }
 
-  void setOnlyNorthernHemisphere(bool value) {
-    if (state.selectedGroup == null) {
-      return;
-    }
-    state = state.copyWith(
-      renderModel: state.renderModel.whenData(
-        (renderModel) => renderModel.setGroupSettings(
-          state.selectedGroup!,
-          renderModel
-              .get(state.selectedGroup!)!
-              .settings
-              .copyWith(onlyNorthernHemisphere: value),
-        ),
-      ),
-    );
-  }
-
-  // void setFinish(bool value) {}
-
+  // Action methods
   void selectGroup(String? value) {
     state = state.copyWith(selectedGroup: value);
   }
@@ -260,21 +98,116 @@ class RenderViewModel extends _$RenderViewModel {
     );
   }
 
-  // void setDone(selectedGroup) {
-  //   if (state.renderModel.isLoading) {
-  //     return;
-  //   }
-  //   state = state.copyWith(
-  //     renderModel: state.renderModel.whenData(
-  //       (renderModel) => renderModel.setGroupSetting(
-  //         selectedGroup,
-  //         renderModel.renderGroups[selectedGroup]!.copyWith(
-  //           finish: renderModel.renderGroups[selectedGroup]!.setDone(),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
+  // Individual setter methods (still useful for UI components that modify a single property)
+  void setNumImages(String groupName, int value) {
+    if (state.renderModel.isLoading) return;
+
+    final settings = getSettingsForGroup(groupName);
+    if (settings == null) return;
+
+    final newSettings = settings.copyWith(numImages: value);
+    updateGroupSettings(groupName, newSettings);
+  }
+
+  void setAzimuthAug(String groupName, bool value) {
+    if (state.renderModel.isLoading) return;
+
+    final settings = getSettingsForGroup(groupName);
+    if (settings == null) return;
+
+    final newSettings = settings.copyWith(azimuthAug: value);
+    updateGroupSettings(groupName, newSettings);
+  }
+
+  void setElevationAug(String groupName, bool value) {
+    if (state.renderModel.isLoading) return;
+
+    final settings = getSettingsForGroup(groupName);
+    if (settings == null) return;
+
+    final newSettings = settings.copyWith(elevationAug: value);
+    updateGroupSettings(groupName, newSettings);
+  }
+
+  void setResolution(String groupName, int value) {
+    if (state.renderModel.isLoading) return;
+
+    final settings = getSettingsForGroup(groupName);
+    if (settings == null) return;
+
+    final newSettings = settings.copyWith(resolution: value);
+    updateGroupSettings(groupName, newSettings);
+  }
+
+  void setModeMulti(String groupName, bool value) {
+    if (state.renderModel.isLoading) return;
+
+    final settings = getSettingsForGroup(groupName);
+    if (settings == null) return;
+
+    final newSettings = settings.copyWith(modeMulti: value);
+    updateGroupSettings(groupName, newSettings);
+  }
+
+  void setModeStatic(String groupName, bool value) {
+    if (state.renderModel.isLoading) return;
+
+    final settings = getSettingsForGroup(groupName);
+    if (settings == null) return;
+
+    final newSettings = settings.copyWith(modeStatic: value);
+    updateGroupSettings(groupName, newSettings);
+  }
+
+  void setModeFrontView(String groupName, bool value) {
+    if (state.renderModel.isLoading) return;
+
+    final settings = getSettingsForGroup(groupName);
+    if (settings == null) return;
+
+    final newSettings = settings.copyWith(modeFrontView: value);
+    updateGroupSettings(groupName, newSettings);
+  }
+
+  void setModeFourView(String groupName, bool value) {
+    if (state.renderModel.isLoading) return;
+
+    final settings = getSettingsForGroup(groupName);
+    if (settings == null) return;
+
+    final newSettings = settings.copyWith(modeFourView: value);
+    updateGroupSettings(groupName, newSettings);
+  }
+
+  void setEngine(String groupName, String value) {
+    if (state.renderModel.isLoading) return;
+
+    final settings = getSettingsForGroup(groupName);
+    if (settings == null) return;
+
+    final newSettings = settings.copyWith(engine: value);
+    updateGroupSettings(groupName, newSettings);
+  }
+
+  void setOnlyNorthernHemisphere(String groupName, bool value) {
+    if (state.renderModel.isLoading) return;
+
+    final settings = getSettingsForGroup(groupName);
+    if (settings == null) return;
+
+    final newSettings = settings.copyWith(onlyNorthernHemisphere: value);
+    updateGroupSettings(groupName, newSettings);
+  }
+
+  void setSeparately(String groupName, bool value) {
+    if (state.renderModel.isLoading) return;
+
+    final settings = getSettingsForGroup(groupName);
+    if (settings == null) return;
+
+    final newSettings = settings.copyWith(separately: value);
+    updateGroupSettings(groupName, newSettings);
+  }
 
   void sendSettings() async {
     state = state.copyWith(
