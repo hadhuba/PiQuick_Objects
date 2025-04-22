@@ -8,7 +8,6 @@ class Viewer3D extends StatefulWidget {
   final Flutter3DController controller;
   final bool isLoading;
   final String? currentObj;
-  final String? currentAnimation;
   final String? currentTexture;
   final WidgetRef ref; // Add ref to access Riverpod providers
 
@@ -17,7 +16,6 @@ class Viewer3D extends StatefulWidget {
     required this.controller,
     required this.isLoading,
     required this.currentObj,
-    required this.currentAnimation,
     required this.currentTexture,
     required this.ref,
   }) : super(key: key);
@@ -40,6 +38,9 @@ class _Viewer3DState extends State<Viewer3D> {
   @override
   Widget build(BuildContext context) {
     debugPrint(widget.currentObj);
+
+    // For textures
+    bool isLoadingTexture = false;
 
     Future<String?> showPickerDialog(
       String title,
@@ -97,71 +98,67 @@ class _Viewer3DState extends State<Viewer3D> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Pallete.objectBackgroundColor,
-        title: const Text("3D Viewer", style: TextStyle(color: Colors.white)),
+        title: Text(
+          widget.currentObj != null
+              ? widget.currentObj!.split("=").last
+              : "3D Viewer",
+          style: const TextStyle(color: Colors.black),
+        ),
       ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            onPressed: () {
-              controller.playAnimation();
-            },
-            icon: const Icon(Icons.play_arrow),
-          ),
-          const SizedBox(height: 4),
-          IconButton(
-            onPressed: () {
-              controller.pauseAnimation();
-            },
-            icon: const Icon(Icons.pause),
-          ),
-          const SizedBox(height: 4),
-          IconButton(
-            onPressed: () {
-              controller.resetAnimation();
-            },
-            icon: const Icon(Icons.replay_circle_filled),
-          ),
-          const SizedBox(height: 4),
-          IconButton(
             onPressed: () async {
-              List<String> availableAnimations =
-                  await controller.getAvailableAnimations();
-              String? selectedAnimation = await showPickerDialog(
-                'Animations',
-                availableAnimations,
-                widget.currentAnimation,
-              );
-              if (selectedAnimation != null) {
-                widget.ref
-                    .read(pickerViewModelProvider.notifier)
-                    .updateAnimation(selectedAnimation);
-                controller.playAnimation(
-                  animationName: widget.currentAnimation,
+              // Show loading indicator while fetching textures
+              setState(() {
+                isLoadingTexture = true;
+              });
+
+              try {
+                List<String> availableTextures =
+                    await controller.getAvailableTextures();
+
+                // Loading complete
+                setState(() {
+                  isLoadingTexture = false;
+                });
+
+                String? selectedTexture = await showPickerDialog(
+                  'Textures',
+                  availableTextures,
+                  widget.currentTexture,
+                );
+
+                if (selectedTexture != null) {
+                  widget.ref
+                      .read(pickerViewModelProvider.notifier)
+                      .updateTexture(selectedTexture);
+
+                  // Use the selected texture directly to avoid delay
+                  controller.setTexture(textureName: selectedTexture);
+                }
+              } catch (e) {
+                // Handle error and reset loading state
+                setState(() {
+                  isLoadingTexture = false;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error loading textures: ${e.toString()}'),
+                  ),
                 );
               }
             },
-            icon: const Icon(Icons.format_list_bulleted_outlined),
-          ),
-          const SizedBox(height: 4),
-          IconButton(
-            onPressed: () async {
-              List<String> availableTextures =
-                  await controller.getAvailableTextures();
-              String? selectedTexture = await showPickerDialog(
-                'Textures',
-                availableTextures,
-                widget.currentTexture,
-              );
-              if (selectedTexture != null) {
-                widget.ref
-                    .read(pickerViewModelProvider.notifier)
-                    .updateTexture(selectedTexture);
-                controller.setTexture(textureName: widget.currentTexture ?? '');
-              }
-            },
-            icon: const Icon(Icons.list_alt_rounded),
+            icon:
+                isLoadingTexture
+                    ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : const Icon(Icons.list_alt_rounded),
           ),
           const SizedBox(height: 4),
           IconButton(
@@ -181,10 +178,7 @@ class _Viewer3DState extends State<Viewer3D> {
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          return
-          // isLoading
-          //     ? const Loader():
-          Container(
+          return Container(
             decoration: const BoxDecoration(
               gradient: RadialGradient(
                 colors: [Color(0xffffffff), Colors.grey],

@@ -69,18 +69,6 @@ class PickerRemoteRepository {
     // Return an empty ObjectGroup initially
     final emptyGroup = ObjectGroups(groups: {});
 
-    // Skeleton code for fetching from an in-app repository
-    // This could be a local database, shared preferences, or any other storage
-    // try {
-    //   // Example: Fetching from a hypothetical in-app repository
-    //   final storedGroups = InAppRepository.getStoredGroups();
-    //   if (storedGroups != null) {
-    //     return storedGroups;
-    //   }
-    // } catch (e) {
-    //   debugPrint('Error fetching grouped objects: $e');
-    // }
-
     return emptyGroup;
   }
 }

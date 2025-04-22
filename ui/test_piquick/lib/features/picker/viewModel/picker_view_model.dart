@@ -32,11 +32,7 @@ class PickerViewModel extends _$PickerViewModel {
       objects: AsyncValue.loading(), // Initialize the state with loading
       groupedObjects: AsyncValue.loading(),
       viewer3DState: AsyncValue.data(
-        Viewer3DState(
-          currentObj: 'assets/Astronaut.glb',
-          currentAnimation: null,
-          currentTexture: null,
-        ),
+        Viewer3DState(currentObj: 'assets/Astronaut.glb', currentTexture: null),
       ),
     );
 
@@ -76,33 +72,13 @@ class PickerViewModel extends _$PickerViewModel {
     state = switch (response) {
       Right(value: final newObjUrl) => state.copyWith(
         viewer3DState: AsyncValue.data(
-          Viewer3DState(
-            currentObj: newObjUrl,
-            currentAnimation: null,
-            currentTexture: null,
-          ),
+          Viewer3DState(currentObj: newObjUrl, currentTexture: null),
         ),
       ),
       Left(value: final l) => state.copyWith(
         viewer3DState: AsyncValue.error(l.message, StackTrace.current),
       ),
     };
-  }
-
-  void updateAnimation(String? newAnimation) {
-    state.viewer3DState.whenData(
-      (data) =>
-          (state = state.copyWith(
-            viewer3DState: AsyncValue.data(
-              data.copyWith(
-                currentObj: state.viewer3DState.value?.currentObj,
-                currentAnimation: newAnimation,
-                currentTexture: state.viewer3DState.value?.currentTexture,
-              ),
-            ),
-          )),
-    );
-    //state update
   }
 
   void updateTexture(String? newTexture) {
@@ -112,7 +88,6 @@ class PickerViewModel extends _$PickerViewModel {
             viewer3DState: AsyncValue.data(
               data.copyWith(
                 currentObj: state.viewer3DState.value?.currentObj,
-                currentAnimation: state.viewer3DState.value?.currentAnimation,
                 currentTexture: newTexture,
               ),
             ),

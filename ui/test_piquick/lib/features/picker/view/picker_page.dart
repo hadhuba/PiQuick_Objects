@@ -31,12 +31,6 @@ class _PickerPageState extends ConsumerState<PickerPage> {
   Widget build(BuildContext context) {
     final currentObj =
         ref.watch(pickerViewModelProvider).viewer3DState.value?.currentObj;
-    final currentAnimation =
-        ref
-            .watch(pickerViewModelProvider)
-            .viewer3DState
-            .value
-            ?.currentAnimation;
     final currentTexture =
         ref.watch(pickerViewModelProvider).viewer3DState.value?.currentTexture;
     final isLoading =
@@ -52,7 +46,6 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                   controller: controller,
                   isLoading: isLoading,
                   currentObj: currentObj,
-                  currentAnimation: currentAnimation,
                   currentTexture: currentTexture,
                   ref: ref, // Pass ref to Viewer3D
                 ),
@@ -104,6 +97,21 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                             decoration: const InputDecoration(
                                               hintText: 'Enter group name',
                                             ),
+                                            // Add onSubmitted to handle Enter key press
+                                            onSubmitted: (value) {
+                                              final groupName = value.trim();
+                                              if (groupName.isNotEmpty) {
+                                                ref
+                                                    .read(
+                                                      pickerViewModelProvider
+                                                          .notifier,
+                                                    )
+                                                    .newGroup(
+                                                      groupname: groupName,
+                                                    );
+                                                Navigator.of(context).pop();
+                                              }
+                                            },
                                           ),
                                           actions: [
                                             TextButton(
