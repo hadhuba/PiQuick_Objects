@@ -6,6 +6,7 @@ import 'package:test_piquick/features/rendering/model/render_model.dart';
 import 'package:test_piquick/features/rendering/model/render_settings.dart';
 import 'package:test_piquick/features/rendering/repository/render_remote_repository.dart';
 import 'package:test_piquick/features/rendering/viewModel/states/render_state.dart';
+import 'package:flutter/foundation.dart';
 
 part 'render_view_model.g.dart';
 
@@ -247,6 +248,18 @@ class RenderViewModel extends _$RenderViewModel {
     state = state.copyWith(selectedGroup: value);
   }
 
+  void updateGroupSettings(String groupName, RenderSettings newSettings) {
+    if (state.renderModel.isLoading) {
+      return;
+    }
+
+    state = state.copyWith(
+      renderModel: state.renderModel.whenData(
+        (renderModel) => renderModel.setGroupSettings(groupName, newSettings),
+      ),
+    );
+  }
+
   // void setDone(selectedGroup) {
   //   if (state.renderModel.isLoading) {
   //     return;
@@ -263,18 +276,61 @@ class RenderViewModel extends _$RenderViewModel {
   //   );
   // }
 
-  void sendSettings() {
-    state.renderModel.whenData((renderModel) {
-      // if (renderModel.isDone()) {
-      _renderRemoteRepository.sendSettings(renderModel);
-      // }
+  void sendSettings() async {
+    state = state.copyWith(
+      downloadStatus: "Sending rendering request...",
+      downloadedFile: const AsyncValue.loading(),
+    );
+
+    state.renderModel.whenData((renderModel) async {
+      try {
+        state = state.copyWith(downloadStatus: "Processing render request...");
+
+        // Check if we're running on the web
+        if (kIsWeb) {
+          final response = await _renderRemoteRepository.sendSettings(
+            renderModel,
+          );
+
+          // Even though we don't get a file back on web, we want to update the state
+          state = state.copyWith(
+            downloadedFile: const AsyncValue.data(null), // No file on web
+            downloadStatus: "Rendering complete! Download initiated.",
+          );
+
+          // The actual download is handled by the browser through web_download_helper.dart
+        } else {
+          // Mobile/Desktop platforms
+          final file = await _renderRemoteRepository.sendSettings(renderModel);
+
+          if (file != null) {
+            state = state.copyWith(
+              downloadedFile: AsyncValue.data(file),
+              downloadStatus: "Render complete! Ready for download.",
+            );
+          } else {
+            state = state.copyWith(
+              downloadedFile: const AsyncValue.error(
+                "Failed to download file",
+                StackTrace.empty,
+              ),
+              downloadStatus: "Rendering failed. Please try again.",
+            );
+          }
+        }
+      } catch (e, stack) {
+        state = state.copyWith(
+          downloadedFile: AsyncValue.error(e, stack),
+          downloadStatus: "Error: ${e.toString()}",
+        );
+      }
     });
   }
 
-  // bool isDone() {
-  //   if (state.renderModel.isLoading) {
-  //     return false;
-  //   }
-  //   return state.renderModel.value!.isDone();
-  // }
+  void resetDownload() {
+    state = state.copyWith(
+      downloadedFile: const AsyncValue.data(null),
+      downloadStatus: null,
+    );
+  }
 }
