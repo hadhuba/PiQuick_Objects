@@ -7,14 +7,6 @@ class RenderModel {
 
   RenderModel({required List<Group> groups}) : _groups = groups;
 
-  // void add(Group group) {
-  //   _groups.add(group);
-  // }
-
-  // void remove(Group group) {
-  //   _groups.remove(group);
-  // }
-
   Group? get(String name) {
     try {
       return _groups.firstWhere((group) => group.name == name);

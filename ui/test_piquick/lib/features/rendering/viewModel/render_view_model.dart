@@ -3,11 +3,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/picker/model/object_groups_model.dart';
 import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
 import 'package:test_piquick/features/picker/viewModel/picker_view_model.dart';
+import 'package:test_piquick/features/rendering/model/group.dart';
 import 'package:test_piquick/features/rendering/model/render_model.dart';
 import 'package:test_piquick/features/rendering/model/render_settings.dart';
 import 'package:test_piquick/features/rendering/repository/render_remote_repository.dart';
 import 'package:test_piquick/features/rendering/viewModel/states/render_state.dart';
-import 'package:flutter/foundation.dart';
 import 'dart:io';
 
 part 'render_view_model.g.dart';
@@ -30,11 +30,38 @@ class RenderViewModel extends _$RenderViewModel {
   }
 
   void updateRender({required ObjectGroups groupedObjects}) {
-    final newRenderModel = RenderModel.fromObjectGroupsAndSettings(
-      objectGroups: groupedObjects,
-      renderSettings: RenderSettings(), // Default settings
-    );
-
+    // Get current render model if available to preserve existing settings
+    final currentRenderModel = state.renderModel.valueOrNull;
+    
+    // Create a new model that will contain groups with preserved settings where possible
+    final List<Group> newGroups = [];
+    
+    // Process each group in the new object list
+    final Set<String> groupNames = groupedObjects.groups.keys.toSet();
+    for (final groupName in groupNames) {
+      final objectIds = groupedObjects.groups[groupName] ?? [];
+      
+      // Try to find existing settings for this group name
+      RenderSettings settings;
+      if (currentRenderModel != null) {
+        // If a group with the same name exists, use its settings
+        final existingGroup = currentRenderModel.get(groupName);
+        settings = existingGroup?.settings ?? RenderSettings();
+      } else {
+        // No existing model, use default settings
+        settings = RenderSettings();
+      }
+      
+      newGroups.add(
+        Group(
+          name: groupName,
+          object_ids: objectIds,
+          settings: settings,
+        ),
+      );
+    }
+    
+    final newRenderModel = RenderModel(groups: newGroups);
     state = state.copyWith(renderModel: AsyncValue.data(newRenderModel));
   }
 
@@ -234,7 +261,7 @@ class RenderViewModel extends _$RenderViewModel {
               "Failed to send settings",
               StackTrace.empty,
             ),
-            downloadStatus: "Rendering failed. Please try again.",
+            downloadStatus: "Error: ${l.message}",
           ),
         };
         // in web mode The actual download is handled by the browser through web_download_helper.dart

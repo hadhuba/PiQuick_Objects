@@ -315,7 +315,7 @@ class _RenderSettingsFormState extends ConsumerState<RenderSettingsForm> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            
+
             // Download Status Text
             if (downloadStatus != null)
               Padding(
