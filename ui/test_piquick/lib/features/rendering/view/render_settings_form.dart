@@ -7,7 +7,7 @@ import 'package:test_piquick/core/utils.dart';
 import 'package:test_piquick/core/widgets/loader.dart';
 import 'package:test_piquick/features/rendering/controller/render_settings_form_controller.dart';
 import 'package:test_piquick/features/rendering/model/render_settings.dart';
-import 'package:test_piquick/features/rendering/model/render_settings_form_model.dart';
+import 'package:test_piquick/features/rendering/model/settings_form_model.dart';
 import 'package:test_piquick/features/rendering/viewModel/render_view_model.dart';
 
 /// A form for configuring render settings for a group of objects
@@ -144,7 +144,7 @@ class _RenderSettingsFormState extends ConsumerState<RenderSettingsForm> {
                               labelText: RenderSettings.getLabel('resolution'),
                             ),
                             items:
-                                RenderSettingsFormModel.commonResolutions.map((
+                                SettingsFormModel.commonResolutions.map((
                                   resolution,
                                 ) {
                                   return DropdownMenuItem<int>(

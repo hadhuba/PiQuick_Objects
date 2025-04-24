@@ -6,7 +6,7 @@ part of 'render_view_model.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$renderViewModelHash() => r'bc5f72798c65475235e29288664ce385929399b6';
+String _$renderViewModelHash() => r'dc5b87d6fe58ffbfde40ad60f5f30ba2a40673ad';
 
 /// See also [RenderViewModel].
 @ProviderFor(RenderViewModel)

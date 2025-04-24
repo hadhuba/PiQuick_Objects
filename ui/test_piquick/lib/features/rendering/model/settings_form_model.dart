@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:test_piquick/features/rendering/model/render_settings.dart';
 
 /// Form model that encapsulates the state and logic for the render settings form
-class RenderSettingsFormModel {
+class SettingsFormModel {
   TextEditingController numImagesController;
   TextEditingController resolutionController;
   String engineValue;
@@ -23,7 +23,7 @@ class RenderSettingsFormModel {
   // Key for form validation
   final formKey = GlobalKey<FormState>();
 
-  RenderSettingsFormModel({
+  SettingsFormModel({
     required this.numImagesController,
     required this.resolutionController,
     required this.engineValue,
@@ -38,8 +38,8 @@ class RenderSettingsFormModel {
   });
 
   /// Create a form model from render settings
-  factory RenderSettingsFormModel.fromSettings(RenderSettings settings) {
-    return RenderSettingsFormModel(
+  factory SettingsFormModel.fromSettings(RenderSettings settings) {
+    return SettingsFormModel(
       numImagesController: TextEditingController(
         text: settings.numImages.toString(),
       ),
@@ -59,8 +59,8 @@ class RenderSettingsFormModel {
   }
 
   /// Create a form model with default values
-  factory RenderSettingsFormModel.defaults() {
-    return RenderSettingsFormModel(
+  factory SettingsFormModel.defaults() {
+    return SettingsFormModel(
       numImagesController: TextEditingController(text: "12"),
       resolutionController: TextEditingController(text: "256"),
       engineValue: "CYCLES",

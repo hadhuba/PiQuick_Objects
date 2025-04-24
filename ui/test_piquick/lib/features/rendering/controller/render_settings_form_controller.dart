@@ -1,11 +1,11 @@
-import 'package:test_piquick/features/rendering/model/render_settings_form_model.dart';
+import 'package:test_piquick/features/rendering/model/settings_form_model.dart';
 import 'package:test_piquick/features/rendering/viewModel/render_view_model.dart';
 
 /// Controller for the render settings form that connects the form model to the view model
 class RenderSettingsFormController {
   final RenderViewModel viewModel;
   final String groupName;
-  late RenderSettingsFormModel formModel;
+  late SettingsFormModel formModel;
 
   RenderSettingsFormController({
     required this.viewModel,
@@ -19,9 +19,9 @@ class RenderSettingsFormController {
     final settings = viewModel.getSettingsForGroup(groupName);
 
     if (settings != null) {
-      formModel = RenderSettingsFormModel.fromSettings(settings);
+      formModel = SettingsFormModel.fromSettings(settings);
     } else {
-      formModel = RenderSettingsFormModel.defaults();
+      formModel = SettingsFormModel.defaults();
     }
   }
 

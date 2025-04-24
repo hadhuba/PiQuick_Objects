@@ -4,10 +4,14 @@ import 'package:test_piquick/features/picker/model/object_groups_model.dart';
 import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
 import 'package:test_piquick/features/picker/viewModel/picker_view_model.dart';
 import 'package:test_piquick/features/rendering/model/group.dart';
+import 'package:test_piquick/features/rendering/model/render_events.dart';
 import 'package:test_piquick/features/rendering/model/render_model.dart';
 import 'package:test_piquick/features/rendering/model/render_settings.dart';
 import 'package:test_piquick/features/rendering/repository/render_remote_repository.dart';
+import 'package:test_piquick/features/rendering/viewModel/render_event_bus.dart';
+import 'package:test_piquick/features/rendering/viewModel/settings_form_view_model.dart';
 import 'package:test_piquick/features/rendering/viewModel/states/render_state.dart';
+import 'dart:async';
 import 'dart:io';
 
 part 'render_view_model.g.dart';
@@ -15,32 +19,79 @@ part 'render_view_model.g.dart';
 @riverpod
 class RenderViewModel extends _$RenderViewModel {
   late RenderRemoteRepository _renderRemoteRepository;
+  StreamSubscription? _eventSubscription;
+  SettingsFormViewModel? _settingsFormViewModel;
 
   @override
   RenderState build() {
     _renderRemoteRepository = ref.watch(renderRemoteRepositoryProvider);
 
+    // Figyeljük a Picker állapotváltozásait
     ref.listen<PickerState>(pickerViewModelProvider, (_, next) {
       next.groupedObjects.whenData((objects) {
         updateRender(groupedObjects: objects);
       });
     });
 
+    // Figyeljük az EventBus eseményeit
+    _setupEventListeners();
+    ref.onDispose(() {
+      _eventSubscription?.cancel();
+    });
+
     return RenderState(renderModel: AsyncValue.loading());
+  }
+
+  void _setupEventListeners() {
+    final bus = ref.read(renderEventBusProvider);
+
+    _eventSubscription = bus.events.listen((event) {
+      if (event is SaveSettingsEvent) {
+        _handleSaveSettingsEvent(event);
+      } else if (event is SendSettingsEvent) {
+        sendSettings();
+      } else if (event is ResetFormEvent) {
+        // Form reset esemény kezelése szükség szerint
+        print("Form reset for group: ${event.groupName}");
+      }
+    });
+  }
+
+  void _handleSaveSettingsEvent(SaveSettingsEvent event) {
+    // Itt frissítjük a beállításokat a formból kapott adatok alapján
+    if (_settingsFormViewModel != null) {
+      final newSettings = _settingsFormViewModel!.formModel.toRenderSettings();
+      updateGroupSettings(event.groupName, newSettings);
+
+      // Ha a send to server jelző be van állítva, küldjük el a beállításokat
+      if (event.shouldSendToServer) {
+        sendSettings();
+      }
+    }
+  }
+
+  // SettingsFormViewModel létrehozás vagy frissítése
+  SettingsFormViewModel createOrUpdateSettingsForm(String groupName) {
+    final settings = getSettingsForGroup(groupName);
+    _settingsFormViewModel = SettingsFormViewModel(
+      groupName: groupName,
+      settings: settings
+    );
+    return _settingsFormViewModel!;
   }
 
   void updateRender({required ObjectGroups groupedObjects}) {
     // Get current render model if available to preserve existing settings
     final currentRenderModel = state.renderModel.valueOrNull;
-    
+
     // Create a new model that will contain groups with preserved settings where possible
     final List<Group> newGroups = [];
-    
+
     // Process each group in the new object list
     final Set<String> groupNames = groupedObjects.groups.keys.toSet();
     for (final groupName in groupNames) {
       final objectIds = groupedObjects.groups[groupName] ?? [];
-      
+
       // Try to find existing settings for this group name
       RenderSettings settings;
       if (currentRenderModel != null) {
@@ -51,16 +102,12 @@ class RenderViewModel extends _$RenderViewModel {
         // No existing model, use default settings
         settings = RenderSettings();
       }
-      
+
       newGroups.add(
-        Group(
-          name: groupName,
-          object_ids: objectIds,
-          settings: settings,
-        ),
+        Group(name: groupName, object_ids: objectIds, settings: settings),
       );
     }
-    
+
     final newRenderModel = RenderModel(groups: newGroups);
     state = state.copyWith(renderModel: AsyncValue.data(newRenderModel));
   }
