@@ -19,10 +19,16 @@ class RenderPage extends ConsumerStatefulWidget {
 class _RenderPageState extends ConsumerState<RenderPage> {
   @override
   Widget build(BuildContext context) {
+    // Watch specific parts of the state to ensure we react to all relevant changes
     final viewModel = ref.watch(renderViewModelProvider.notifier);
-    final modelAsync = ref.watch(renderViewModelProvider).renderModel;
-    
 
+    // Watch all these state selectors separately to ensure rebuilds happen properly
+    final modelAsync = ref.watch(
+      renderViewModelProvider.select((state) => state.renderModel),
+    );
+    final selectedGroup = ref.watch(
+      renderViewModelProvider.select((state) => state.selectedGroup),
+    );
     final downloadStatus = ref.watch(
       renderViewModelProvider.select((state) => state.downloadStatus),
     );
@@ -32,9 +38,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
 
     return modelAsync.when(
       data: (_) {
-        
         final groupNames = viewModel.getGroupNames();
-        final selectedGroup = viewModel.getSelectedGroup();
 
         return Scaffold(
           appBar: AppBar(title: const Text('Render Settings')),
@@ -85,13 +89,33 @@ class _RenderPageState extends ConsumerState<RenderPage> {
       },
       loading: () => const Scaffold(body: Loader()),
       error:
-          (error, stack) =>
-              const Scaffold(body: Center(child: Text('Hiba történt'))),
+          (error, stack) => Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Error loading render settings: ${error.toString()}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => ref.refresh(renderViewModelProvider),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          ),
     );
   }
 
   Widget _buildDownloadStatusCard(RenderViewModel viewModel) {
-    final downloadedFile = ref.watch(renderViewModelProvider).downloadedFile;
+    // Explicitly watch downloadedFile state to ensure rebuilds
+    final downloadedFile = ref.watch(
+      renderViewModelProvider.select((state) => state.downloadedFile),
+    );
     final downloadStatus = viewModel.getDownloadStatus();
     final isDownloading = viewModel.isDownloading();
 

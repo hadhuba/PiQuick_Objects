@@ -106,11 +106,25 @@ class RenderViewModel extends _$RenderViewModel {
       );
     }
 
-    final newRenderModel = RenderModel(groups: newGroups);
-    state = state.copyWith(renderModel: AsyncValue.data(newRenderModel));
+    // Handle selected group logic - ensure it's valid after group updates
+    String? updatedSelectedGroup = state.selectedGroup;
 
-    if (getSelectedGroup() != null) {
-      createOrUpdateSettingsForm(state.selectedGroup!);
+    // If currently selected group no longer exists, select a new one or null
+    if (updatedSelectedGroup != null &&
+        !groupNames.contains(updatedSelectedGroup)) {
+      updatedSelectedGroup = null;
+    }
+    final newRenderModel = RenderModel(groups: newGroups);
+
+    // Update state with new model AND potentially new selection
+    state = state.copyWith(
+      renderModel: AsyncValue.data(newRenderModel),
+      selectedGroup: updatedSelectedGroup,
+    );
+
+    // Update the form if there's a selected group
+    if (updatedSelectedGroup != null) {
+      createOrUpdateSettingsForm(updatedSelectedGroup);
     }
   }
 
