@@ -21,6 +21,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
   Widget build(BuildContext context) {
     final viewModel = ref.watch(renderViewModelProvider.notifier);
     final modelAsync = ref.watch(renderViewModelProvider).renderModel;
+    
 
     final downloadStatus = ref.watch(
       renderViewModelProvider.select((state) => state.downloadStatus),
@@ -31,6 +32,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
 
     return modelAsync.when(
       data: (_) {
+        
         final groupNames = viewModel.getGroupNames();
         final selectedGroup = viewModel.getSelectedGroup();
 
@@ -56,7 +58,11 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                 ),
                 const SizedBox(height: 20),
                 if (selectedGroup != null)
-                  Expanded(child: RenderSettingsForm(groupName: selectedGroup)),
+                  Expanded(
+                    child: RenderSettingsForm(
+                      viewModel: viewModel.settingsFormViewModel,
+                    ),
+                  ),
                 ElevatedButton(
                   onPressed:
                       viewModel.isDownloading()

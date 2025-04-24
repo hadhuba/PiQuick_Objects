@@ -19,12 +19,13 @@ part 'auto_generated/render_view_model.g.dart';
 @riverpod
 class RenderViewModel extends _$RenderViewModel {
   late RenderRemoteRepository _renderRemoteRepository;
+  late SettingsFormViewModel settingsFormViewModel;
   StreamSubscription? _eventSubscription;
-  SettingsFormViewModel? _settingsFormViewModel;
 
   @override
   RenderState build() {
     _renderRemoteRepository = ref.watch(renderRemoteRepositoryProvider);
+    settingsFormViewModel = ref.watch(settingsFormViewModelProvider.notifier);
 
     // Figyeljük a Picker állapotváltozásait
     ref.listen<PickerState>(pickerViewModelProvider, (_, next) {
@@ -51,40 +52,30 @@ class RenderViewModel extends _$RenderViewModel {
       } else if (event is SendSettingsEvent) {
         _handleSendSettingsEvent(event);
       } else if (event is ResetFormEvent) {
-        // Form reset esemény kezelése szükség szerint
-        print("Form reset for group: ${event.groupName}");
+        createOrUpdateSettingsForm(event.groupName);
       }
     });
   }
 
   void _handleSaveSettingsEvent(SaveSettingsEvent event) {
-    // Itt frissítjük a beállításokat a formból kapott adatok alapján
-    if (_settingsFormViewModel != null) {
-      final newSettings =
-          _settingsFormViewModel!.state.formModel.toRenderSettings();
-      updateGroupSettings(event.groupName, newSettings);
+    final newSettings =
+        settingsFormViewModel.state.formModel.toRenderSettings();
+    updateGroupSettings(event.groupName, newSettings);
 
-      // Ha a send to server jelző be van állítva, küldjük el a beállításokat
-      if (event.shouldSendToServer) {
-        sendSettings();
-      }
+    if (event.shouldSendToServer) {
+      sendSettings();
     }
   }
 
   void _handleSendSettingsEvent(SendSettingsEvent event) {
-    // Közvetlenül küldjük el a beállításokat a szervernek
     sendSettings();
   }
 
   // SettingsFormViewModel létrehozás vagy frissítése
   SettingsFormViewModel createOrUpdateSettingsForm(String groupName) {
     final settings = getSettingsForGroup(groupName);
-    _settingsFormViewModel = ref.read(settingsFormViewModelProvider.notifier);
-    _settingsFormViewModel!.initialize(
-      groupName: groupName,
-      settings: settings,
-    );
-    return _settingsFormViewModel!;
+    settingsFormViewModel.initialize(groupName: groupName, settings: settings);
+    return settingsFormViewModel;
   }
 
   void updateRender({required ObjectGroups groupedObjects}) {
@@ -117,6 +108,10 @@ class RenderViewModel extends _$RenderViewModel {
 
     final newRenderModel = RenderModel(groups: newGroups);
     state = state.copyWith(renderModel: AsyncValue.data(newRenderModel));
+
+    if (getSelectedGroup() != null) {
+      createOrUpdateSettingsForm(state.selectedGroup!);
+    }
   }
 
   // Query methods
@@ -166,6 +161,9 @@ class RenderViewModel extends _$RenderViewModel {
   // Action methods
   void selectGroup(String? value) {
     state = state.copyWith(selectedGroup: value);
+    if (value != null) {
+      createOrUpdateSettingsForm(value);
+    }
   }
 
   void updateGroupSettings(String groupName, RenderSettings newSettings) {

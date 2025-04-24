@@ -1,21 +1,14 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fpdart/fpdart.dart';
-import 'package:open_filex/open_filex.dart';
 import 'package:test_piquick/core/utils.dart';
-import 'package:test_piquick/core/widgets/loader.dart';
-import 'package:test_piquick/features/rendering/controller/render_settings_form_controller.dart';
 import 'package:test_piquick/features/rendering/model/render_settings.dart';
 import 'package:test_piquick/features/rendering/model/settings_form_model.dart';
-import 'package:test_piquick/features/rendering/viewModel/render_view_model.dart';
 import 'package:test_piquick/features/rendering/viewModel/settings_form_view_model.dart';
 
 /// A form for configuring render settings for a group of objects
 class RenderSettingsForm extends ConsumerStatefulWidget {
-  const RenderSettingsForm({super.key, required this.groupName});
-  final String groupName;
+  const RenderSettingsForm({super.key, required this.viewModel});
+  final SettingsFormViewModel viewModel;
 
   @override
   ConsumerState<RenderSettingsForm> createState() => _RenderSettingsFormState();
@@ -52,7 +45,7 @@ class _RenderSettingsFormState extends ConsumerState<RenderSettingsForm> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = ref.watch(settingsFormViewModelProvider.notifier);
+    final viewModel = widget.viewModel;
     // Force rebuild when download status changes
     return Column(
       children: [
