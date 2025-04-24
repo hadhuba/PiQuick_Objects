@@ -1,12 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:test_piquick/features/rendering/model/render_model.dart';
-// import 'dart:io';
-
 import 'package:test_piquick/features/rendering/model/settings_form_model.dart';
 
 class SettingsFormState {
-  final AsyncValue<String> groupName;
-  final AsyncValue<SettingsFormModel> formModel;
+  final String groupName;
+  final SettingsFormModel formModel;
 
   SettingsFormState({
     required this.groupName,
@@ -14,8 +10,8 @@ class SettingsFormState {
   });
 
   SettingsFormState copyWith({
-    AsyncValue<String>? groupName,
-    AsyncValue<SettingsFormModel>? formModel,
+    String? groupName,
+    SettingsFormModel? formModel,
   }) {
     return SettingsFormState(
       groupName: groupName ?? this.groupName,

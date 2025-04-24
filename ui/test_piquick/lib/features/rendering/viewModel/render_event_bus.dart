@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/rendering/model/render_events.dart';
 
-part 'render_event_bus.g.dart';
+part 'auto_generated/render_event_bus.g.dart';
 
 /// Event bus osztály, ami központilag kezeli a rendering eseményeket.
 /// Biztosítja, hogy a komponensek kommunikálhassanak egymással közvetlen függőség nélkül.

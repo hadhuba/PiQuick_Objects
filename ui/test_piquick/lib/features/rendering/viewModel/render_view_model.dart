@@ -14,7 +14,7 @@ import 'package:test_piquick/features/rendering/viewModel/states/render_state.da
 import 'dart:async';
 import 'dart:io';
 
-part 'render_view_model.g.dart';
+part 'auto_generated/render_view_model.g.dart';
 
 @riverpod
 class RenderViewModel extends _$RenderViewModel {
@@ -49,7 +49,7 @@ class RenderViewModel extends _$RenderViewModel {
       if (event is SaveSettingsEvent) {
         _handleSaveSettingsEvent(event);
       } else if (event is SendSettingsEvent) {
-        sendSettings();
+        _handleSendSettingsEvent(event);
       } else if (event is ResetFormEvent) {
         // Form reset esemény kezelése szükség szerint
         print("Form reset for group: ${event.groupName}");
@@ -60,7 +60,8 @@ class RenderViewModel extends _$RenderViewModel {
   void _handleSaveSettingsEvent(SaveSettingsEvent event) {
     // Itt frissítjük a beállításokat a formból kapott adatok alapján
     if (_settingsFormViewModel != null) {
-      final newSettings = _settingsFormViewModel!.formModel.toRenderSettings();
+      final newSettings =
+          _settingsFormViewModel!.state.formModel.toRenderSettings();
       updateGroupSettings(event.groupName, newSettings);
 
       // Ha a send to server jelző be van állítva, küldjük el a beállításokat
@@ -70,12 +71,18 @@ class RenderViewModel extends _$RenderViewModel {
     }
   }
 
+  void _handleSendSettingsEvent(SendSettingsEvent event) {
+    // Közvetlenül küldjük el a beállításokat a szervernek
+    sendSettings();
+  }
+
   // SettingsFormViewModel létrehozás vagy frissítése
   SettingsFormViewModel createOrUpdateSettingsForm(String groupName) {
     final settings = getSettingsForGroup(groupName);
-    _settingsFormViewModel = SettingsFormViewModel(
+    _settingsFormViewModel = ref.read(settingsFormViewModelProvider.notifier);
+    _settingsFormViewModel!.initialize(
       groupName: groupName,
-      settings: settings
+      settings: settings,
     );
     return _settingsFormViewModel!;
   }
@@ -171,117 +178,6 @@ class RenderViewModel extends _$RenderViewModel {
         (renderModel) => renderModel.setGroupSettings(groupName, newSettings),
       ),
     );
-  }
-
-  // Individual setter methods (still useful for UI components that modify a single property)
-  void setNumImages(String groupName, int value) {
-    if (state.renderModel.isLoading) return;
-
-    final settings = getSettingsForGroup(groupName);
-    if (settings == null) return;
-
-    final newSettings = settings.copyWith(numImages: value);
-    updateGroupSettings(groupName, newSettings);
-  }
-
-  void setAzimuthAug(String groupName, bool value) {
-    if (state.renderModel.isLoading) return;
-
-    final settings = getSettingsForGroup(groupName);
-    if (settings == null) return;
-
-    final newSettings = settings.copyWith(azimuthAug: value);
-    updateGroupSettings(groupName, newSettings);
-  }
-
-  void setElevationAug(String groupName, bool value) {
-    if (state.renderModel.isLoading) return;
-
-    final settings = getSettingsForGroup(groupName);
-    if (settings == null) return;
-
-    final newSettings = settings.copyWith(elevationAug: value);
-    updateGroupSettings(groupName, newSettings);
-  }
-
-  void setResolution(String groupName, int value) {
-    if (state.renderModel.isLoading) return;
-
-    final settings = getSettingsForGroup(groupName);
-    if (settings == null) return;
-
-    final newSettings = settings.copyWith(resolution: value);
-    updateGroupSettings(groupName, newSettings);
-  }
-
-  void setModeMulti(String groupName, bool value) {
-    if (state.renderModel.isLoading) return;
-
-    final settings = getSettingsForGroup(groupName);
-    if (settings == null) return;
-
-    final newSettings = settings.copyWith(modeMulti: value);
-    updateGroupSettings(groupName, newSettings);
-  }
-
-  void setModeStatic(String groupName, bool value) {
-    if (state.renderModel.isLoading) return;
-
-    final settings = getSettingsForGroup(groupName);
-    if (settings == null) return;
-
-    final newSettings = settings.copyWith(modeStatic: value);
-    updateGroupSettings(groupName, newSettings);
-  }
-
-  void setModeFrontView(String groupName, bool value) {
-    if (state.renderModel.isLoading) return;
-
-    final settings = getSettingsForGroup(groupName);
-    if (settings == null) return;
-
-    final newSettings = settings.copyWith(modeFrontView: value);
-    updateGroupSettings(groupName, newSettings);
-  }
-
-  void setModeFourView(String groupName, bool value) {
-    if (state.renderModel.isLoading) return;
-
-    final settings = getSettingsForGroup(groupName);
-    if (settings == null) return;
-
-    final newSettings = settings.copyWith(modeFourView: value);
-    updateGroupSettings(groupName, newSettings);
-  }
-
-  void setEngine(String groupName, String value) {
-    if (state.renderModel.isLoading) return;
-
-    final settings = getSettingsForGroup(groupName);
-    if (settings == null) return;
-
-    final newSettings = settings.copyWith(engine: value);
-    updateGroupSettings(groupName, newSettings);
-  }
-
-  void setOnlyNorthernHemisphere(String groupName, bool value) {
-    if (state.renderModel.isLoading) return;
-
-    final settings = getSettingsForGroup(groupName);
-    if (settings == null) return;
-
-    final newSettings = settings.copyWith(onlyNorthernHemisphere: value);
-    updateGroupSettings(groupName, newSettings);
-  }
-
-  void setSeparately(String groupName, bool value) {
-    if (state.renderModel.isLoading) return;
-
-    final settings = getSettingsForGroup(groupName);
-    if (settings == null) return;
-
-    final newSettings = settings.copyWith(separately: value);
-    updateGroupSettings(groupName, newSettings);
   }
 
   void sendSettings() async {

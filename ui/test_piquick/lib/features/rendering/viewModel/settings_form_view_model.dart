@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/rendering/model/render_events.dart';
 import 'package:test_piquick/features/rendering/model/render_settings.dart';
@@ -9,74 +8,72 @@ import 'package:test_piquick/features/rendering/model/settings_form_model.dart';
 import 'package:test_piquick/features/rendering/viewModel/render_event_bus.dart';
 import 'package:test_piquick/features/rendering/viewModel/states/settings_form_state.dart';
 
-part 'settings_form_view_model.g.dart';
+part 'auto_generated/settings_form_view_model.g.dart';
 
 @riverpod
 class SettingsFormViewModel extends _$SettingsFormViewModel {
-  StreamSubscription? _eventSubscription;
+  String? _groupName;
+  RenderSettings? _settings;
+
+  // Initialize with group name and settings
+  void initialize({String? groupName, RenderSettings? settings}) {
+    _groupName = groupName;
+    _settings = settings;
+
+    // Create form model from settings or defaults
+    final formModel =
+        settings != null
+            ? SettingsFormModel.fromSettings(settings)
+            : SettingsFormModel.defaults();
+
+    state = SettingsFormState(groupName: groupName ?? '', formModel: formModel);
+  }
 
   @override
-  SettingsFormState build() {
-    _setupEventListeners();
-    ref.onDispose(() {
-      _eventSubscription?.cancel();
-    });
-    // _initializeFormViewModel();
-
+  SettingsFormState build({groupName, RenderSettings? settings}) {
+    // Default empty state - must call initialize() before using
     return SettingsFormState(
-      groupName: AsyncValue.loading(),
-      formModel: AsyncValue.loading(),
+      groupName: groupName,
+      formModel: settings != null
+            ? SettingsFormModel.fromSettings(settings)
+            : SettingsFormModel.defaults(),
     );
-  }
-
-  // SettingsFormViewModel({
-  //   required String groupName,
-  //   required RenderSettings? settings,
-  // }) {}
-
-  /// Initialize the form viewmodel with settings from the view model
-  void _initializeFormViewModel(RenderSettings? settings) {
-    // if (settings != null) {
-    //   formModel = SettingsFormModel.fromSettings(settings);
-    // } else {
-    //   formModel = SettingsFormModel.defaults();
-    // }
-  }
-
-  void _setupEventListeners() {
-    // final bus = ref.read(renderEventBusProvider);
-
-    // _eventSubscription = bus.events.listen((event) {
-    //   if (event is SaveSettingsEvent) {
-    //     _handleSaveSettingsEvent(event);
-    //   } else if (event is SendSettingsEvent) {
-    //     sendSettings();
-    //   } else if (event is ResetFormEvent) {
-    //     // Form reset esemény kezelése szükség szerint
-    //     print("Form reset for group: ${event.groupName}");
-    //   }
-    // });
   }
 
   /// Reset the form to its initial values from the view model
   void resetForm() {
-    // formModel.dispose();
-    // _initializeFormViewModel(null);
+    state.formModel.dispose();
+
+    // Create a new form model from the saved settings or defaults
+    final formModel =
+        _settings != null
+            ? SettingsFormModel.fromSettings(_settings!)
+            : SettingsFormModel.defaults();
+
+    state = SettingsFormState(
+      groupName: _groupName ?? '',
+      formModel: formModel,
+    );
+
     // Értesítjük az event bus-on keresztül, hogy a form reset történt
-    ref.read(renderEventBusProvider).emit(ResetFormEvent(groupName: groupName));
+    ref
+        .read(renderEventBusProvider)
+        .emit(ResetFormEvent(groupName: state.groupName));
   }
 
   /// Save the current form values to the view model
-  bool saveSettings({bool sendToServer = false}) {
-    if (formModel.validate()) {
+  bool saveSettings() {
+    if (state.formModel.validate()) {
       // Kiváltunk egy eseményt az event bus-on keresztül
-      final newSettings = formModel.toRenderSettings();
+      final newSettings = state.formModel.toRenderSettings();
+      _settings = newSettings; // Save settings locally too
+
       ref
           .read(renderEventBusProvider)
           .emit(
             SaveSettingsEvent(
-              groupName: groupName,
-              shouldSendToServer: sendToServer,
+              groupName: state.groupName,
+              settings: newSettings,
             ),
           );
       return true;
@@ -92,8 +89,17 @@ class SettingsFormViewModel extends _$SettingsFormViewModel {
     }
   }
 
+  /// Get the description of a field by its ID
+  String getDescription(String fieldId) {
+    return RenderSettings.getDescription(fieldId);
+  }
+
+  Key get formKey => state.formModel.formKey;
+
+  SettingsFormModel get formModel => state.formModel;
+
   /// Dispose of resources
   void dispose() {
-    formModel.dispose();
+    state.formModel.dispose();
   }
 }

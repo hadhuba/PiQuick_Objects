@@ -1,12 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'render_view_model.dart';
+part of '../render_view_model.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$renderViewModelHash() => r'dc5b87d6fe58ffbfde40ad60f5f30ba2a40673ad';
+String _$renderViewModelHash() => r'395093cf2a2d65f0190a12893119213a2975f44b';
 
 /// See also [RenderViewModel].
 @ProviderFor(RenderViewModel)

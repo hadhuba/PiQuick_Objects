@@ -1,4 +1,6 @@
 // A rendering modul különböző eseményeinek definíciói
+import 'package:test_piquick/features/rendering/model/render_settings.dart';
+
 abstract class RenderEvent {
   const RenderEvent();
 }
@@ -6,10 +8,12 @@ abstract class RenderEvent {
 // A beállítások mentésének eseménye
 class SaveSettingsEvent extends RenderEvent {
   final String groupName;
+  final RenderSettings settings; // A beállítások objektum
   final bool shouldSendToServer;
 
   const SaveSettingsEvent({
     required this.groupName,
+    required this.settings,
     this.shouldSendToServer = false,
   });
 }
