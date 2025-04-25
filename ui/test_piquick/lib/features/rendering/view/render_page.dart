@@ -60,8 +60,8 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                     const SizedBox(width: 16),
                     ElevatedButton(
                       onPressed:
-                          viewModel.isDownloading()
-                              ? null // Disable button while downloading
+                          viewModel.isDownloading() || groupNames.isEmpty
+                              ? null // Disable button while downloading or when no groups are available
                               : () => viewModel.sendSettings(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).primaryColor,

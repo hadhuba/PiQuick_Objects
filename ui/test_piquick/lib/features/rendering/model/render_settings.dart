@@ -7,7 +7,6 @@ class RenderSettings {
   bool elevationAug;
   int resolution;
   bool modeMulti;
-  bool modeStatic;
   bool modeFrontView;
   bool modeFourView;
   bool onlyNorthernHemisphere;
@@ -20,7 +19,6 @@ class RenderSettings {
     'elevationAug': 'Elevation Augmentation',
     'resolution': 'Image Resolution',
     'modeMulti': 'Multi-View Mode',
-    'modeStatic': 'Static Multi-View Mode',
     'modeFrontView': 'Front View Mode',
     'modeFourView': 'Four View Mode',
     'onlyNorthernHemisphere': 'Only Northern Hemisphere',
@@ -30,7 +28,7 @@ class RenderSettings {
   // Detailed descriptions for tooltips or help text
   static const Map<String, String> descriptions = {
     'numImages':
-        'Number of frames to render. The motion stops at a certain timestep, which differs with each case. Note that Mode Four View will only render 4 frames, and Mode Front will only render 1 single frame. This setting will only be used for the rest of the view modes.',
+        'Number of frames to render. The motion stops at a certain timestep, which differs with each case. Note that Mode Four View will only render 4 frames, and Mode Front will only render 1 single frame. This setting will only be used for the Multi View Mode.',
     'azimuthAug':
         'If enabled, images will be rendered from a random azimuth angle.',
     'elevationAug':
@@ -38,13 +36,11 @@ class RenderSettings {
     'resolution':
         'Image resolution in pixels (e.g. 256 means 256×256). Higher values produce better quality but take longer to render.',
     'modeMulti':
-        'If enabled, images will be rendered from "time 0, view 0" to "time T, view T".',
-    'modeStatic':
-        'If enabled, images will be rendered from "time 0, view 0" to "time 0, view T".',
+        'If enabled, images will be rendered by continously rotating the object. At least one view mode must be enabled.',
     'modeFrontView':
-        'If enabled, images will be rendered from "time 0, view front" to "time T, view front". The front view changes with azimuth augmentation.',
+        'If enabled, images will be rendered from the front. At least one view mode must be enabled.',
     'modeFourView':
-        'If enabled, images will be rendered from "time 0, view front/left/right/back" to "time T, view front/left/right/back".',
+        'If enabled, images will be rendered from front/left/right/back. At least one view mode must be enabled.',
     'onlyNorthernHemisphere':
         'If enabled, only renders from the top hemisphere of viewing angles. This is useful for objects acquired via photogrammetry, as the southern hemisphere may have holes',
     'separately':
@@ -67,7 +63,6 @@ class RenderSettings {
     this.elevationAug = false,
     this.resolution = 256,
     this.modeMulti = true,
-    this.modeStatic = false,
     this.modeFrontView = false,
     this.modeFourView = false,
     this.onlyNorthernHemisphere = true,
@@ -80,7 +75,6 @@ class RenderSettings {
     bool? elevationAug,
     int? resolution,
     bool? modeMulti,
-    bool? modeStatic,
     bool? modeFrontView,
     bool? modeFourView,
     bool? onlyNorthernHemisphere,
@@ -92,7 +86,6 @@ class RenderSettings {
       elevationAug: elevationAug ?? this.elevationAug,
       resolution: resolution ?? this.resolution,
       modeMulti: modeMulti ?? this.modeMulti,
-      modeStatic: modeStatic ?? this.modeStatic,
       modeFrontView: modeFrontView ?? this.modeFrontView,
       modeFourView: modeFourView ?? this.modeFourView,
       onlyNorthernHemisphere:
@@ -109,7 +102,6 @@ class RenderSettings {
       'elevation_aug': elevationAug,
       'resolution': resolution,
       'mode_multi': modeMulti,
-      'mode_static': modeStatic,
       'mode_front_view': modeFrontView,
       'mode_four_view': modeFourView,
       'only_northern_hemisphere': onlyNorthernHemisphere,
@@ -125,7 +117,6 @@ class RenderSettings {
       elevationAug: map['elevation_aug'] ?? map['elevationAug'] as bool,
       resolution: map['resolution'] as int,
       modeMulti: map['mode_multi'] ?? map['modeMulti'] as bool,
-      modeStatic: map['mode_static'] ?? map['modeStatic'] as bool,
       modeFrontView: map['mode_front_view'] ?? map['modeFrontView'] as bool,
       modeFourView: map['mode_four_view'] ?? map['modeFourView'] as bool,
       onlyNorthernHemisphere:

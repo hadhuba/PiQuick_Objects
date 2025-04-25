@@ -161,20 +161,6 @@ class _Viewer3DState extends State<Viewer3D> {
                     )
                     : const Icon(Icons.list_alt_rounded),
           ),
-          const SizedBox(height: 4),
-          IconButton(
-            onPressed: () {
-              controller.setCameraOrbit(20, 20, 5);
-            },
-            icon: const Icon(Icons.camera_alt),
-          ),
-          const SizedBox(height: 4),
-          IconButton(
-            onPressed: () {
-              controller.resetCameraOrbit();
-            },
-            icon: const Icon(Icons.cameraswitch_outlined),
-          ),
         ],
       ),
       body: LayoutBuilder(

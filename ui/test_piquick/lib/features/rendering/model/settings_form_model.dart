@@ -10,7 +10,6 @@ class SettingsFormModel {
   bool azimuthAug;
   bool elevationAug;
   bool modeMulti;
-  bool modeStatic;
   bool modeFrontView;
   bool modeFourView;
   bool onlyNorthernHemisphere;
@@ -28,7 +27,6 @@ class SettingsFormModel {
     required this.azimuthAug,
     required this.elevationAug,
     required this.modeMulti,
-    required this.modeStatic,
     required this.modeFrontView,
     required this.modeFourView,
     required this.onlyNorthernHemisphere,
@@ -47,7 +45,6 @@ class SettingsFormModel {
       azimuthAug: settings.azimuthAug,
       elevationAug: settings.elevationAug,
       modeMulti: settings.modeMulti,
-      modeStatic: settings.modeStatic,
       modeFrontView: settings.modeFrontView,
       modeFourView: settings.modeFourView,
       onlyNorthernHemisphere: settings.onlyNorthernHemisphere,
@@ -63,7 +60,6 @@ class SettingsFormModel {
       azimuthAug: true,
       elevationAug: false,
       modeMulti: true,
-      modeStatic: false,
       modeFrontView: false,
       modeFourView: false,
       onlyNorthernHemisphere: true,
@@ -90,7 +86,6 @@ class SettingsFormModel {
       azimuthAug: azimuthAug,
       elevationAug: elevationAug,
       modeMulti: modeMulti,
-      modeStatic: modeStatic,
       modeFrontView: modeFrontView,
       modeFourView: modeFourView,
       onlyNorthernHemisphere: onlyNorthernHemisphere,

@@ -151,19 +151,6 @@ class _RenderSettingsFormState extends ConsumerState<RenderSettingsForm> {
                   viewModel: viewModel,
                 ),
                 _createSettingField(
-                  fieldId: 'modeStatic',
-                  child: SwitchListTile(
-                    title: Text(RenderSettings.getLabel('modeStatic')),
-                    value: viewModel.formModel.modeStatic,
-                    onChanged: (value) {
-                      setState(() {
-                        viewModel.formModel.modeStatic = value;
-                      });
-                    },
-                  ),
-                  viewModel: viewModel,
-                ),
-                _createSettingField(
                   fieldId: 'modeFrontView',
                   child: SwitchListTile(
                     title: Text(RenderSettings.getLabel('modeFrontView')),
