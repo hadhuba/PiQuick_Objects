@@ -1,7 +1,8 @@
 class AppFailure {
   final String message;
-  AppFailure([this.message = 'Sorry, an unexpected error occurred']);
+  final int? statusCode;
+  AppFailure([this.message = 'Sorry, an unexpected error occurred', this.statusCode]);
 
   @override
-  String toString() => 'AppFailure(message: $message)';
+  String toString() => 'AppFailure(message: $message, statusCode: $statusCode)';
 }

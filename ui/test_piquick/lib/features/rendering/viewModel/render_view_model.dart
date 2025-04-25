@@ -148,13 +148,6 @@ class RenderViewModel extends _$RenderViewModel {
     }
   }
 
-  // Query methods
-  List<String> getGroupNames() {
-    return state.renderModel
-            .whenData((renderModel) => renderModel.getAllNames())
-            .valueOrNull ??
-        [];
-  }
 
   RenderSettings? getSettingsForGroup(String groupName) {
     return state.renderModel
@@ -178,10 +171,6 @@ class RenderViewModel extends _$RenderViewModel {
     return state.downloadedFile.hasError;
   }
 
-  String? getDownloadError() {
-    if (!state.downloadedFile.hasError) return null;
-    return state.downloadedFile.error.toString();
-  }
 
   // Action methods
   void selectGroup(String? value) {
@@ -227,18 +216,18 @@ class RenderViewModel extends _$RenderViewModel {
             downloadStatus: "Rendering successful! Download initiated.",
           ),
           Left(value: final l) => state.copyWith(
-            downloadedFile: const AsyncValue.error(
-              "Failed to send settings",
+            downloadedFile: AsyncValue.error(
+              l.message,
               StackTrace.empty,
             ),
-            downloadStatus: "Error: ${l.message}",
+            downloadStatus: "Rendering unsuccessful!",
           ),
         };
         // in web mode The actual download is handled by the browser through web_download_helper.dart
       } catch (e, stack) {
         state = state.copyWith(
           downloadedFile: AsyncValue.error(e, stack),
-          downloadStatus: "Error: ${e.toString()}",
+          downloadStatus: "Unexpeceted error occurred...",
         );
       }
     });

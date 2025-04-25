@@ -19,7 +19,9 @@ RenderRemoteRepository renderRemoteRepository(Ref ref) {
 }
 
 class RenderRemoteRepository {
-  Future<Either<AppFailure, File?>> sendSettings(RenderModel renderModel) async {
+  Future<Either<AppFailure, File?>> sendSettings(
+    RenderModel renderModel,
+  ) async {
     try {
       final jsonBody = jsonEncode(renderModel.toJson());
 
@@ -30,15 +32,14 @@ class RenderRemoteRepository {
       );
 
       if (response.statusCode == 201) {
-
         final timestamp = DateTime.now().millisecondsSinceEpoch;
         final zipFileName = 'rendered_output_$timestamp.zip';
 
         if (kIsWeb) {
           downloadFileWeb(response.bodyBytes, zipFileName);
           return Right(null);
-        } 
-        else { // android, ios
+        } else {
+          // android, ios
           final directory = await getApplicationDocumentsDirectory();
           final outputDir = Directory('${directory.path}/rendered_outputs');
 
@@ -53,9 +54,15 @@ class RenderRemoteRepository {
           return Right(zipFile);
         }
       } else {
-        return Left(AppFailure( 
-          'Failed to render objects: ${response.statusCode} - ${response.body}',
-        ));
+        // JSON-ból kinyerjük a "detail" mezőt, ha van
+        String errorMessage;
+        try {
+          final Map<String, dynamic> json = jsonDecode(response.body);
+          errorMessage = json['detail'] as String? ?? response.body;
+        } catch (_) {
+          errorMessage = response.body;
+        }
+        return Left(AppFailure(errorMessage, response.statusCode));
       }
     } catch (e) {
       return Left(AppFailure(e.toString()));

@@ -228,7 +228,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Error: ${viewModel.getDownloadError()}',
+                          error.toString(),
                           style: const TextStyle(color: Colors.red),
                         ),
                         ElevatedButton(
