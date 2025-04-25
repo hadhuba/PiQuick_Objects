@@ -5,7 +5,10 @@ import concurrent.futures
 import json
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from utils.setup_path import add_project_root
+add_project_root()
+
 from models.render_model import Group
 # from server.models.render_model import Group
 from utils.logging_config import setup_custom_logger
@@ -13,6 +16,7 @@ from utils.logging_config import setup_custom_logger
 import random
 import time
 import zipfile
+import shutil
 
 import concurrent.futures
 
@@ -129,7 +133,7 @@ def download_groups(args, groups):
     
     return groups_paths
 
-def execute_command(objects_paths, save_file_name, gpu_id, separate_render, group_settings):
+def execute_command(objects_paths, save_file_name, output_dir, gpu_id, separate_render, group_settings):
     output_dir_name = save_file_name
     
     azimuth = 0
@@ -143,30 +147,52 @@ def execute_command(objects_paths, save_file_name, gpu_id, separate_render, grou
         output_dir_name += f'_el{elevation}'
         
     # output dir + name of group + elevation/azimuth
-    output_dir_path = os.path.join(args.output_dir, output_dir_name)
+    output_dir_path = os.path.join(output_dir, output_dir_name)
     
-    command = f'CUDA_VISIBLE_DEVICES={gpu_id} export DISPLAY=:0.1 && scripts/blender-3.2.2-linux-x64/blender \
-        --background --python scripts/blender_render.py -- \
-            --objects_paths {",".join(objects_paths)} \
-            --separate {1 if separate_render else 0} \
-            --output_dir {output_dir_path} \
-            --gpu_id {gpu_id} \
-            --num_images {group_settings.num_images} \
+    # Set up environment for headless rendering
+    # Use xvfb-run if available to create a virtual framebuffer
+    try:
+        # Test if xvfb-run is available
+        subprocess.run(["which", "xvfb-run"], check=True, capture_output=True)
+        xvfb_prefix = "xvfb-run -a "
+        display_env = ""
+        logger.info("Using xvfb-run for virtual display")
+    except subprocess.CalledProcessError:
+        # If xvfb-run is not available, try with DISPLAY=:99
+        xvfb_prefix = ""
+        display_env = "export DISPLAY=:99 && "
+        logger.info("xvfb-run not found, using DISPLAY=:99")
+    
+    gpu_options = f"CUDA_VISIBLE_DEVICES={gpu_id}"
+    
+    # Build the command
+    command = f'{gpu_options} {display_env}{xvfb_prefix}scripts/blender-3.2.2-linux-x64/blender \
+            --background --python scripts/blender_render.py --\
+            --objects_paths {",".join(objects_paths)}\
+            --separate {1 if separate_render else 0}\
+            --output_dir {output_dir_path}\
+            --gpu_id {gpu_id}\
+            --num_images {group_settings.num_images}\
             --azimuth {azimuth}\
             --elevation {elevation}\
-            --resolution {group_settings.resolution} \
+            --resolution {group_settings.resolution}\
             --mode_multi {1 if group_settings.mode_multi else 0}\
             --mode_static {1 if group_settings.mode_static else 0}\
             --mode_front {1 if group_settings.mode_front_view else 0}\
             --mode_four_view {1 if group_settings.mode_four_view else 0}\
-            --engine {group_settings.engine.upper()} \
             --only_northern_hemisphere {1 if group_settings.only_northern_hemisphere else 0}'
     
-    #running
+    logger.info(f"Running command: {command}")
+    
+    # Run the command
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    logger.info(f"Executing command: {command}")
     logger.info(result.stdout.decode())
-    logger.error(result.stderr.decode())
+    
+    if result.returncode != 0:
+        logger.error(f"Command failed with return code {result.returncode}")
+        logger.error(result.stderr.decode())
+    else:
+        logger.info(f"Successfully rendered to {output_dir_path}")
 
 def zip_subfolders(output_dir: str, output_file: str):
     """
@@ -187,7 +213,7 @@ def zip_subfolders(output_dir: str, output_file: str):
                 arcname = os.path.relpath(file_path, output_dir)
                 zipf.write(file_path, arcname)
     
-if __name__ == "__main__":
+def main():
     args = parse_arguments()
     
     if not args.groups_json or not os.path.isfile(args.groups_json):
@@ -213,10 +239,11 @@ if __name__ == "__main__":
                 logger.debug(f"Object ID: {obj_id}")
                 obj_id = obj_id[:5]
                 logger.debug(f"Object path: {path}")
-                render_tasks.append(([path], group.name+obj_id, gpu_id % gpu_count, group.settings.separately, group.settings))
+                render_tasks.append(([path], group.name+obj_id, args.output_dir, gpu_id % gpu_count, group.settings.separately, group.settings))
                 gpu_id+=1
         else:
-            render_tasks.append((group_paths[group.name], group.name, gpu_id % gpu_count, group.settings.separately, group.settings))
+            logger.debug(f"Group name: {group.name}, is rendered together")
+            render_tasks.append((group_paths[group.name], group.name, args.output_dir, gpu_id % gpu_count, group.settings.separately, group.settings))
             gpu_id+=1
         
         
@@ -225,21 +252,18 @@ if __name__ == "__main__":
         
     logger.success("Rendering process completed.")
 
+    # Delete the folder named "groups_paths" next to the args.groups_json file
+    groups_paths_dir = os.path.join(os.path.dirname(args.groups_json), "groups_paths")
+    if os.path.exists(groups_paths_dir) and os.path.isdir(groups_paths_dir):
+        try:
+            shutil.rmtree(groups_paths_dir)
+            logger.info(f"Deleted remporary folder containing .glb paths: {groups_paths_dir}")
+        except Exception as e:
+            logger.info(f"Failed to delete folder {groups_paths_dir}: {e}")
     zip_subfolders(args.output_dir, args.output_file)
     logger.info(f"Zipped output files to {args.output_file}")
 
 
-
-    
-"""
-./outputs/KitchenObjects01ca4_az0.90
-./outputs/KitchenObjects01ca4_az0.90
-./outputs/KitchenObjects01ca4_az0.90
-
-Blender quit
-
-[2025-04-09 00:14:43] [ERROR] [render_script]: Authorization required, but no authorization protocol specified
-
-xcb_connection_has_error() returned true
-CUDA cuInit: Unknown CUDA error value"""
+if __name__ == "__main__":
+    main()    
 

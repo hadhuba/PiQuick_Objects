@@ -20,9 +20,6 @@ import numpy as np
 from mathutils import Matrix, Vector
 import os
 
-# import imageio
-# from skimage.metrics import structural_similarity as ssim
-
 IMPORT_FUNCTIONS: Dict[str, Callable] = {
     "obj": bpy.ops.import_scene.obj,
     "glb": bpy.ops.import_scene.gltf,
@@ -36,167 +33,6 @@ IMPORT_FUNCTIONS: Dict[str, Callable] = {
     "abc": bpy.ops.wm.alembic_import,
     "blend": bpy.ops.wm.append,
 }
-
-
-class MetadataExtractor:
-    """Class to extract metadata from a Blender scene."""
-
-    def __init__(
-        self, object_path: str, scene: bpy.types.Scene, bdata: bpy.types.BlendData
-    ) -> None:
-        """Initializes the MetadataExtractor.
-
-        Args:
-            object_path (str): Path to the object file.
-            scene (bpy.types.Scene): The current scene object from `bpy.context.scene`.
-            bdata (bpy.types.BlendData): The current blender data from `bpy.data`.
-
-        Returns:
-            None
-        """
-        self.object_path = object_path
-        self.scene = scene
-        self.bdata = bdata
-
-    def get_poly_count(self) -> int:
-        """Returns the total number of polygons in the scene."""
-        total_poly_count = 0
-        for obj in self.scene.objects:
-            if obj.type == "MESH":
-                total_poly_count += len(obj.data.polygons)
-        return total_poly_count
-
-    def get_vertex_count(self) -> int:
-        """Returns the total number of vertices in the scene."""
-        total_vertex_count = 0
-        for obj in self.scene.objects:
-            if obj.type == "MESH":
-                total_vertex_count += len(obj.data.vertices)
-        return total_vertex_count
-
-    def get_edge_count(self) -> int:
-        """Returns the total number of edges in the scene."""
-        total_edge_count = 0
-        for obj in self.scene.objects:
-            if obj.type == "MESH":
-                total_edge_count += len(obj.data.edges)
-        return total_edge_count
-
-    def get_lamp_count(self) -> int:
-        """Returns the number of lamps in the scene."""
-        return sum(1 for obj in self.scene.objects if obj.type == "LIGHT")
-
-    def get_mesh_count(self) -> int:
-        """Returns the number of meshes in the scene."""
-        return sum(1 for obj in self.scene.objects if obj.type == "MESH")
-
-    def get_material_count(self) -> int:
-        """Returns the number of materials in the scene."""
-        return len(self.bdata.materials)
-
-    def get_object_count(self) -> int:
-        """Returns the number of objects in the scene."""
-        return len(self.bdata.objects)
-
-    def get_animation_count(self) -> int:
-        """Returns the number of animations in the scene."""
-        return len(self.bdata.actions)
-
-    def get_linked_files(self) -> List[str]:
-        """Returns the filepaths of all linked files."""
-        image_filepaths = self._get_image_filepaths()
-        material_filepaths = self._get_material_filepaths()
-        linked_libraries_filepaths = self._get_linked_libraries_filepaths()
-
-        all_filepaths = (
-            image_filepaths | material_filepaths | linked_libraries_filepaths
-        )
-        if "" in all_filepaths:
-            all_filepaths.remove("")
-        return list(all_filepaths)
-
-    def _get_image_filepaths(self) -> Set[str]:
-        """Returns the filepaths of all images used in the scene."""
-        filepaths = set()
-        for image in self.bdata.images:
-            if image.source == "FILE":
-                filepaths.add(bpy.path.abspath(image.filepath))
-        return filepaths
-
-    def _get_material_filepaths(self) -> Set[str]:
-        """Returns the filepaths of all images used in materials."""
-        filepaths = set()
-        for material in self.bdata.materials:
-            if material.use_nodes:
-                for node in material.node_tree.nodes:
-                    if node.type == "TEX_IMAGE":
-                        image = node.image
-                        if image is not None:
-                            filepaths.add(bpy.path.abspath(image.filepath))
-        return filepaths
-
-    def _get_linked_libraries_filepaths(self) -> Set[str]:
-        """Returns the filepaths of all linked libraries."""
-        filepaths = set()
-        for library in self.bdata.libraries:
-            filepaths.add(bpy.path.abspath(library.filepath))
-        return filepaths
-
-    def get_scene_size(self) -> Dict[str, list]:
-        """Returns the size of the scene bounds in meters."""
-        bbox_min, bbox_max = scene_bbox()
-        return {"bbox_max": list(bbox_max), "bbox_min": list(bbox_min)}
-
-    def get_shape_key_count(self) -> int:
-        """Returns the number of shape keys in the scene."""
-        total_shape_key_count = 0
-        for obj in self.scene.objects:
-            if obj.type == "MESH":
-                shape_keys = obj.data.shape_keys
-                if shape_keys is not None:
-                    total_shape_key_count += (
-                        len(shape_keys.key_blocks) - 1
-                    )  # Subtract 1 to exclude the Basis shape key
-        return total_shape_key_count
-
-    def get_armature_count(self) -> int:
-        """Returns the number of armatures in the scene."""
-        total_armature_count = 0
-        for obj in self.scene.objects:
-            if obj.type == "ARMATURE":
-                total_armature_count += 1
-        return total_armature_count
-
-    def read_file_size(self) -> int:
-        """Returns the size of the file in bytes."""
-        return os.path.getsize(self.object_path)
-
-    def get_metadata(self) -> Dict[str, Any]:
-        """Returns the metadata of the scene.
-
-        Returns:
-            Dict[str, Any]: Dictionary of the metadata with keys for "file_size",
-            "poly_count", "vert_count", "edge_count", "material_count", "object_count",
-            "lamp_count", "mesh_count", "animation_count", "linked_files", "scene_size",
-            "shape_key_count", and "armature_count".
-        """
-        return {
-            "file_size": self.read_file_size(),
-            "poly_count": self.get_poly_count(),
-            "vert_count": self.get_vertex_count(),
-            "edge_count": self.get_edge_count(),
-            "material_count": self.get_material_count(),
-            "object_count": self.get_object_count(),
-            "lamp_count": self.get_lamp_count(),
-            "mesh_count": self.get_mesh_count(),
-            "animation_count": self.get_animation_count(),
-            "linked_files": self.get_linked_files(),
-            "scene_size": self.get_scene_size(),
-            "shape_key_count": self.get_shape_key_count(),
-            "armature_count": self.get_armature_count(),
-        }
-
-
 
 def reset_cameras() -> None:
     """Resets the cameras in the scene to a single default camera."""
@@ -460,7 +296,7 @@ def load_objects(objects_paths: str) -> None:
             import_function(filepath=object_path)
     # Multiple objects
     else:
-        offset = 5  
+        offset = 2
         grid_size = math.ceil(math.sqrt(len(objects_path_list))) 
 
         for index, path in enumerate(objects_path_list):
@@ -480,10 +316,7 @@ def load_objects(objects_paths: str) -> None:
                     obj.location = position
             else:
                 print(f"File not found: {path}")
-    return objects_path_list
 
-
-           
 
 
 def scene_bbox(
@@ -597,7 +430,6 @@ def delete_invisible_objects() -> None:
     for col in invisible_collections:
         bpy.data.collections.remove(col)
 
-
 def normalize_scene() -> None:
     """Normalizes the scene by scaling and translating it to fit in a unit cube centered
     at the origin.
@@ -686,7 +518,6 @@ def delete_missing_textures() -> Dict[str, Any]:
         "file_path_to_color": file_path_to_color,
     }
 
-
 def _get_random_color() -> Tuple[float, float, float, float]:
     """Generates a random RGB-A color.
 
@@ -697,7 +528,6 @@ def _get_random_color() -> Tuple[float, float, float, float]:
         range [0, 1].
     """
     return (random.random(), random.random(), random.random(), 1)
-
 
 def _apply_color_to_object(
     obj: bpy.types.Object, color: Tuple[float, float, float, float]
@@ -849,77 +679,42 @@ def render_scene(
     reset_scene()
     # reset_cameras()
     # delete_invisible_objects()
-    objects_path_list = load_objects(objects_paths)
-
-    # Set up cameras
-    # cam = scene.objects["Camera"]
-    # cam.data.lens = 35
-    # cam.data.sensor_width = 32
-
-    # # Set up camera constraints
-    # cam_constraint = cam.constraints.new(type="TRACK_TO")
-    # cam_constraint.track_axis = "TRACK_NEGATIVE_Z"
-    # cam_constraint.up_axis = "UP_Y"
-    # empty = bpy.data.objects.new("Empty", None)
-    # scene.collection.objects.link(empty)
-    # cam_constraint.target = empty
-
-    # Extract the metadata. This must be done before normalizing the scene to get
-    # accurate bounding box information.
-    for obj_path in objects_paths.split(','):
-        metadata_extractor = MetadataExtractor(
-            object_path=obj_path, scene=scene, bdata=bpy.data
-        )
-        metadata = metadata_extractor.get_metadata()
-        #print(metadata)
-
-        # delete all objects that are not meshes
-        if obj_path.lower().endswith(".usdz"):
-            # don't delete missing textures on usdz files, lots of them are embedded
-            missing_textures = None
-        else:
-            missing_textures = delete_missing_textures()
-        metadata["missing_textures"] = missing_textures
-
-        # possibly apply a random color to all objects
-        if obj_path.endswith(".stl") or obj_path.endswith(".ply"):
-            assert len(bpy.context.selected_objects) == 1
-            rand_color = apply_single_random_color_to_all_objects()
-            metadata["random_color"] = rand_color
-        else:
-            metadata["random_color"] = None
-    """
-    # save metadata
-    metadata_path = os.path.join(output_dir, "metadata.json")
-    os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
-    with open(metadata_path, "w", encoding="utf-8") as f:
-        json.dump(metadata, f, sort_keys=True, indent=2)"""
+    load_objects(objects_paths)
 
     # normalize the scene
     normalize_scene()
-    print("Scene normalized")
+    print("Scene was normalized")
 
     # randomize the lighting
     randomize_lighting()
     print("light randomized")
-    # camera = bpy.data.objects["Camera"]
-    # camera.location = Vector((0.0, -4.0, 0.0))
-    # look_at(camera, Vector((0.0, 0.0, 0.0)))
 
-    
+
     camera_pose="random"
-    camera_dist_min=2
-    camera_dist_max=2
+    # Calculate the bounding box of the scene
+    bbox_min, bbox_max = scene_bbox()
+    scene_size = max(bbox_max - bbox_min)
+    print(f"Scene size: {scene_size}")
+    print(args.separate)
+
+    # Adjust camera distance based on scene size
+    if not args.separate:
+        camera_dist_min=scene_size * 2
+        camera_dist_max=scene_size * 2
+    else:
+        camera_dist_min=2
+        camera_dist_max=2 # Default distance for single object rendering
+
+
     # render the images
-
-
     angle = azimuth * math.pi * 2
     direction = [math.sin(angle), math.cos(angle), 0]
     direction_az = Vector(direction).normalized()
     
     print("starting render")
-    for frame in range(num_images):
-        if args.mode_multi:
+
+    if args.mode_multi:
+        for frame in range(num_images):
             print("mode_multi")
             t = frame / max(num_images - 1, 1)
             place_camera(
@@ -937,82 +732,82 @@ def render_scene(
             print("render_path: ", render_path)
             bpy.ops.render.render(write_still=True)
             write_camera_metadata(os.path.join(output_dir, f"multi{frame}.json"))    
-    
 
-        if args.mode_front:
-            place_camera(
-                0,
-                camera_pose_mode="random",
-                camera_dist_min=camera_dist_min,
-                camera_dist_max=camera_dist_max,
-                Direction_type='az_front',
-                az_front_vector=direction_az
-            )
-            bpy.context.scene.frame_set(frame)
-            render_path = os.path.join(output_dir, f"front_frame{frame}.png")  #view and frame 
-            scene.render.filepath = render_path
-            bpy.ops.render.render(write_still=True)
-            
-            write_camera_metadata(os.path.join(output_dir, f"front.json"))
+    if args.mode_front:
+        place_camera(
+            0,
+            camera_pose_mode="random",
+            camera_dist_min=camera_dist_min,
+            camera_dist_max=camera_dist_max,
+            Direction_type='az_front',
+            az_front_vector=direction_az
+        )
+        bpy.context.scene.frame_set(frame)
+        render_path = os.path.join(output_dir, f"front_frame.png")  #view and frame 
+        scene.render.filepath = render_path
+        bpy.ops.render.render(write_still=True)
         
-        #print('args.mode_four_view:',args.mode_four_view)
-        if args.mode_four_view:
-             #front
-            place_camera(
-                0,
-                camera_pose_mode="random",
-                camera_dist_min=camera_dist_min,
-                camera_dist_max=camera_dist_max,
-                Direction_type='front'
-                )
-            bpy.context.scene.frame_set(frame)
-            render_path = os.path.join(output_dir, f"front_frame{frame}.png")  #view and frame 
-            scene.render.filepath = render_path
-            bpy.ops.render.render(write_still=True)
-            write_camera_metadata(os.path.join(output_dir, f"front.json"))
-            
-            place_camera(
-                0,
-                camera_pose_mode="random",
-                camera_dist_min=camera_dist_min,
-                camera_dist_max=camera_dist_max,
-                Direction_type='back'
-                )
-            bpy.context.scene.frame_set(frame)
-            render_path = os.path.join(output_dir, f"back_frame{frame}.png")  #view and frame 
-            scene.render.filepath = render_path
-            bpy.ops.render.render(write_still=True)
-            write_camera_metadata(os.path.join(output_dir, f"back.json"))
-            
-            place_camera(
-                0,
-                camera_pose_mode="random",
-                camera_dist_min=camera_dist_min,
-                camera_dist_max=camera_dist_max,
-                Direction_type='left'
-                )
-            bpy.context.scene.frame_set(frame)
-            render_path = os.path.join(output_dir, f"left_frame{frame}.png")  #view and frame 
-            scene.render.filepath = render_path
-            bpy.ops.render.render(write_still=True)
-            write_camera_metadata(os.path.join(output_dir, f"left.json"))
-            
-            place_camera(
-                0,
-                camera_pose_mode="random",
-                camera_dist_min=camera_dist_min,
-                camera_dist_max=camera_dist_max,
-                Direction_type='right'
-                )
-            bpy.context.scene.frame_set(frame)
-            render_path = os.path.join(output_dir, f"right_frame{frame}.png")  #view and frame 
-            scene.render.filepath = render_path
-            bpy.ops.render.render(write_still=True)
-            write_camera_metadata(os.path.join(output_dir, f"right.json"))
+        write_camera_metadata(os.path.join(output_dir, f"front.json"))
     
-    for frame in range(num_images):
+    #print('args.mode_four_view:',args.mode_four_view)
+    if args.mode_four_view:
+
+        #front
+        place_camera(
+            0,
+            camera_pose_mode="random",
+            camera_dist_min=camera_dist_min,
+            camera_dist_max=camera_dist_max,
+            Direction_type='front'
+            )
+        bpy.context.scene.frame_set(frame)
+        render_path = os.path.join(output_dir, f"front_frame.png")  #view and frame 
+        scene.render.filepath = render_path
+        bpy.ops.render.render(write_still=True)
+        write_camera_metadata(os.path.join(output_dir, f"front.json"))
+        
+        place_camera(
+            0,
+            camera_pose_mode="random",
+            camera_dist_min=camera_dist_min,
+            camera_dist_max=camera_dist_max,
+            Direction_type='back'
+            )
+        bpy.context.scene.frame_set(frame)
+        render_path = os.path.join(output_dir, f"back_frame.png")  #view and frame 
+        scene.render.filepath = render_path
+        bpy.ops.render.render(write_still=True)
+        write_camera_metadata(os.path.join(output_dir, f"back.json"))
+        
+        place_camera(
+            0,
+            camera_pose_mode="random",
+            camera_dist_min=camera_dist_min,
+            camera_dist_max=camera_dist_max,
+            Direction_type='left'
+            )
+        bpy.context.scene.frame_set(frame)
+        render_path = os.path.join(output_dir, f"left_frame.png")  #view and frame 
+        scene.render.filepath = render_path
+        bpy.ops.render.render(write_still=True)
+        write_camera_metadata(os.path.join(output_dir, f"left.json"))
+        
+        place_camera(
+            0,
+            camera_pose_mode="random",
+            camera_dist_min=camera_dist_min,
+            camera_dist_max=camera_dist_max,
+            Direction_type='right'
+            )
+        bpy.context.scene.frame_set(frame)
+        render_path = os.path.join(output_dir, f"right_frame.png")  #view and frame 
+        scene.render.filepath = render_path
+        bpy.ops.render.render(write_still=True)
+        write_camera_metadata(os.path.join(output_dir, f"right.json"))
+        
         print(output_dir)
-        if  args.mode_static:
+    if  args.mode_static:
+        for frame in range(num_images):
             t = frame / max(num_images - 1, 1)
             place_camera(
                 t,
@@ -1029,7 +824,6 @@ def render_scene(
             print("render_path: ", render_path)
             bpy.ops.render.render(write_still=True)
             write_camera_metadata(os.path.join(output_dir, f"static{frame}.json"))   
-    print("\n\nOBJEKTUMOK LISTAJA: ",objects_path_list, "\n\n")
     
 
 
@@ -1051,7 +845,7 @@ def main():
         help="Paths of the object files",)
     parser.add_argument( #--separate
         "--separate",
-        type=bool,
+        type=int,
         required=True,
         help="Wether to render in group or separately",)
     parser.add_argument( #--output_dir
@@ -1064,11 +858,6 @@ def main():
         type=int,
         default=0,
         help="Current GPU id")
-    parser.add_argument( #--engine
-        "--engine", 
-        type=str, 
-        default="CYCLES", 
-        choices=["CYCLES", "BLENDER_EEVEE"])
     parser.add_argument( #--num_images
         "--num_images",
         type=int, 
@@ -1134,7 +923,7 @@ def main():
     render = scene.render
     
     # Set render settings
-    render.engine = args.engine
+    render.engine = "CYCLES"
     render.image_settings.file_format = "PNG"
     render.image_settings.color_mode = "RGBA"
     render.resolution_x = args.resolution

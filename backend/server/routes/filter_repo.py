@@ -66,7 +66,6 @@ example_filters = {
 
 @router.get("/options", response_model=Filters, status_code=200)
 def fetch_filters():
-    logger.debug("filters/options called")
     return example_filters
 
 @router.post("/apply", response_model=ThreeDObjectsModel, status_code=200)
@@ -76,7 +75,6 @@ def apply_filters(filters: Filters):
     If no filters are specified (all min/max values are None), return all available objects.
     """
     all_matching_ids = None
-    logger.debug("filters/apply called")
 
     for filter_item in filters.filters:
         # Skip filters where both min and max are None
@@ -109,7 +107,6 @@ def all_objects():
     """
     Give back all objects in the database.
     """
-    logger.debug("filters/allobjects called")
     try:
         ids = get_all()
         
@@ -157,8 +154,6 @@ def get_all():
         "glbs",
         "000-023"
     ))
-    # file_path = os.path.normpath(file_path)
-    print(file_path)
     
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"The file {file_path} does not exist.")

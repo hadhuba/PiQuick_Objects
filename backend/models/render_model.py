@@ -11,7 +11,6 @@ class RenderSettings(BaseModel):
     mode_static: bool = Field(default=False)
     mode_front_view: bool = Field(default=False)
     mode_four_view: bool = Field(default=False)
-    engine: str = Field(default="CYCLES")
     only_northern_hemisphere: bool = Field(default=True)
     separately: bool = Field(default=True)
 
