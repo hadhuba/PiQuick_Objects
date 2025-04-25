@@ -28,12 +28,6 @@ class _RenderPageState extends ConsumerState<RenderPage> {
     final selectedGroup = ref.watch(
       renderViewModelProvider.select((state) => state.selectedGroup),
     );
-    final downloadStatus = ref.watch(
-      renderViewModelProvider.select((state) => state.downloadStatus),
-    );
-    final downloadedFile = ref.watch(
-      renderViewModelProvider.select((state) => state.downloadedFile),
-    );
 
     return modelAsync.when(
       data: (_) {
@@ -47,19 +41,35 @@ class _RenderPageState extends ConsumerState<RenderPage> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                DropdownButton<String>(
-                  value: selectedGroup,
-                  hint: const Text('Select a Group'),
-                  items:
-                      groupNames.map((groupName) {
-                        return DropdownMenuItem<String>(
-                          value: groupName,
-                          child: Text(groupName),
-                        );
-                      }).toList(),
-                  onChanged: (value) {
-                    viewModel.selectGroup(value);
-                  },
+                Row(
+                  children: [
+                    DropdownButton<String>(
+                      value: selectedGroup,
+                      hint: const Text('Select a Group'),
+                      items:
+                          groupNames.map((groupName) {
+                            return DropdownMenuItem<String>(
+                              value: groupName,
+                              child: Text(groupName),
+                            );
+                          }).toList(),
+                      onChanged: (value) {
+                        viewModel.selectGroup(value);
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed:
+                          viewModel.isDownloading()
+                              ? null // Disable button while downloading
+                              : () => viewModel.sendSettings(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Apply & Send to Server'),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 20),
 
@@ -69,20 +79,10 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                       viewModel: viewModel.settingsFormViewModel,
                     ),
                   ),
-                ElevatedButton(
-                  onPressed:
-                      viewModel.isDownloading()
-                          ? null // Disable button while downloading
-                          : () => viewModel.sendSettings(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Apply & Send to Server'),
-                ),
 
                 // File Download Status & Controls
-                if (downloadStatus != null || downloadedFile.isLoading)
+                if (ref.watch(renderViewModelProvider).downloadStatus != null ||
+                    ref.watch(renderViewModelProvider).downloadedFile.isLoading)
                   _buildDownloadStatusCard(viewModel),
               ],
             ),
@@ -172,26 +172,6 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                       ],
                     );
                   }
-
-                  // Handle non-201 status code errors
-                  if (downloadStatus?.contains("Error") == true) {
-                    return Row(
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            'An error occurred during the download. Please try again.',
-                            style: TextStyle(color: Colors.red),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => viewModel.resetDownload(),
-                          tooltip: 'Dismiss',
-                        ),
-                      ],
-                    );
-                  }
                   return const SizedBox.shrink();
                 } else {
                   // On mobile/desktop, we provide a button to open the downloaded file
@@ -212,7 +192,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                         const SizedBox(width: 8),
                         IconButton(
                           icon: const Icon(Icons.close),
-                          onPressed: () => viewModel.resetDownload(),
+                          onPressed: () => viewModel.dismissRender(),
                           tooltip: 'Dismiss',
                         ),
                       ],
