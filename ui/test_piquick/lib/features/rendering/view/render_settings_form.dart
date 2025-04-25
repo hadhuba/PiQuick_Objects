@@ -192,34 +192,6 @@ class _RenderSettingsFormState extends ConsumerState<RenderSettingsForm> {
                   viewModel: viewModel,
                 ),
                 _createSettingField(
-                  fieldId: 'engine',
-                  child: DropdownButtonFormField<String>(
-                    value: viewModel.formModel.engineValue,
-                    decoration: InputDecoration(
-                      labelText: RenderSettings.getLabel('engine'),
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 'CYCLES', child: Text('CYCLES')),
-                      DropdownMenuItem(
-                        value: 'BLENDER_EEVEE',
-                        child: Text('BLENDER_EEVEE'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        viewModel.formModel.engineValue = value ?? 'CYCLES';
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select an engine';
-                      }
-                      return null;
-                    },
-                  ),
-                  viewModel: viewModel,
-                ),
-                _createSettingField(
                   fieldId: 'onlyNorthernHemisphere',
                   child: SwitchListTile(
                     title: Text(

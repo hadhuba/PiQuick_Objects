@@ -61,10 +61,6 @@ class RenderViewModel extends _$RenderViewModel {
     final newSettings =
         settingsFormViewModel.state.formModel.toRenderSettings();
     updateGroupSettings(event.groupName, newSettings);
-
-    if (event.shouldSendToServer) {
-      sendSettings();
-    }
   }
 
   void _handleSendSettingsEvent(SendSettingsEvent event) {
@@ -208,6 +204,10 @@ class RenderViewModel extends _$RenderViewModel {
   }
 
   void sendSettings() async {
+    final newSettings =
+      settingsFormViewModel.state.formModel.toRenderSettings();
+      updateGroupSettings(settingsFormViewModel.state.groupName, newSettings);
+    
     state = state.copyWith(
       downloadStatus: "Sending rendering request...",
       downloadedFile: const AsyncValue.loading(),

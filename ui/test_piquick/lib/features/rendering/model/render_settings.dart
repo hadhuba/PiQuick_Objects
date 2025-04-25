@@ -10,7 +10,6 @@ class RenderSettings {
   bool modeStatic;
   bool modeFrontView;
   bool modeFourView;
-  String engine;
   bool onlyNorthernHemisphere;
   bool separately;
 
@@ -24,7 +23,6 @@ class RenderSettings {
     'modeStatic': 'Static Multi-View Mode',
     'modeFrontView': 'Front View Mode',
     'modeFourView': 'Four View Mode',
-    'engine': 'Rendering Engine',
     'onlyNorthernHemisphere': 'Only Northern Hemisphere',
     'separately': 'Render Separately',
   };
@@ -47,8 +45,6 @@ class RenderSettings {
         'If enabled, images will be rendered from "time 0, view front" to "time T, view front". The front view changes with azimuth augmentation.',
     'modeFourView':
         'If enabled, images will be rendered from "time 0, view front/left/right/back" to "time T, view front/left/right/back".',
-    'engine':
-        'The rendering engine to use (CYCLES for photorealistic or BLENDER_EEVEE for faster rendering).',
     'onlyNorthernHemisphere':
         'If enabled, only renders from the top hemisphere of viewing angles. This is useful for objects acquired via photogrammetry, as the southern hemisphere may have holes',
     'separately':
@@ -74,7 +70,6 @@ class RenderSettings {
     this.modeStatic = false,
     this.modeFrontView = false,
     this.modeFourView = false,
-    this.engine = 'CYCLES',
     this.onlyNorthernHemisphere = true,
     this.separately = true,
   });
@@ -88,7 +83,6 @@ class RenderSettings {
     bool? modeStatic,
     bool? modeFrontView,
     bool? modeFourView,
-    String? engine,
     bool? onlyNorthernHemisphere,
     bool? separately,
   }) {
@@ -101,7 +95,6 @@ class RenderSettings {
       modeStatic: modeStatic ?? this.modeStatic,
       modeFrontView: modeFrontView ?? this.modeFrontView,
       modeFourView: modeFourView ?? this.modeFourView,
-      engine: engine ?? this.engine,
       onlyNorthernHemisphere:
           onlyNorthernHemisphere ?? this.onlyNorthernHemisphere,
       separately: separately ?? this.separately,
@@ -119,7 +112,6 @@ class RenderSettings {
       'mode_static': modeStatic,
       'mode_front_view': modeFrontView,
       'mode_four_view': modeFourView,
-      'engine': engine,
       'only_northern_hemisphere': onlyNorthernHemisphere,
       'separately': separately,
     };
@@ -136,7 +128,6 @@ class RenderSettings {
       modeStatic: map['mode_static'] ?? map['modeStatic'] as bool,
       modeFrontView: map['mode_front_view'] ?? map['modeFrontView'] as bool,
       modeFourView: map['mode_four_view'] ?? map['modeFourView'] as bool,
-      engine: map['engine'] as String,
       onlyNorthernHemisphere:
           map['only_northern_hemisphere'] ??
           map['onlyNorthernHemisphere'] as bool,

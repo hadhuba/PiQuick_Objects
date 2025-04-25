@@ -19,6 +19,7 @@ import bpy
 import numpy as np
 from mathutils import Matrix, Vector
 import os
+
 # import imageio
 # from skimage.metrics import structural_similarity as ssim
 
@@ -415,7 +416,7 @@ def load_objects(objects_paths: str) -> None:
     """Loads a model with a supported file extension into the scene.
 
     Args:
-        object_path (str): Path to the model file.
+        objects_paths (str): Comma-separated paths to the model files.
 
     Raises:
         ValueError: If the file extension is not supported.
@@ -426,7 +427,7 @@ def load_objects(objects_paths: str) -> None:
     # Convert the objects_paths string into a list  
     objects_path_list = objects_paths.split(',')
 
-    #single object
+    # Single object
     if len(objects_path_list) == 1: 
         object_path = objects_path_list[0]
 
@@ -435,20 +436,20 @@ def load_objects(objects_paths: str) -> None:
             raise ValueError(f"Unsupported file type: {object_path}")
 
         if file_extension == "usdz":
-            # install usdz io package
+            # Install usdz io package
             dirname = os.path.dirname(os.path.realpath(__file__))
             usdz_package = os.path.join(dirname, "io_scene_usdz.zip")
             bpy.ops.preferences.addon_install(filepath=usdz_package)
-            # enable it
+            # Enable it
             addon_name = "io_scene_usdz"
             bpy.ops.preferences.addon_enable(module=addon_name)
-            # import the usdz
+            # Import the usdz
             from io_scene_usdz.import_usdz import import_usdz
 
             import_usdz(context, filepath=object_path, materials=True, animations=True)
             return None
 
-        # load from existing import functions
+        # Load from existing import functions
         import_function = IMPORT_FUNCTIONS[file_extension]
 
         if file_extension == "blend":
@@ -457,19 +458,29 @@ def load_objects(objects_paths: str) -> None:
             import_function(filepath=object_path, merge_vertices=True)
         else:
             import_function(filepath=object_path)
-    #multiple objects
-    else: #len(objects_path_list) > 1:
-        spacing = 2.0 
-        for index, object_path in enumerate(objects_path_list):
+    # Multiple objects
+    else:
+        offset = 5  
+        grid_size = math.ceil(math.sqrt(len(objects_path_list))) 
 
-            file_extension = object_path.split(".")[-1].lower()
-            if file_extension is None:
-                raise ValueError(f"Unsupported file type: {object_path}")
+        for index, path in enumerate(objects_path_list):
+            if os.path.exists(path):
+                bpy.ops.import_scene.gltf(filepath=path)
 
-            elif file_extension in {"glb", "gltf"}: # just this one 
-                bpy.ops.import_scene.gltf(filepath=object_path)
-                imported_object = bpy.context.selected_objects[0]
-                imported_object.location.x = index * spacing
+                # Get the newly imported objects
+                imported_objects = bpy.context.selected_objects
+
+                # Calculate the grid position
+                row = index // grid_size
+                col = index % grid_size
+                position = (col * offset, row * offset, 0)
+
+                # Move the imported objects to the calculated position
+                for obj in imported_objects:
+                    obj.location = position
+            else:
+                print(f"File not found: {path}")
+    return objects_path_list
 
 
            
@@ -838,7 +849,7 @@ def render_scene(
     reset_scene()
     # reset_cameras()
     # delete_invisible_objects()
-    load_objects(objects_paths)
+    objects_path_list = load_objects(objects_paths)
 
     # Set up cameras
     # cam = scene.objects["Camera"]
@@ -1018,6 +1029,7 @@ def render_scene(
             print("render_path: ", render_path)
             bpy.ops.render.render(write_still=True)
             write_camera_metadata(os.path.join(output_dir, f"static{frame}.json"))   
+    print("\n\nOBJEKTUMOK LISTAJA: ",objects_path_list, "\n\n")
     
 
 
@@ -1115,6 +1127,7 @@ def main():
     args = parser.parse_args(argv)
 
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_id)
+    os.environ['PYTHONPATH'] = ''
 
     context = bpy.context
     scene = context.scene
@@ -1137,10 +1150,16 @@ def main():
     scene.cycles.filter_width = 0.01
     scene.cycles.use_denoising = True
     scene.render.film_transparent = True
-    bpy.context.preferences.addons["cycles"].preferences.get_devices()
-    bpy.context.preferences.addons[
-        "cycles"
-    ].preferences.compute_device_type = "CUDA"  # or "OPENCL"
+    
+    try:
+        bpy.context.preferences.addons["cycles"].preferences.get_devices()
+        bpy.context.preferences.addons[
+            "cycles"
+        ].preferences.compute_device_type = "CUDA"  # or "OPENCL"
+    except Exception as e:
+        print(f"Warning: Could not set CUDA devices: {e}")
+        print("Falling back to CPU rendering")
+        scene.cycles.device = "CPU"
 
     # print(f"starting render of: {objects_path_list}")
     render_scene(

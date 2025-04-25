@@ -9,12 +9,10 @@ abstract class RenderEvent {
 class SaveSettingsEvent extends RenderEvent {
   final String groupName;
   final RenderSettings settings; // A beállítások objektum
-  final bool shouldSendToServer;
 
   const SaveSettingsEvent({
     required this.groupName,
     required this.settings,
-    this.shouldSendToServer = false,
   });
 }
 

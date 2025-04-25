@@ -5,7 +5,6 @@ import 'package:test_piquick/features/rendering/model/render_settings.dart';
 class SettingsFormModel {
   TextEditingController numImagesController;
   TextEditingController resolutionController;
-  String engineValue;
 
   // Boolean form values
   bool azimuthAug;
@@ -26,7 +25,6 @@ class SettingsFormModel {
   SettingsFormModel({
     required this.numImagesController,
     required this.resolutionController,
-    required this.engineValue,
     required this.azimuthAug,
     required this.elevationAug,
     required this.modeMulti,
@@ -46,7 +44,6 @@ class SettingsFormModel {
       resolutionController: TextEditingController(
         text: settings.resolution.toString(),
       ),
-      engineValue: settings.engine,
       azimuthAug: settings.azimuthAug,
       elevationAug: settings.elevationAug,
       modeMulti: settings.modeMulti,
@@ -63,7 +60,6 @@ class SettingsFormModel {
     return SettingsFormModel(
       numImagesController: TextEditingController(text: "12"),
       resolutionController: TextEditingController(text: "256"),
-      engineValue: "CYCLES",
       azimuthAug: true,
       elevationAug: false,
       modeMulti: true,
@@ -91,7 +87,6 @@ class SettingsFormModel {
     return RenderSettings(
       numImages: int.tryParse(numImagesController.text) ?? 12,
       resolution: int.tryParse(resolutionController.text) ?? 256,
-      engine: engineValue,
       azimuthAug: azimuthAug,
       elevationAug: elevationAug,
       modeMulti: modeMulti,
