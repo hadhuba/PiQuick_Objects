@@ -45,7 +45,8 @@ class _RenderSettingsFormState extends ConsumerState<RenderSettingsForm> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = widget.viewModel;
+    // final viewModel = widget.viewModel;
+    final viewModel = ref.watch(settingsFormViewModelProvider.notifier);
     // Force rebuild when download status changes
     return Column(
       children: [

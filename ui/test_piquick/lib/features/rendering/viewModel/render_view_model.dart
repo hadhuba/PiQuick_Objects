@@ -40,7 +40,7 @@ class RenderViewModel extends _$RenderViewModel {
       _eventSubscription?.cancel();
     });
 
-    return RenderState(renderModel: AsyncValue.loading());
+    return RenderState(renderModel: AsyncValue.loading(), groupNames: []);
   }
 
   void _setupEventListeners() {
@@ -78,6 +78,11 @@ class RenderViewModel extends _$RenderViewModel {
     return settingsFormViewModel;
   }
 
+  SettingsFormViewModel emptySettingsForm() {
+    settingsFormViewModel.initialize(groupName: null, settings: null);
+    return settingsFormViewModel;
+  }
+
   void updateRender({required ObjectGroups groupedObjects}) {
     // Get current render model if available to preserve existing settings
     final currentRenderModel = state.renderModel.valueOrNull;
@@ -87,6 +92,17 @@ class RenderViewModel extends _$RenderViewModel {
 
     // Process each group in the new object list
     final Set<String> groupNames = groupedObjects.groups.keys.toSet();
+
+    if (groupNames.isEmpty) {
+      // If no groups exist, reset the model and selected group
+      state = state.copyWith(
+        renderModel: AsyncValue.data(RenderModel(groups: [])),
+        selectedGroup: null,
+        groupNames: [],
+      );
+      return;
+    }
+
     for (final groupName in groupNames) {
       final objectIds = groupedObjects.groups[groupName] ?? [];
 
@@ -112,19 +128,27 @@ class RenderViewModel extends _$RenderViewModel {
     // If currently selected group no longer exists, select a new one or null
     if (updatedSelectedGroup != null &&
         !groupNames.contains(updatedSelectedGroup)) {
-      updatedSelectedGroup = null;
+      updatedSelectedGroup = groupNames.isNotEmpty ? groupNames.first : null;
     }
+    // If no group is selected but groups are available, select the first one
+    else if (updatedSelectedGroup == null && groupNames.isNotEmpty) {
+      updatedSelectedGroup = groupNames.first;
+    }
+
     final newRenderModel = RenderModel(groups: newGroups);
 
     // Update state with new model AND potentially new selection
     state = state.copyWith(
       renderModel: AsyncValue.data(newRenderModel),
       selectedGroup: updatedSelectedGroup,
+      groupNames: groupNames.toList(),
     );
 
     // Update the form if there's a selected group
     if (updatedSelectedGroup != null) {
       createOrUpdateSettingsForm(updatedSelectedGroup);
+    } else {
+      emptySettingsForm();
     }
   }
 
@@ -136,19 +160,10 @@ class RenderViewModel extends _$RenderViewModel {
         [];
   }
 
-  String? getSelectedGroup() {
-    return state.selectedGroup;
-  }
-
   RenderSettings? getSettingsForGroup(String groupName) {
     return state.renderModel
         .whenData((renderModel) => renderModel.get(groupName)?.settings)
         .valueOrNull;
-  }
-
-  RenderSettings? getSelectedGroupSettings() {
-    if (state.selectedGroup == null) return null;
-    return getSettingsForGroup(state.selectedGroup!);
   }
 
   bool isDownloading() {

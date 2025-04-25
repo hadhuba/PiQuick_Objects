@@ -100,16 +100,24 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                             // Add onSubmitted to handle Enter key press
                                             onSubmitted: (value) {
                                               final groupName = value.trim();
-                                              if (groupName.isNotEmpty) {
-                                                ref
-                                                    .read(
-                                                      pickerViewModelProvider
-                                                          .notifier,
-                                                    )
-                                                    .newGroup(
-                                                      groupname: groupName,
-                                                    );
+
+                                              final errorMessage = ref
+                                                  .read(
+                                                    pickerViewModelProvider
+                                                        .notifier,
+                                                  )
+                                                  .newGroup(
+                                                    groupname: groupName,
+                                                  );
+
+                                              if (errorMessage == null) {
                                                 Navigator.of(context).pop();
+                                              } else {
+                                                // Show error as snackbar
+                                                showSnackBar(
+                                                  context,
+                                                  errorMessage,
+                                                );
                                               }
                                             },
                                           ),
@@ -125,16 +133,23 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                                 final groupName =
                                                     groupNameController.text
                                                         .trim();
-                                                if (groupName.isNotEmpty) {
-                                                  ref
-                                                      .read(
-                                                        pickerViewModelProvider
-                                                            .notifier,
-                                                      )
-                                                      .newGroup(
-                                                        groupname: groupName,
-                                                      );
+                                                final errorMessage = ref
+                                                    .read(
+                                                      pickerViewModelProvider
+                                                          .notifier,
+                                                    )
+                                                    .newGroup(
+                                                      groupname: groupName,
+                                                    );
+
+                                                if (errorMessage == null) {
                                                   Navigator.of(context).pop();
+                                                } else {
+                                                  // Show error as snackbar
+                                                  showSnackBar(
+                                                    context,
+                                                    errorMessage,
+                                                  );
                                                 }
                                               },
                                               child: const Text('Create'),

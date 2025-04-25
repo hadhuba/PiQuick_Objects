@@ -21,7 +21,6 @@ class _RenderPageState extends ConsumerState<RenderPage> {
   Widget build(BuildContext context) {
     // Watch specific parts of the state to ensure we react to all relevant changes
     final viewModel = ref.watch(renderViewModelProvider.notifier);
-
     // Watch all these state selectors separately to ensure rebuilds happen properly
     final modelAsync = ref.watch(
       renderViewModelProvider.select((state) => state.renderModel),
@@ -35,11 +34,12 @@ class _RenderPageState extends ConsumerState<RenderPage> {
     final downloadedFile = ref.watch(
       renderViewModelProvider.select((state) => state.downloadedFile),
     );
-    
 
     return modelAsync.when(
       data: (_) {
-        final groupNames = viewModel.getGroupNames();
+        final groupNames = ref.watch(
+          renderViewModelProvider.select((state) => state.groupNames),
+        );
 
         return Scaffold(
           appBar: AppBar(title: const Text('Render Settings')),
@@ -62,6 +62,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                   },
                 ),
                 const SizedBox(height: 20),
+
                 if (selectedGroup != null)
                   Expanded(
                     child: RenderSettingsForm(

@@ -60,8 +60,6 @@ class PickerViewModel extends _$PickerViewModel {
   }
 
   void updateObj(String newObj) {
-    print('pressed id: ${newObj}');
-
     // Set the state to loading while the object is being fetched
     state = state.copyWith(viewer3DState: const AsyncValue.loading());
 
@@ -120,15 +118,27 @@ class PickerViewModel extends _$PickerViewModel {
     );
   }
 
-  void newGroup({required String groupname}) {
-    state.groupedObjects.whenData(
-      (groups) =>
-          (state = state.copyWith(
-            groupedObjects: AsyncValue.data(
-              groups.createGroup(groupName: groupname),
-            ),
-          )),
-    );
+  String? newGroup({required String groupname}) {
+    if (groupname.trim().isEmpty) {
+      return "Group name cannot be empty";
+    }
+
+    // Check if the group already exists
+    String? errorMessage;
+    state.groupedObjects.whenData((groups) {
+      if (groups.groups.containsKey(groupname)) {
+        errorMessage = "A group with name '$groupname' already exists";
+      } else {
+        // Group doesn't exist, create it
+        state = state.copyWith(
+          groupedObjects: AsyncValue.data(
+            groups.createGroup(groupName: groupname),
+          ),
+        );
+      }
+    });
+
+    return errorMessage;
   }
 
   void removeGroup({required String groupname}) {
