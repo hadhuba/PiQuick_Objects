@@ -166,7 +166,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                         const SizedBox(width: 8),
                         IconButton(
                           icon: const Icon(Icons.close),
-                          onPressed: () => viewModel.resetDownload(),
+                          onPressed: () => viewModel.dismissRender(),
                           tooltip: 'Dismiss',
                         ),
                       ],

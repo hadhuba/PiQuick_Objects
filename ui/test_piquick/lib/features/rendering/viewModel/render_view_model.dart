@@ -1,3 +1,4 @@
+import 'package:flutter/src/widgets/framework.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/picker/model/object_groups_model.dart';
@@ -234,6 +235,10 @@ class RenderViewModel extends _$RenderViewModel {
   }
 
   void resetDownload() {
+    sendSettings();
+  }
+
+  void dismissRender() {
     state = state.copyWith(
       downloadedFile: const AsyncValue.data(null),
       downloadStatus: null,
