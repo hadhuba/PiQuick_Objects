@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:test_piquick/features/filters/repository/filter_remote_repository.dart';
+import 'package:test_piquick/features/filters/model/repository/filter_remote_repository.dart';
 import 'package:test_piquick/features/filters/viewModel/states/filters_state.dart';
 
 part 'filters_view_model.g.dart';

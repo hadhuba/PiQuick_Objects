@@ -66,18 +66,6 @@ class SettingsFormModel {
       separately: true,
     );
   }
-
-  /// Updates image count based on selected view modes
-  void updateImagesForViewMode() {
-    if (modeFrontView) {
-      // Server will use 1 image for front view mode
-      numImagesController.text = numImagesController.text;
-    } else if (modeFourView) {
-      // Server will use 4 images for four view mode
-      numImagesController.text = numImagesController.text;
-    }
-  }
-
   /// Convert form values to RenderSettings object
   RenderSettings toRenderSettings() {
     return RenderSettings(

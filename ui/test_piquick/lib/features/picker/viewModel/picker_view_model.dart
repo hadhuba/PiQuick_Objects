@@ -2,7 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/filters/viewModel/states/filters_state.dart';
 import 'package:test_piquick/features/filters/viewModel/filters_view_model.dart';
-import 'package:test_piquick/features/picker/repository/picker_remote_repository.dart';
+import 'package:test_piquick/features/picker/model/repository/picker_remote_repository.dart';
 import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
 import 'package:test_piquick/features/picker/viewModel/states/viewer_3d_state.dart';
 

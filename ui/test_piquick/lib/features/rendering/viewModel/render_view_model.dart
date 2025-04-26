@@ -7,7 +7,7 @@ import 'package:test_piquick/features/rendering/model/group.dart';
 import 'package:test_piquick/features/rendering/model/render_events.dart';
 import 'package:test_piquick/features/rendering/model/render_model.dart';
 import 'package:test_piquick/features/rendering/model/render_settings.dart';
-import 'package:test_piquick/features/rendering/repository/render_remote_repository.dart';
+import 'package:test_piquick/features/rendering/model/repository/render_remote_repository.dart';
 import 'package:test_piquick/features/rendering/viewModel/render_event_bus.dart';
 import 'package:test_piquick/features/rendering/viewModel/settings_form_view_model.dart';
 import 'package:test_piquick/features/rendering/viewModel/states/render_state.dart';

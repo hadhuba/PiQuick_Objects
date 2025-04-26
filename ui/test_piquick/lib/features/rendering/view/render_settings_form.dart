@@ -158,7 +158,6 @@ class _RenderSettingsFormState extends ConsumerState<RenderSettingsForm> {
                     onChanged: (value) {
                       setState(() {
                         viewModel.formModel.modeFrontView = value;
-                        viewModel.formModel.updateImagesForViewMode();
                       });
                     },
                   ),
@@ -172,7 +171,6 @@ class _RenderSettingsFormState extends ConsumerState<RenderSettingsForm> {
                     onChanged: (value) {
                       setState(() {
                         viewModel.formModel.modeFourView = value;
-                        viewModel.formModel.updateImagesForViewMode();
                       });
                     },
                   ),
