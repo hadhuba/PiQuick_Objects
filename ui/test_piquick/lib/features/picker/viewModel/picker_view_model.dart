@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/filters/viewModel/states/filters_state.dart';
@@ -12,6 +14,7 @@ part 'picker_view_model.g.dart';
 @riverpod
 class PickerViewModel extends _$PickerViewModel {
   late PickerRemoteRepository _pickerRemoteRepository;
+  StreamSubscription? _eventSubscription;
 
   @override
   PickerState build() {
@@ -39,8 +42,25 @@ class PickerViewModel extends _$PickerViewModel {
 
     Future.microtask(() => initHome());
 
+    _setupEventListeners();
+    ref.onDispose(() {
+      _eventSubscription?.cancel();
+    });
+
+
     return initialState;
   }
+
+  
+  void _setupEventListeners() {
+    final bus = ref.read(filterEventBusProvider);
+
+    _eventSubscription = bus.events.listen((event) {
+      if (event is FiltersAppliedEvent) {
+        _handleFiltersAppliedEvent(event);
+      }  }
+      );
+    }
 
   Future<void> initHome() async {
     state =  state.copyWith(

@@ -40,7 +40,6 @@ class FiltersViewModel extends _$FiltersViewModel {
         // Update the state with the modified filters
         state = state.copyWith(filters: AsyncValue.data(filters));
       }
-      print('Updated filters: $filters');
     });
   }
 

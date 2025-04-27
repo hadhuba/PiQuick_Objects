@@ -1,3 +1,7 @@
+// FiltersPage: A Flutter widget that provides an interface for applying filters
+// to a list of 3D objects. Features dynamic min/max value inputs for each filter type
+// and real-time object list updates.
+
 import 'package:flutter/material.dart';
 import 'package:test_piquick/core/widgets/loader.dart';
 import 'package:test_piquick/features/filters/viewModel/filters_view_model.dart';
@@ -11,13 +15,11 @@ class FiltersPage extends ConsumerStatefulWidget {
 }
 
 class _FiltersPageState extends ConsumerState<FiltersPage> {
-  final formKey = GlobalKey<FormState>(); //is it necessary?
+  final formKey = GlobalKey<FormState>();
 
-  //TODO necessary?
   @override
   void dispose() {
     super.dispose();
-    // formKey.currentState!.validate();
   }
 
   @override
@@ -28,7 +30,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
     final objects = ref.watch(filtersViewModelProvider).objectsList;
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(title: const Text('Filters'), centerTitle: true),
       body:
           isLoading
               ? const Loader()
@@ -45,142 +47,386 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
-                          'Objects',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
                         Expanded(
-                          child: objects.when(
-                            data:
-                                (objectsList) => ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: objectsList.length,
-                                  itemBuilder: (context, index) {
-                                    final object = objectsList[index];
-                                    return Text(
-                                      object,
-                                    ); // Display the ID of each object
-                                  },
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Card(
+                                  elevation: 4,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Filters',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+                                        const Divider(),
+                                        const SizedBox(height: 8),
+                                        Expanded(
+                                          child:
+                                              filtersList == null ||
+                                                      filtersList.isEmpty
+                                                  ? const Center(
+                                                    child: Text(
+                                                      'No filters available',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
+                                                  )
+                                                  : ListView.separated(
+                                                    itemCount:
+                                                        filtersList.length,
+                                                    separatorBuilder:
+                                                        (context, index) =>
+                                                            const Divider(
+                                                              height: 1,
+                                                            ),
+                                                    itemBuilder: (
+                                                      context,
+                                                      index,
+                                                    ) {
+                                                      final filter =
+                                                          filtersList[index];
+                                                      return Padding(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              vertical: 8.0,
+                                                            ),
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Tooltip(
+                                                              message:
+                                                                  filter
+                                                                      .description ??
+                                                                  '',
+                                                              child: Text(
+                                                                filter.type,
+                                                                style: const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize: 16,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                              height: 8,
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                Expanded(
+                                                                  child: Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      const Text(
+                                                                        'Min:',
+                                                                        style: TextStyle(
+                                                                          fontSize:
+                                                                              12,
+                                                                        ),
+                                                                      ),
+                                                                      TextFormField(
+                                                                        initialValue:
+                                                                            filter.minValue?.toString(),
+                                                                        decoration: InputDecoration(
+                                                                          isDense:
+                                                                              true,
+                                                                          contentPadding: const EdgeInsets.symmetric(
+                                                                            vertical:
+                                                                                10,
+                                                                            horizontal:
+                                                                                10,
+                                                                          ),
+                                                                          border: OutlineInputBorder(
+                                                                            borderRadius: BorderRadius.circular(
+                                                                              8,
+                                                                            ),
+                                                                          ),
+                                                                          hintText:
+                                                                              'Min',
+                                                                        ),
+                                                                        keyboardType:
+                                                                            TextInputType.number,
+                                                                        onChanged: (
+                                                                          value,
+                                                                        ) {
+                                                                          final num?
+                                                                          newMin =
+                                                                              value.isEmpty
+                                                                                  ? null
+                                                                                  : num.tryParse(
+                                                                                    value,
+                                                                                  );
+                                                                          ref
+                                                                              .read(
+                                                                                filtersViewModelProvider.notifier,
+                                                                              )
+                                                                              .updateFilter(
+                                                                                type:
+                                                                                    filter.type,
+                                                                                minValue:
+                                                                                    newMin,
+                                                                                maxValue:
+                                                                                    filter.maxValue,
+                                                                              );
+                                                                        },
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(
+                                                                  width: 16,
+                                                                ),
+                                                                Expanded(
+                                                                  child: Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      const Text(
+                                                                        'Max:',
+                                                                        style: TextStyle(
+                                                                          fontSize:
+                                                                              12,
+                                                                        ),
+                                                                      ),
+                                                                      TextFormField(
+                                                                        initialValue:
+                                                                            filter.maxValue?.toString(),
+                                                                        decoration: InputDecoration(
+                                                                          isDense:
+                                                                              true,
+                                                                          contentPadding: const EdgeInsets.symmetric(
+                                                                            vertical:
+                                                                                10,
+                                                                            horizontal:
+                                                                                10,
+                                                                          ),
+                                                                          border: OutlineInputBorder(
+                                                                            borderRadius: BorderRadius.circular(
+                                                                              8,
+                                                                            ),
+                                                                          ),
+                                                                          hintText:
+                                                                              'Max',
+                                                                        ),
+                                                                        keyboardType:
+                                                                            TextInputType.number,
+                                                                        onChanged: (
+                                                                          value,
+                                                                        ) {
+                                                                          final num?
+                                                                          newMax =
+                                                                              value.isEmpty
+                                                                                  ? null
+                                                                                  : num.tryParse(
+                                                                                    value,
+                                                                                  );
+                                                                          ref
+                                                                              .read(
+                                                                                filtersViewModelProvider.notifier,
+                                                                              )
+                                                                              .updateFilter(
+                                                                                type:
+                                                                                    filter.type,
+                                                                                minValue:
+                                                                                    filter.minValue,
+                                                                                maxValue:
+                                                                                    newMax,
+                                                                              );
+                                                                        },
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                            loading:
-                                () =>
-                                    const CircularProgressIndicator(), // Show a loader while loading
-                            error:
-                                (error, stackTrace) =>
-                                    Text('Error: $error'), // Show error message
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Filters',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Expanded(
-                          // Ensure ListView.builder has a constrained height
-                          child: ListView.builder(
-                            itemCount: filtersList!.length, //TODO null check
+                              ),
 
-                            itemBuilder: (context, index) {
-                              final filter = filtersList[index];
-                              return ListTile(
-                                title: Tooltip(
-                                  message: filter.description ?? '',
-                                  child: Text(filter.type),
-                                ),
-                                subtitle: Row(
-                                  children: [
-                                    const Text('Min: '),
-                                    SizedBox(
-                                      width: 60,
-                                      child: TextFormField(
-                                        initialValue:
-                                            filter.minValue?.toString(),
-                                        decoration: const InputDecoration(
-                                          isDense: true,
-                                          contentPadding: EdgeInsets.symmetric(
-                                            vertical: 8,
-                                            horizontal: 4,
+                              const SizedBox(width: 16),
+
+                              Expanded(
+                                child: Card(
+                                  elevation: 4,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        objects.when(
+                                          data:
+                                              (objectsList) => Text(
+                                                'Objects (${objectsList.length})',
+                                                style: const TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.blue,
+                                                ),
+                                              ),
+                                          loading:
+                                              () => const Text(
+                                                'Objects (loading...)',
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.blue,
+                                                ),
+                                              ),
+                                          error:
+                                              (_, __) => const Text(
+                                                'Objects (error)',
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.blue,
+                                                ),
+                                              ),
+                                        ),
+                                        const Divider(),
+                                        const SizedBox(height: 8),
+                                        Expanded(
+                                          child: objects.when(
+                                            data:
+                                                (objectsList) =>
+                                                    objectsList.isEmpty
+                                                        ? const Center(
+                                                          child: Text(
+                                                            'No objects match the current filters',
+                                                            textAlign:
+                                                                TextAlign
+                                                                    .center,
+                                                            style: TextStyle(
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              color:
+                                                                  Colors.grey,
+                                                            ),
+                                                          ),
+                                                        )
+                                                        : ListView.builder(
+                                                          shrinkWrap: true,
+                                                          itemCount:
+                                                              objectsList
+                                                                  .length,
+                                                          itemBuilder: (
+                                                            context,
+                                                            index,
+                                                          ) {
+                                                            final object =
+                                                                objectsList[index];
+                                                            return Card(
+                                                              elevation: 2,
+                                                              margin:
+                                                                  const EdgeInsets.symmetric(
+                                                                    vertical: 4,
+                                                                  ),
+                                                              child: ListTile(
+                                                                title: Text(
+                                                                  object,
+                                                                  style:
+                                                                      const TextStyle(
+                                                                        fontSize:
+                                                                            14,
+                                                                      ),
+                                                                ),
+                                                                dense: true,
+                                                              ),
+                                                            );
+                                                          },
+                                                        ),
+                                            loading:
+                                                () => const Center(
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                ),
+                                            error:
+                                                (error, stackTrace) => Center(
+                                                  child: Text(
+                                                    'Error: $error',
+                                                    style: const TextStyle(
+                                                      color: Colors.red,
+                                                    ),
+                                                  ),
+                                                ),
                                           ),
                                         ),
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (value) {
-                                          final num? newMin =
-                                              value.isEmpty
-                                                  ? null
-                                                  : num.tryParse(value);
-                                          ref
-                                              .read(
-                                                filtersViewModelProvider
-                                                    .notifier,
-                                              )
-                                              .updateFilter(
-                                                type: filter.type,
-                                                minValue: newMin,
-                                                maxValue: filter.maxValue,
-                                              );
-                                        },
-                                      ),
+                                      ],
                                     ),
-                                    const SizedBox(width: 12),
-                                    const Text('Max: '),
-                                    SizedBox(
-                                      width: 60,
-                                      child: TextFormField(
-                                        initialValue:
-                                            filter.maxValue?.toString(),
-                                        decoration: const InputDecoration(
-                                          isDense: true,
-                                          contentPadding: EdgeInsets.symmetric(
-                                            vertical: 8,
-                                            horizontal: 4,
-                                          ),
-                                        ),
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (value) {
-                                          final num? newMax =
-                                              value.isEmpty
-                                                  ? null
-                                                  : num.tryParse(value);
-                                          ref
-                                              .read(
-                                                filtersViewModelProvider
-                                                    .notifier,
-                                              )
-                                              .updateFilter(
-                                                type: filter.type,
-                                                minValue: filter.minValue,
-                                                maxValue: newMax,
-                                              );
-                                        },
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              );
-                            },
+                              ),
+                            ],
                           ),
                         ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            ref
-                                .read(filtersViewModelProvider.notifier)
-                                .applyFilters();
-                            Navigator.of(context).pop();
-                            // Handle the fetched IDs
-                          },
-                          child: const Text('Apply Filters'),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                ref
+                                    .read(filtersViewModelProvider.notifier)
+                                    .applyFilters();
+                                Navigator.of(context).pop();
+                              },
+                              icon: const Icon(Icons.filter_alt),
+                              label: const Text('Apply Filters'),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            TextButton.icon(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              icon: const Icon(Icons.close),
+                              label: const Text('Cancel'),
+                            ),
+                          ],
                         ),
-                        // ElevatedButton(
-                        //   onPressed: () =>                           child: const Text('Close'),
-                        // ),
                       ],
                     ),
                   ),
