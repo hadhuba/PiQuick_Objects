@@ -21,54 +21,9 @@ class PickerRemoteRepository {
           Uri.parse(
             '${ServerConstants.serverUrl}/picker/updateobj',
           ).replace(queryParameters: {'newObj': newObj}).toString();
-
-      //check if obj is available
-      // Make the HTTP POST request
-      // final response = await http.post(
-      //   url,
-      //   headers: {'Content-Type': 'application/json'}, // Content-Type updated
-      // );
-
-      // final responseBody = jsonDecode(response.body);
-
-      // if (response.statusCode != 200) {
-      //   return Left(
-      //     AppFailure(responseBody['detail'] ?? 'Failed to fetch new object'),
-      //   );
-      // }
-
       return Right(url);
     } catch (e) {
       return Left(AppFailure(e.toString()));
     }
-  }
-
-  Future<Either<AppFailure, AsyncValue<List<String>>>> fetchObjects() async {
-    try {
-      // Skeleton code for an HTTP request
-      final url = Uri.parse('${ServerConstants.serverUrl}/picker/objects');
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        // Parse the response body (assuming it's a JSON array of strings)
-        final List<String> objects = List<String>.from(
-          jsonDecode(response.body) as List<dynamic>,
-        );
-        return Right(AsyncValue.data(objects));
-      } else {
-        // return Left(AppFailure('Failed to fetch objects: ${response.reasonPhrase}'));
-        return Right(AsyncValue.data([]));
-      }
-    } catch (e) {
-      // return Left(AppFailure(e.toString()));
-      return Right(AsyncValue.data([])); // Return an empty list on error
-    }
-  }
-
-  ObjectGroups fetchGroupedObjects() {
-    // Return an empty ObjectGroup initially
-    final emptyGroup = ObjectGroups(groups: {});
-
-    return emptyGroup;
   }
 }

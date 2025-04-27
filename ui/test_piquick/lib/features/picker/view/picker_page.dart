@@ -163,89 +163,112 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                 ),
                               ),
                               Expanded(
-                                child: ListView(
-                                  children:
-                                      groupedObjects.entries.map((entry) {
-                                        String groupName = entry.key;
-                                        List<String> items = entry.value;
-                                        return CustomExpansionTile(
-                                          // title: Text(groupName),
-                                          groupId: groupName,
-                                          selectedGroup:
-                                              ref
-                                                  .read(pickerViewModelProvider)
-                                                  .selectedGroup,
-                                          onGroupSelected:
-                                              ref
-                                                  .read(
-                                                    pickerViewModelProvider
-                                                        .notifier,
-                                                  )
-                                                  .selectGroup,
-                                          onRemove: () {
-                                            debugPrint(
-                                              'Remove button clicked for group: $groupName',
-                                            );
-                                            // Add logic to remove the entire group
-                                            ref
-                                                .read(
-                                                  pickerViewModelProvider
-                                                      .notifier,
-                                                )
-                                                .removeGroup(
-                                                  groupname: groupName,
-                                                );
-                                          },
+                                child:
+                                    groupedObjects.entries.isEmpty
+                                        ? const Center(
+                                          child: Text(
+                                            'No groups available. Create a new group to get started!',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        )
+                                        : ListView(
                                           children:
-                                              items.map((item) {
-                                                return ListTile(
-                                                  title: Row(
-                                                    children: [
-                                                      Expanded(
-                                                        child: GestureDetector(
-                                                          onTap: () {
-                                                            // saveObjToHistory(item);
-                                                            ref
-                                                                .read(
-                                                                  pickerViewModelProvider
-                                                                      .notifier,
-                                                                )
-                                                                .updateObj(
-                                                                  item,
-                                                                );
-                                                          },
-                                                          child: Text(item),
-                                                        ),
-                                                      ),
-                                                      IconButton(
-                                                        icon: const Icon(
-                                                          Icons
-                                                              .remove_circle_outline,
-                                                          color: Colors.red,
-                                                        ),
-                                                        onPressed: () {
-                                                          debugPrint(
-                                                            'Remove button clicked for: $item',
-                                                          );
-                                                          ref
-                                                              .read(
-                                                                pickerViewModelProvider
-                                                                    .notifier,
-                                                              )
-                                                              .removeFromGroup(
-                                                                groupname:
-                                                                    groupName,
-                                                                objectId: item,
-                                                              );
-                                                        },
-                                                      ),
-                                                    ],
-                                                  ),
+                                              groupedObjects.entries.map((
+                                                entry,
+                                              ) {
+                                                String groupName = entry.key;
+                                                List<String> items =
+                                                    entry.value;
+                                                return CustomExpansionTile(
+                                                  // title: Text(groupName),
+                                                  groupId: groupName,
+                                                  selectedGroup:
+                                                      ref
+                                                          .read(
+                                                            pickerViewModelProvider,
+                                                          )
+                                                          .selectedGroup,
+                                                  onGroupSelected:
+                                                      ref
+                                                          .read(
+                                                            pickerViewModelProvider
+                                                                .notifier,
+                                                          )
+                                                          .selectGroup,
+                                                  onRemove: () {
+                                                    debugPrint(
+                                                      'Remove button clicked for group: $groupName',
+                                                    );
+                                                    // Add logic to remove the entire group
+                                                    ref
+                                                        .read(
+                                                          pickerViewModelProvider
+                                                              .notifier,
+                                                        )
+                                                        .removeGroup(
+                                                          groupname: groupName,
+                                                        );
+                                                  },
+                                                  children:
+                                                      items.map((item) {
+                                                        return ListTile(
+                                                          title: Row(
+                                                            children: [
+                                                              Expanded(
+                                                                child: GestureDetector(
+                                                                  onTap: () {
+                                                                    // saveObjToHistory(item);
+                                                                    ref
+                                                                        .read(
+                                                                          pickerViewModelProvider
+                                                                              .notifier,
+                                                                        )
+                                                                        .updateObj(
+                                                                          item,
+                                                                        );
+                                                                  },
+                                                                  child: Text(
+                                                                    item,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              IconButton(
+                                                                icon: const Icon(
+                                                                  Icons
+                                                                      .remove_circle_outline,
+                                                                  color:
+                                                                      Colors
+                                                                          .red,
+                                                                ),
+                                                                onPressed: () {
+                                                                  debugPrint(
+                                                                    'Remove button clicked for: $item',
+                                                                  );
+                                                                  ref
+                                                                      .read(
+                                                                        pickerViewModelProvider
+                                                                            .notifier,
+                                                                      )
+                                                                      .removeFromGroup(
+                                                                        groupname:
+                                                                            groupName,
+                                                                        objectId:
+                                                                            item,
+                                                                      );
+                                                                },
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        );
+                                                      }).toList(),
                                                 );
                                               }).toList(),
-                                        );
-                                      }).toList(),
-                                ),
+                                        ),
                               ),
                             ],
                           );
@@ -267,55 +290,76 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                       .objects
                       .when(
                         data:
-                            (objects) => ListView.builder(
-                              itemCount:
-                                  ref
-                                      .read(pickerViewModelProvider)
-                                      .objects
-                                      .value
-                                      ?.length ??
-                                  0,
-                              itemBuilder: (context, index) {
-                                final file = objects[index];
-                                // return ListTile(
-                                //   title: Text(file),
-                                //   onTap: () {
-                                //     // saveObjToHistory(file);
-                                //     ref
-                                //         .read(pickerViewModelProvider.notifier)
-                                //         .updateObj(file);
-                                //   },
-                                // );
-                                return CustomListTile(
-                                  fileName: file,
-                                  onAddToGroup: () {
-                                    if (ref
-                                            .read(pickerViewModelProvider)
-                                            .selectedGroup ==
-                                        null) {
-                                      showSnackBar(
-                                        context,
-                                        'Please select a group first',
-                                      );
-                                      return;
-                                    }
-                                    ref
-                                        .read(pickerViewModelProvider.notifier)
-                                        .addToGroup(
-                                          file,
-                                        ); //TODO not add multiple times
-                                  },
-                                  onTap: () {
-                                    // saveObjToHistory(file);
+                            (objects) =>
+                                objects.isEmpty
+                                    ? const Center(
+                                      child: Text(
+                                        'No objects found. Try updating your filters!',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    )
+                                    : ListView.builder(
+                                      itemCount:
+                                          ref
+                                              .read(pickerViewModelProvider)
+                                              .objects
+                                              .value
+                                              ?.length ??
+                                          0,
+                                      itemBuilder: (context, index) {
+                                        final file = objects[index];
+                                        // return ListTile(
+                                        //   title: Text(file),
+                                        //   onTap: () {
+                                        //     // saveObjToHistory(file);
+                                        //     ref
+                                        //         .read(pickerViewModelProvider.notifier)
+                                        //         .updateObj(file);
+                                        //   },
+                                        // );
+                                        return CustomListTile(
+                                          fileName: file,
+                                          onAddToGroup: () {
+                                            if (ref
+                                                    .read(
+                                                      pickerViewModelProvider,
+                                                    )
+                                                    .selectedGroup ==
+                                                null) {
+                                              showSnackBar(
+                                                context,
+                                                'Please select a group first',
+                                              );
+                                              return;
+                                            }
+                                            ref
+                                                .read(
+                                                  pickerViewModelProvider
+                                                      .notifier,
+                                                )
+                                                .addToGroup(
+                                                  file,
+                                                ); //TODO not add multiple times
+                                          },
+                                          onTap: () {
+                                            // saveObjToHistory(file);
 
-                                    ref
-                                        .read(pickerViewModelProvider.notifier)
-                                        .updateObj(file);
-                                  },
-                                );
-                              },
-                            ),
-                        loading: () => Loader(),
+                                            ref
+                                                .read(
+                                                  pickerViewModelProvider
+                                                      .notifier,
+                                                )
+                                                .updateObj(file);
+                                          },
+                                        );
+                                      },
+                                    ),
+                        loading: () => const Center(child: Loader()),
                         error:
                             (error, stackTrace) =>
                                 Center(child: Text('Error: $error')),

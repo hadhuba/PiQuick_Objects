@@ -1,25 +1,40 @@
-from fastapi import HTTPException, APIRouter, Query
+"""
+Render API Router Module
+
+This module provides FastAPI routes for 3D object rendering operations.
+It handles rendering requests by processing groups of 3D objects with specific rendering settings,
+executing the rendering process, and returning the results as a zip file.
+"""
+
+from fastapi import HTTPException, APIRouter, BackgroundTasks
 from fastapi.responses import FileResponse
 import os
 import sys
-
-base_path =os.path.normpath( os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-sys.path.append(base_path)
-
-from models.render_model import Group
-from typing import List
 import json
 import subprocess
 import tempfile
+import shutil
+from typing import List
+
+base_path = os.path.normpath(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.append(base_path)
+
+from models.render_model import Group
 from utils.logging_config import setup_custom_logger
 
-
 logger = setup_custom_logger("render")
-
 router = APIRouter()
 
 def validate_input(groups: List[Group]):
-    """Validate the input groups for rendering."""
+    """
+    Validate the input groups for rendering.
+    
+    Args:
+        groups: List of Group objects to validate
+        
+    Raises:
+        HTTPException: If validation fails
+    """
     if not groups or len(groups) == 0:
         logger.error("No groups provided for rendering.")
         raise HTTPException(status_code=400, detail="No groups provided for rendering.")
@@ -31,7 +46,7 @@ def validate_input(groups: List[Group]):
                 status_code=400, 
                 detail=f"Group '{group.name}' has an empty list of objects."
             )
-        if not any([group.settings.mode_multi, group.settings.mode_static, group.settings.mode_front_view, group.settings.mode_four_view]):
+        if not any([group.settings.mode_multi, group.settings.mode_front_view, group.settings.mode_four_view]):
             logger.error(f"Group '{group.name}' does not have any view mode set to true.")
             raise HTTPException(
                 status_code=400,
@@ -40,30 +55,33 @@ def validate_input(groups: List[Group]):
 
 @router.post("/", status_code=201)
 def render_groups(groups: List[Group]):
+    """
+    Process and render groups of 3D objects based on specified settings.
+    
+    Args:
+        groups: List of Group objects containing object IDs and rendering settings
+        
+    Returns:
+        FileResponse: Zip file containing rendered results
+        
+    Raises:
+        HTTPException: If rendering fails
+    """
     validate_input(groups)
     temp_dir = None
     
     try:
         temp_dir = tempfile.mkdtemp(prefix="render_")
-        logger.debug(f"Created temporary directory: {temp_dir}")
         
-        import shutil
         output_file = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
         output_file.close()
 
-        # Path for the output file
-        logger.debug("the output file: %s" , output_file)
-
-        # Create JSON file with groups data
         json_path = os.path.join(temp_dir, "groups.json")
         with open(json_path, "w") as f:
-            # Convert Pydantic models to dict for JSON serialization
             json_data = [group.model_dump() for group in groups]
             json.dump(json_data, f, indent=2)
         
-        
         render_script = os.path.join(base_path, "scripts/render.py")
-        logger.debug("render_script: %s", render_script)
         result = subprocess.run(
             ["python3", render_script, "--groups_json", json_path, "--output_dir", temp_dir, "--output_file", output_file.name],
             text=True
@@ -80,34 +98,28 @@ def render_groups(groups: List[Group]):
                 status_code=500, 
                 detail="Render script did not produce output file"
             )
-
-        # Copy the output file to a new temporary file that will survive after we delete the temp directory
         
-        # shutil.copy2(output_file, final_temp_file.name)
-        
-        # Clean up the temporary directory before returning the response
         if temp_dir and os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
-            logger.debug(f"Cleaned up temporary directory: {temp_dir}")
             temp_dir = None
 
-        # Return the file with a callback to delete it after the request is completed
-        response = FileResponse(
-            path=output_file.name,
-            status_code=201,
-            filename="rendered_dataset.zip",  # Fixed file extension
-            media_type="application/zip",
-        )
-        
-        # Add a background task to clean up the file after it's sent
-        from fastapi import BackgroundTasks
+        try:
+            response = FileResponse(
+                path=output_file.name,
+                status_code=201,
+                filename="rendered_dataset.zip",
+                media_type="application/zip",
+            )
+        except Exception as e:
+            logger.error(f"Error preparing file response: {str(e)}")
+            raise HTTPException(status_code=500, detail="Error preparing file response")
+
         background_tasks = BackgroundTasks()
         
         def cleanup_temp_file():
             try:
                 if os.path.exists(output_file.name):
                     os.unlink(output_file.name)
-                    logger.debug(f"Cleaned up temporary file: {output_file.name}")
             except Exception as e:
                 logger.error(f"Error cleaning up temporary file: {str(e)}")
         
@@ -117,10 +129,7 @@ def render_groups(groups: List[Group]):
         return response
         
     except Exception as e:
-        # Clean up the temporary directory in case of an error
         if temp_dir and os.path.exists(temp_dir):
-            import shutil
             shutil.rmtree(temp_dir)
-            logger.debug(f"Cleaned up temporary directory after error: {temp_dir}")
         
         raise HTTPException(status_code=500, detail=f"Rendering error: {str(e)}")

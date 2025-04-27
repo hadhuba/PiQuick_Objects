@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/filters/viewModel/states/filters_state.dart';
 import 'package:test_piquick/features/filters/viewModel/filters_view_model.dart';
+import 'package:test_piquick/features/picker/model/object_groups_model.dart';
 import 'package:test_piquick/features/picker/model/repository/picker_remote_repository.dart';
 import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
 import 'package:test_piquick/features/picker/viewModel/states/viewer_3d_state.dart';
@@ -42,21 +43,10 @@ class PickerViewModel extends _$PickerViewModel {
   }
 
   Future<void> initHome() async {
-    // Fetch the initial list of objects from the remote repository
-    final objectsResponse = await _pickerRemoteRepository.fetchObjects();
-    final groupResponse = _pickerRemoteRepository.fetchGroupedObjects();
-
-    // Handle the response using a switch expression
-    state = switch (objectsResponse) {
-      Right(value: final objectsList) => state.copyWith(
-        objects: objectsList,
-        groupedObjects: AsyncValue.data(groupResponse),
-      ),
-      Left(value: final l) => state.copyWith(
-        objects: AsyncValue.error(l.message, StackTrace.current),
-        groupedObjects: AsyncValue.data(groupResponse),
-      ),
-    };
+    state =  state.copyWith(
+        objects: AsyncValue.data([]),
+        groupedObjects: AsyncValue.data(ObjectGroups(groups: {})),
+      );
   }
 
   void updateObj(String newObj) {
