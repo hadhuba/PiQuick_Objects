@@ -6,7 +6,7 @@ part of 'picker_view_model.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$pickerViewModelHash() => r'aacfd83c98e746092f78663051645ac21c854a7e';
+String _$pickerViewModelHash() => r'65e3726144d5187d77acee1de4cd39d48b098be7';
 
 /// See also [PickerViewModel].
 @ProviderFor(PickerViewModel)

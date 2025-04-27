@@ -1,14 +1,17 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:test_piquick/features/filters/model/filter_events.dart';
 import 'package:test_piquick/features/filters/model/repository/filter_remote_repository.dart';
+import 'package:test_piquick/features/filters/viewModel/filter_event_bus.dart';
 import 'package:test_piquick/features/filters/viewModel/states/filters_state.dart';
 
-part 'filters_view_model.g.dart';
+part 'auto_generated/filters_view_model.g.dart';
 
 @riverpod
 class FiltersViewModel extends _$FiltersViewModel {
   late FilterRemoteRepository _filterRemoteRepository;
-
+  // static bool _hasInitialized = false;
+  
   @override
   FiltersState build() {
     _filterRemoteRepository =
@@ -26,7 +29,41 @@ class FiltersViewModel extends _$FiltersViewModel {
     // Defer the call to fetchFilters() until after the state is initialized
     Future.microtask(() => initFilters());
 
+
     return initialState;
+  }
+
+  Future<void> initFilters() async {
+    state = state.copyWith(filters: const AsyncValue.loading());
+
+    final filterResponse = await _filterRemoteRepository.getFilterOptions();
+    state = switch (filterResponse) {
+      Right(value: final r) => state.copyWith(filters: AsyncValue.data(r)),
+      Left(value: final l) => state.copyWith(
+        filters: AsyncValue.error(l.message, StackTrace.current),
+      ),
+    };
+
+    final objResponse = await _filterRemoteRepository.getObjectsList();
+
+    switch (objResponse) {
+      case Right(value: final r):
+        {
+          ref
+              .read(filterEventBusProvider)
+              .emit(AppliedFiltersEvent(newObjects: r));
+          state = state.copyWith(objectsList: AsyncValue.data(r));
+        }
+      case Left(value: final l):
+        {
+          ref
+              .read(filterEventBusProvider)
+              .emit(AppliedFiltersEvent(newObjects: []));
+          state = state.copyWith(
+            objectsList: AsyncValue.error(l.message, StackTrace.current),
+          );
+        }
+    }
   }
 
   void updateFilter({required String type, num? minValue, num? maxValue}) {
@@ -43,26 +80,6 @@ class FiltersViewModel extends _$FiltersViewModel {
     });
   }
 
-  Future<void> initFilters() async {
-    state = state.copyWith(filters: const AsyncValue.loading());
-
-    final filterResponse = await _filterRemoteRepository.getFilterOptions();
-    state = switch (filterResponse) {
-      Right(value: final r) => state.copyWith(filters: AsyncValue.data(r)),
-      Left(value: final l) => state.copyWith(
-        filters: AsyncValue.error(l.message, StackTrace.current),
-      ),
-    };
-
-    final objResponse = await _filterRemoteRepository.getObjectsList();
-    state = switch (objResponse) {
-      Right(value: final r) => state.copyWith(objectsList: AsyncValue.data(r)),
-      Left(value: final l) => state.copyWith(
-        objectsList: AsyncValue.error(l.message, StackTrace.current),
-      ),
-    };
-  }
-
   Future<void> applyFilters() async {
     state.filters.whenData((filters) async {
       state = state.copyWith(objectsList: const AsyncValue.loading());
@@ -70,14 +87,24 @@ class FiltersViewModel extends _$FiltersViewModel {
       final response = await _filterRemoteRepository.applyFilters(
         filters: filters,
       );
-      state = switch (response) {
-        Right(value: final r) => state.copyWith(
-          objectsList: AsyncValue.data(r),
-        ),
-        Left(value: final l) => state.copyWith(
-          objectsList: AsyncValue.error(l.message, StackTrace.current),
-        ),
-      };
+      switch (response) {
+        case Right(value: final r):
+          {
+            ref
+                .read(filterEventBusProvider)
+                .emit(AppliedFiltersEvent(newObjects: r));
+            state = state.copyWith(objectsList: AsyncValue.data(r));
+          }
+        case Left(value: final l):
+          {
+            ref
+                .read(filterEventBusProvider)
+                .emit(AppliedFiltersEvent(newObjects: []));
+            state = state.copyWith(
+              objectsList: AsyncValue.error(l.message, StackTrace.current),
+            );
+          }
+      }
     });
   }
 }

@@ -1,8 +1,9 @@
 import 'dart:async';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/filters/model/filter_events.dart';
 
-part 'filter_event_bus.g.dart';
+part 'auto_generated/filter_event_bus.g.dart';
 
 /// Event bus osztály, ami központilag kezeli a rendering eseményeket.
 /// Biztosítja, hogy a komponensek kommunikálhassanak egymással közvetlen függőség nélkül.
@@ -30,7 +31,7 @@ class FilterEventBus {
 
 /// Riverpod provider az event bus-hoz
 @Riverpod(keepAlive: true)
-FilterEventBus fenderEventBus(FilterEventBusRef ref) {
+FilterEventBus filterEventBus(Ref ref) {
   final bus = FilterEventBus();
   ref.onDispose(bus.dispose);
   return bus;

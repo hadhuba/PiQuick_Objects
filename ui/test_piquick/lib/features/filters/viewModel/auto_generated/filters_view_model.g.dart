@@ -1,12 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'filters_view_model.dart';
+part of '../filters_view_model.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$filtersViewModelHash() => r'd06503d5af8e2b60dcbbf95906f73453d0b04f96';
+String _$filtersViewModelHash() => r'e0f12d2b095240c6ad60eb590f895973b0e40933';
 
 /// See also [FiltersViewModel].
 @ProviderFor(FiltersViewModel)

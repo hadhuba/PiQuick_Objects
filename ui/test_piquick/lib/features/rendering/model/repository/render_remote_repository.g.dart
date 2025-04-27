@@ -7,7 +7,7 @@ part of 'render_remote_repository.dart';
 // **************************************************************************
 
 String _$renderRemoteRepositoryHash() =>
-    r'437654bfbec25bb5347aa37019f31e8754643e4e';
+    r'51e8d9a4090128f82c5046a86a434bdd102857b5';
 
 /// See also [renderRemoteRepository].
 @ProviderFor(renderRemoteRepository)

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -12,7 +13,7 @@ import 'package:test_piquick/features/filters/model/filter.dart';
 part 'filter_remote_repository.g.dart';
 
 @riverpod
-FilterRemoteRepository filterRemoteRepository(FilterRemoteRepositoryRef ref) {
+FilterRemoteRepository filterRemoteRepository(Ref ref) {
   return FilterRemoteRepository();
 }
 

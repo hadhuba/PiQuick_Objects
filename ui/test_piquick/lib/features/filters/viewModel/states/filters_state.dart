@@ -5,14 +5,15 @@ class FiltersState {
   final AsyncValue<List<Filter>> filters;
   final AsyncValue<List<String>> objectsList;
 
-  FiltersState({required this.filters, required this.objectsList});
+  FiltersState({
+    required this.filters,
+    required this.objectsList,
+  });
 
   FiltersState copyWith({
+    bool? hasInitialized,
     AsyncValue<List<Filter>>? filters,
     AsyncValue<List<String>>? objectsList,
-    Future<void> Function()? applyFiltersCallback,
-    void Function({required String type, num? minValue, num? maxValue})?
-    updateFilterCallback,
   }) {
     return FiltersState(
       filters: filters ?? this.filters,

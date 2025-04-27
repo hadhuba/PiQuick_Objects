@@ -2,13 +2,12 @@ import 'dart:async';
 
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:test_piquick/features/filters/viewModel/states/filters_state.dart';
-import 'package:test_piquick/features/filters/viewModel/filters_view_model.dart';
 import 'package:test_piquick/features/picker/model/object_groups_model.dart';
 import 'package:test_piquick/features/picker/model/repository/picker_remote_repository.dart';
 import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
 import 'package:test_piquick/features/picker/viewModel/states/viewer_3d_state.dart';
-
+import 'package:test_piquick/features/filters/model/filter_events.dart';
+import 'package:test_piquick/features/filters/viewModel/filter_event_bus.dart';
 part 'picker_view_model.g.dart';
 
 @riverpod
@@ -24,13 +23,6 @@ class PickerViewModel extends _$PickerViewModel {
       pickerRemoteRepositoryProvider,
     ); // if it changes the latest comes, build runs again
 
-    ref.listen<FiltersState>(filtersViewModelProvider, (_, next) {
-      next.objectsList.whenData((objects) {
-        // TODO tényleg csak akkkor hívódik meg mikor rendes adat van?
-        // Frissítjük a HomeViewModel állapotát a FiltersViewModel adataival
-        updateObjectsList(objectsList: objects);
-      });
-    });
 
     final initialState = PickerState(
       objects: AsyncValue.loading(), // Initialize the state with loading
@@ -47,26 +39,24 @@ class PickerViewModel extends _$PickerViewModel {
       _eventSubscription?.cancel();
     });
 
-
     return initialState;
   }
 
-  
   void _setupEventListeners() {
     final bus = ref.read(filterEventBusProvider);
 
     _eventSubscription = bus.events.listen((event) {
-      if (event is FiltersAppliedEvent) {
+      if (event is AppliedFiltersEvent) {
         _handleFiltersAppliedEvent(event);
-      }  }
-      );
-    }
+      }
+    });
+  }
 
   Future<void> initHome() async {
-    state =  state.copyWith(
-        objects: AsyncValue.data([]),
-        groupedObjects: AsyncValue.data(ObjectGroups(groups: {})),
-      );
+    state = state.copyWith(
+      objects: AsyncValue.data([]),
+      groupedObjects: AsyncValue.data(ObjectGroups(groups: {})),
+    );
   }
 
   void updateObj(String newObj) {
@@ -173,5 +163,9 @@ class PickerViewModel extends _$PickerViewModel {
 
   void updateObjectsList({required List<String> objectsList}) {
     state = state.copyWith(objects: AsyncValue.data(objectsList));
+  }
+
+  void _handleFiltersAppliedEvent(AppliedFiltersEvent event) {
+    updateObjectsList(objectsList: event.newObjects ?? []);
   }
 }

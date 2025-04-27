@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/rendering/model/render_events.dart';
 
@@ -30,7 +31,7 @@ class RenderEventBus {
 
 /// Riverpod provider az event bus-hoz
 @Riverpod(keepAlive: true)
-RenderEventBus renderEventBus(RenderEventBusRef ref) {
+RenderEventBus renderEventBus(Ref ref) {
   final bus = RenderEventBus();
   ref.onDispose(bus.dispose);
   return bus;
