@@ -48,24 +48,49 @@ def parse_arguments():
                         help="Directory where downloaded objects will be stored. Defaults to '<project_root>/src/objects_database'.")
     return parser.parse_args()
 
-def search_in_database(storeFolder: str, ids):
+def load_paths_database(db_path):
+    """Load the centralized paths database or create if it doesn't exist"""
+    paths_db_file = os.path.join(db_path, "paths_for_db.json")
+    if os.path.exists(paths_db_file):
+        try:
+            with open(paths_db_file, 'r') as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            logger.warning(f"Error decoding {paths_db_file}, creating new database")
+            return {}
+        except Exception as e:
+            logger.warning(f"Error loading paths database: {e}, creating new database")
+            return {}
+    else:
+        logger.info(f"No paths database found at {paths_db_file}, creating new database")
+        return {}
+
+def save_paths_database(db_path, paths_db):
+    """Save the centralized paths database"""
+    paths_db_file = os.path.join(db_path, "paths_for_db.json")
+    os.makedirs(os.path.dirname(paths_db_file), exist_ok=True)
+    with open(paths_db_file, 'w') as f:
+        json.dump(paths_db, f, indent=2)
+    logger.info(f"Updated paths database at {paths_db_file}")
+
+def search_in_database(store_path, ids):
+    """Check which IDs need to be downloaded by consulting the paths database"""
+    paths_db = load_paths_database(store_path)
+    
+    # Determine which files already exist in the database
     filepaths = []
     ids_to_download = []
     
-    if not os.path.exists(storeFolder):
-        for id in ids:
-            path_to_id = os.path.join(storeFolder, id + ".glb")
+    for id in ids:
+        if id in paths_db:
+            filepaths.append(paths_db[id])
+        else:
+            # Predict where the file will be stored based on objaverse's structure
+            # The final path will be updated after download
+            path_to_id = os.path.join(store_path, "glbs", "000-023", id + ".glb")
             filepaths.append(path_to_id)
-            ids_to_download = ids
-    else:
-        downloaded_files = os.listdir(storeFolder)
-        downloaded_ids = {file.split('.')[0] for file in downloaded_files}
-        for id in ids:
-            path_to_id = os.path.join(storeFolder, id + ".glb")
-            filepaths.append(path_to_id)
-            if id not in downloaded_ids:
-                ids_to_download.append(id)
-
+            ids_to_download.append(id)
+    
     return filepaths, ids_to_download
             
 def write_group_to_json(group, filepaths, save_path, groups_json):
@@ -84,30 +109,35 @@ def write_group_to_json(group, filepaths, save_path, groups_json):
 def process_groups(groups, args, cpu_count):
     for group in groups:
         # Checking if files are already downloaded
-        final_save_path = os.path.join(args.store_path, "glbs", "000-023")
         logger.info(f"Saving object files to {args.store_path}")
 
-        filepaths, ids_to_download = search_in_database(final_save_path, group.object_ids)
+        filepaths, ids_to_download = search_in_database(args.store_path, group.object_ids)
 
         # If all exists
         if not ids_to_download:
             logger.info(f"All files in group '{group.name}' have already been downloaded.")
-        # Start downloading of all files
-        elif len(ids_to_download) == len(group.object_ids):
-            logger.info(f"Downloading all files for group: {group.name}")
-            objaverse._VERSIONED_PATH = args.store_path
-            objaverse.load_objects(
-                uids=ids_to_download,
-                download_processes=cpu_count
-            )
-        # Start downloading of remaining files
         else:
-            logger.info(f"Downloading remaining files for group: {group.name}")
+            # Start downloading of missing files
+            logger.info(f"Downloading {len(ids_to_download)} files for group: {group.name}")
             objaverse._VERSIONED_PATH = args.store_path
-            objaverse.load_objects(
+            
+            # Download objects and get their paths
+            downloaded_paths = objaverse.load_objects(
                 uids=ids_to_download,
                 download_processes=cpu_count
             )
+            
+            # Update our paths database with the actual paths
+            paths_db = load_paths_database(args.store_path)
+            paths_db.update(downloaded_paths)
+            save_paths_database(args.store_path, paths_db)
+            
+            # Update filepaths with the actual downloaded paths
+            for i, id in enumerate(group.object_ids):
+                if id in downloaded_paths:
+                    # Replace the predicted path with the actual path
+                    idx = group.object_ids.index(id)
+                    filepaths[idx] = downloaded_paths[id]
 
         # Write to file
         write_group_to_json(group.name, filepaths, args.save_path, args.groups_json)
@@ -137,7 +167,7 @@ def main():
     # Argument parsing for input and output file paths
     args = parse_arguments() 
 
-    groups = load_groups_from_json(args.groups_json) #[Group(**group_data) for group_data in raw_data]
+    groups = load_groups_from_json(args.groups_json)
 
     # Set default for save_path if not provided
     if args.save_path is None:

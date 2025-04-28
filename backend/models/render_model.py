@@ -8,7 +8,6 @@ class RenderSettings(BaseModel):
     elevation_aug: bool = Field(default=False)
     resolution: int = Field(default=256)
     mode_multi: bool = Field(default=True)
-    mode_static: bool = Field(default=False)
     mode_front_view: bool = Field(default=False)
     mode_four_view: bool = Field(default=False)
     only_northern_hemisphere: bool = Field(default=True)

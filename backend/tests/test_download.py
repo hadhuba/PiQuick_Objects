@@ -1,3 +1,16 @@
+"""
+This test suite verifies the functionality of the download script, which is responsible for
+retrieving 3D object files from Objaverse based on group definitions. The tests cover:
+
+1. Command-line argument handling - Parsing arguments with proper defaults and validation
+2. Database searching - Finding existing objects in the local database to avoid redundant downloads
+3. Group data processing - Loading and validating group definitions from JSON
+4. File management - Creating proper directory structures and writing path information
+5. Main workflow execution - Coordinating the download process with proper error handling
+
+The download script serves as the data acquisition layer for the 3D object pipeline,
+ensuring efficient retrieval and storage of 3D models while avoiding duplicate downloads.
+"""
 import pytest
 import os
 import json
@@ -20,7 +33,7 @@ def mock_args(tmp_path):
     args.save_path = str(tmp_path / "output_paths")
     args.store_path = str(tmp_path / "objects_database")
     args.num_of_gpus = 2
-    # Hozzunk létre egy dummy input json fájlt is
+    
     dummy_group_data = [{"name": "group1", "object_ids": ["id1", "id2"]}]
     with open(args.groups_json, 'w') as f:
         json.dump(dummy_group_data, f)
@@ -36,8 +49,8 @@ def mock_objaverse_and_logger(mocker):
     """Automatically mock objaverse and logger for all tests in this module."""
     mocker.patch('scripts.download.objaverse.load_objects')
     mocker.patch('scripts.download.objaverse._VERSIONED_PATH', new_callable=mocker.PropertyMock)
-    mocker.patch('scripts.download.logger', new_callable=MagicMock) # Mock logger methods like info, error, etc.
-    mocker.patch('scripts.download.setup_custom_logger', return_value=MagicMock()) # Mock the setup function itself if called within download
+    mocker.patch('scripts.download.logger', new_callable=MagicMock)
+    mocker.patch('scripts.download.setup_custom_logger', return_value=MagicMock())
 
 @pytest.fixture
 def mock_fs(mocker):
@@ -56,7 +69,7 @@ def mock_fs(mocker):
 # --- Test Functions ---
 
 def test_parse_arguments(mocker):
-    """Test command line argument parsing."""
+    """DTC1: Test command line argument parsing."""
     test_argv = ['download.py', '--groups_json', 'groups.json', '--save_path', 'output', '--store_path', 'db']
     mocker.patch('sys.argv', test_argv)
     args = download.parse_arguments()
@@ -65,17 +78,16 @@ def test_parse_arguments(mocker):
     assert args.store_path == 'db'
 
 def test_parse_arguments_required(mocker):
-    """Test that required arguments raise an error if missing."""
+    """DTC2: Test that required arguments raise an error if missing."""
     test_argv = ['download.py']
     mocker.patch('sys.argv', test_argv)
-    # Argparse exits on error, we catch SystemExit
     with pytest.raises(SystemExit):
         download.parse_arguments()
 
 # --- Tests for search_in_database ---
 
 def test_search_in_database_store_does_not_exist(mock_fs):
-    """Test when the store directory doesn't exist."""
+    """DTC3: Test when the store directory doesn't exist."""
     mock_fs["exists"].return_value = False
     store_folder = "/fake/store"
     ids = ["id1", "id2"]
@@ -88,9 +100,9 @@ def test_search_in_database_store_does_not_exist(mock_fs):
     assert ids_to_download == ids
 
 def test_search_in_database_store_exists_no_files(mock_fs):
-    """Test when store exists but contains no relevant files."""
+    """DTC4: Test when store exists but contains no relevant files."""
     mock_fs["exists"].return_value = True
-    mock_fs["listdir"].return_value = [] # Empty directory
+    mock_fs["listdir"].return_value = [] 
     store_folder = "/fake/store"
     ids = ["id1", "id2"]
     expected_paths = [os.path.join(store_folder, "id1.glb"), os.path.join(store_folder, "id2.glb")]
@@ -103,9 +115,9 @@ def test_search_in_database_store_exists_no_files(mock_fs):
     assert ids_to_download == ids
 
 def test_search_in_database_store_exists_some_files(mock_fs):
-    """Test when store exists and contains some of the files."""
+    """DTC5: Test when store exists and contains some of the files."""
     mock_fs["exists"].return_value = True
-    mock_fs["listdir"].return_value = ["id1.glb", "otherfile.txt"] # id1 exists
+    mock_fs["listdir"].return_value = ["id1.glb", "otherfile.txt"]
     store_folder = "/fake/store"
     ids = ["id1", "id2", "id3"]
     expected_paths = [
@@ -120,12 +132,12 @@ def test_search_in_database_store_exists_some_files(mock_fs):
     mock_fs["exists"].assert_called_once_with(store_folder)
     mock_fs["listdir"].assert_called_once_with(store_folder)
     assert filepaths == expected_paths
-    assert sorted(ids_to_download) == sorted(expected_ids_to_download) # Order doesn't matter
+    assert sorted(ids_to_download) == sorted(expected_ids_to_download)
 
 def test_search_in_database_store_exists_all_files(mock_fs):
-    """Test when store exists and contains all the files."""
+    """DTC6: Test when store exists and contains all the files."""
     mock_fs["exists"].return_value = True
-    mock_fs["listdir"].return_value = ["id1.glb", "id2.glb", "id3.glb"] # All exist
+    mock_fs["listdir"].return_value = ["id1.glb", "id2.glb", "id3.glb"]
     store_folder = "/fake/store"
     ids = ["id1", "id2", "id3"]
     expected_paths = [
@@ -145,38 +157,32 @@ def test_search_in_database_store_exists_all_files(mock_fs):
 # --- Tests for write_group_to_json ---
 
 def test_write_group_to_json(mock_fs, tmp_path):
-    """Test writing the file paths to a JSON file."""
+    """DTC7: Test writing the file paths to a JSON file."""
     group_name = "test_group"
     filepaths = ["/path/to/id1.glb", "/path/to/id2.glb"]
     save_path = str(tmp_path / "output")
-    groups_json_path = str(tmp_path / "input/my_groups.json")  # Dummy input path
+    groups_json_path = str(tmp_path / "input/my_groups.json")
     expected_output_dir = os.path.join(save_path, "my_groups_paths")
     expected_json_path = os.path.join(expected_output_dir, f"{group_name}.json")
 
-    # Call the function
     download.write_group_to_json(group_name, filepaths, save_path, groups_json_path)
 
-    # Check that makedirs and open were called
     mock_fs["makedirs"].assert_called_once_with(expected_output_dir, exist_ok=True)
     mock_fs["open"].assert_called_once_with(expected_json_path, "w")
 
-    # Reconstruct all written content
     file_handle_mock = mock_fs["open"]().__enter__()
     all_written_content = "".join(call_arg[0][0] for call_arg in file_handle_mock.write.call_args_list)
 
-    # Now parse it as JSON
     written_data = json.loads(all_written_content)
-
     assert written_data == filepaths
 
 # --- Tests for load_groups_from_json ---
 
 def test_load_groups_from_json_file(mock_fs, tmp_path):
-    """Test loading group data from a valid JSON file."""
+    """DTC8: Test loading group data from a valid JSON file."""
     json_path = tmp_path / "groups.json"
     group_data = [{"name": "g1", "object_ids": ["id1"]}]
     json_content = json.dumps(group_data)
-    # Configure mock_open to return the JSON content
     mock_fs["open"].configure_mock(return_value=mock_open(read_data=json_content).return_value)
 
     groups = download.load_groups_from_json(str(json_path))
@@ -188,7 +194,7 @@ def test_load_groups_from_json_file(mock_fs, tmp_path):
     assert groups[0].object_ids == ["id1"]
 
 def test_load_groups_from_json_string():
-    """Test loading group data directly from a JSON string."""
+    """DTC9: Test loading group data directly from a JSON string."""
     group_data = [{"name": "g2", "object_ids": ["id2", "id3"]}]
     json_string = json.dumps(group_data)
 
@@ -199,9 +205,8 @@ def test_load_groups_from_json_string():
     assert groups[0].name == "g2"
     assert groups[0].object_ids == ["id2", "id3"]
 
-
 def test_load_groups_from_json_file_not_found(mocker, mock_fs, tmp_path):
-    """Test error handling for a non-existent JSON file."""
+    """DTC10: Test error handling for a non-existent JSON file."""
     json_path = tmp_path / "nonexistent.json"
     mock_fs["open"].side_effect = FileNotFoundError("File not found")
     mock_exit = mocker.patch('sys.exit')
@@ -212,9 +217,9 @@ def test_load_groups_from_json_file_not_found(mocker, mock_fs, tmp_path):
     mock_exit.assert_called_once_with(1)
 
 def test_load_groups_from_json_invalid_json(mocker, mock_fs, tmp_path):
-    """Test error handling for invalid JSON content."""
+    """DTC11: Test error handling for invalid JSON content."""
     json_path = tmp_path / "invalid.json"
-    invalid_json_content = '{"name": "g1", "object_ids": ["id1"]' # Missing closing brace
+    invalid_json_content = '{"name": "g1", "object_ids": ["id1"]'
     mock_fs["open"].configure_mock(return_value=mock_open(read_data=invalid_json_content).return_value)
     mock_exit = mocker.patch('sys.exit')
 
@@ -222,7 +227,6 @@ def test_load_groups_from_json_invalid_json(mocker, mock_fs, tmp_path):
 
     mock_fs["open"].assert_called_once_with(str(json_path), 'r')
     mock_exit.assert_called_once_with(1)
-
 
 # --- Tests for process_groups ---
 
@@ -236,8 +240,8 @@ def mock_process_deps(mocker):
     }
 
 def test_process_groups_all_exist(mock_process_deps, mock_args, mock_group):
-    """Test process_groups when all files already exist."""
-    mock_process_deps["search"].return_value = (["/path/id1.glb", "/path/id2.glb"], []) # No IDs to download
+    """DTC12: Test process_groups when all files already exist."""
+    mock_process_deps["search"].return_value = (["/path/id1.glb", "/path/id2.glb"], [])
     groups = [mock_group]
     cpu_count = 4
 
@@ -245,15 +249,15 @@ def test_process_groups_all_exist(mock_process_deps, mock_args, mock_group):
 
     expected_store_path = os.path.join(mock_args.store_path, "glbs", "000-023")
     mock_process_deps["search"].assert_called_once_with(expected_store_path, mock_group.object_ids)
-    mock_process_deps["load_objects"].assert_not_called() # Should not download
+    mock_process_deps["load_objects"].assert_not_called()
     mock_process_deps["write"].assert_called_once_with(
         mock_group.name, ["/path/id1.glb", "/path/id2.glb"], mock_args.save_path, mock_args.groups_json
     )
 
 def test_process_groups_none_exist(mock_process_deps, mock_args, mock_group):
-    """Test process_groups when no files exist and all need downloading."""
+    """DTC13: Test process_groups when no files exist and all need downloading."""
     expected_paths = [os.path.join(mock_args.store_path, "glbs", "000-023", f"{id}.glb") for id in mock_group.object_ids]
-    mock_process_deps["search"].return_value = (expected_paths, mock_group.object_ids) # All IDs to download
+    mock_process_deps["search"].return_value = (expected_paths, mock_group.object_ids)
     groups = [mock_group]
     cpu_count = 4
 
@@ -270,10 +274,10 @@ def test_process_groups_none_exist(mock_process_deps, mock_args, mock_group):
     )
 
 def test_process_groups_some_exist(mock_process_deps, mock_args, mock_group):
-    """Test process_groups when some files exist."""
+    """DTC14: Test process_groups when some files exist."""
     ids_to_download = ["id2"]
     existing_paths = [os.path.join(mock_args.store_path, "glbs", "000-023", f"{id}.glb") for id in mock_group.object_ids]
-    mock_process_deps["search"].return_value = (existing_paths, ids_to_download) # Only id2 to download
+    mock_process_deps["search"].return_value = (existing_paths, ids_to_download)
     groups = [mock_group]
     cpu_count = 4
 
@@ -297,19 +301,15 @@ def test_process_groups_some_exist(mock_process_deps, mock_args, mock_group):
 @patch('os.makedirs')
 @patch('multiprocessing.cpu_count')
 def test_main_flow(mock_cpu_count, mock_makedirs, mock_process, mock_load_groups, mock_parse_args, mock_args, mock_group):
-    """Test the main execution flow."""
-    # Setup mocks
+    """DTC15: Test the main execution flow."""
     mock_parse_args.return_value = mock_args
     mock_load_groups.return_value = [mock_group]
     mock_cpu_count.return_value = 8
 
-    # Run main
     download.main()
 
-    # Assertions
     mock_parse_args.assert_called_once()
     mock_load_groups.assert_called_once_with(mock_args.groups_json)
-    # Check if store_path was created
     mock_makedirs.assert_any_call(mock_args.store_path, exist_ok=True)
     mock_cpu_count.assert_called_once()
     mock_process.assert_called_once_with([mock_group], mock_args, 8)
@@ -320,16 +320,13 @@ def test_main_flow(mock_cpu_count, mock_makedirs, mock_process, mock_load_groups
 @patch('os.makedirs')
 @patch('multiprocessing.cpu_count')
 def test_main_default_paths(mock_cpu_count, mock_makedirs, mock_process, mock_load_groups, mock_parse_args, tmp_path):
-    """Test that default paths are set correctly when not provided."""
-
-    # Mock args without save_path and store_path
+    """DTC16: Test that default paths are set correctly when not provided."""
     args_no_paths = argparse.Namespace()
     args_no_paths.groups_json = str(tmp_path / "input/groups.json")
     args_no_paths.save_path = None
     args_no_paths.store_path = None
     mock_parse_args.return_value = args_no_paths
 
-    # Create dummy input file and directory
     (tmp_path / "input").mkdir(exist_ok=True)
     with open(args_no_paths.groups_json, 'w') as f:
         json.dump([{"name": "g1", "object_ids": ["id1"]}], f)
@@ -338,17 +335,12 @@ def test_main_default_paths(mock_cpu_count, mock_makedirs, mock_process, mock_lo
     mock_load_groups.return_value = [mock_group_instance]
     mock_cpu_count.return_value = 4
 
-    # Expected default paths
     expected_save_path = str(tmp_path / "input")
-
-    # Dynamically calculate project root based on test location
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     expected_store_path = os.path.join("src", "objects_database")
 
-    # Run main
     download.main()
 
-    # Assertions
     mock_parse_args.assert_called_once()
     mock_load_groups.assert_called_once_with(args_no_paths.groups_json)
     mock_makedirs.assert_any_call(expected_store_path, exist_ok=True)

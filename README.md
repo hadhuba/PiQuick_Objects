@@ -22,6 +22,24 @@ python3 scripts/download.py     --groups_json src/download_test.json\
                                 --save_path src/
 ```
 
+### ***uid_prep.py***
+
+The ```uid_prep.py``` script is a utility for generating the groups_json file required by download.py. It creates properly formatted JSON files containing object groups with randomly selected Objaverse UIDs.
+
+```
+python3 scripts/uid_prep.py     --group_names "creating,some,files"\
+                                --number_of_glbs "10,50,8"\
+                                --save_path src/\
+                                --name download_test
+```
+
+This helper script:
+1. Loads all available UIDs from the Objaverse database
+2. Creates specified groups with randomly assigned unique object IDs
+3. Saves a properly formatted JSON file that can be directly used with download.py
+
+Note that the groups_json file can either be created with this helper script or manually constructed following the same format. The format requires an array of objects, each with a "name" field and an array of "object_ids".
+
 ### ***metadata_multiproc.py***
 The ```metadata_multiproc``` script uses Blender to extract and save metadata for a given set of objects. The key feature of this script is its flexibility in easily adding new rendering parameters or metadata extraction criteria. You can customize what metadata to extract for each 3D object and how to organize the output, making it simple to adapt the process to new requirements.
 

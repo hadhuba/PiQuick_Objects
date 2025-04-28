@@ -1,3 +1,17 @@
+"""
+This test suite verifies the functionality of the metadata multiprocessing script, which extracts
+and analyzes various metrics from 3D object files. The tests cover:
+
+1. File type handling - Correctly processing different 3D file formats (.glb and .fbx)
+2. Metadata extraction - Collecting geometry metrics such as vertex count, polygon count, and edge count
+3. Object processing - Handling single and multiple 3D objects with proper resource management
+4. Configuration options - Processing different subsets of metadata based on command-line flags
+5. Multiprocess execution - Testing the parallel processing workflow with proper data aggregation
+
+The metadata script provides essential information about 3D objects that can be used for 
+filtering, categorization, and quality assessment, supporting the overall pipeline for
+3D object selection and rendering.
+"""
 import pytest
 import os
 import argparse
@@ -51,11 +65,6 @@ sys.modules['bpy'] = mock_bpy
 
 # Now we can safely import the functions
 from scripts.metadata_multiproc import task, save_to_file, main, split_list, parse_args
-
-# filepath: PiQuick_Objects/scripts/test_metadata_multiproc.py
-
-# Since the parent directory has no __init__.py, use absolute import
-# Assuming tests are run from the project root (PiQuick_Objects)
 
 # Mock the bpy module as it's not available outside Blender
 @pytest.fixture
@@ -151,8 +160,8 @@ def mock_args_some_false(mocker):
 @pytest.fixture
 def mock_os_path(mocker):
     """Mocks os.path.splitext and os.path.basename."""
-    real_splitext = os.path.splitext  # <- mentsd el az eredeti függvényt!
-    real_basename = os.path.basename  # <- ha a basename-t is mockolod, érdemes azt is elmenteni
+    real_splitext = os.path.splitext
+    real_basename = os.path.basename
 
     mock_splitext = mocker.patch('os.path.splitext')
     mock_basename = mocker.patch('os.path.basename')
@@ -162,7 +171,7 @@ def mock_os_path(mocker):
 
     def splitext_side_effect(path):
         base = basename_side_effect(path)
-        return real_splitext(base)  # <- itt az eredeti splitext-et hívod
+        return real_splitext(base)
 
     mock_basename.side_effect = basename_side_effect
     mock_splitext.side_effect = splitext_side_effect
@@ -172,7 +181,7 @@ def mock_os_path(mocker):
 # --- Test Functions ---
 
 def test_task_imports_glb_all_flags(mock_bpy, mock_metadata_helpers, mock_args_all_true, mock_os_path):
-    """Tests task with a .glb file and all metadata flags enabled."""
+    """MTC1: Tests task with a .glb file and all metadata flags enabled."""
     object_files_chunk = ["/fake/path/to/model.glb"]
     expected_obj_id = "model"
 
@@ -190,7 +199,6 @@ def test_task_imports_glb_all_flags(mock_bpy, mock_metadata_helpers, mock_args_a
     mock_metadata_helpers['count_edge'].assert_called_once_with(mock_bpy.context.scene)
 
     # Check cleanup calls (only non-camera/light objects removed)
-    # Expected calls: remove(mesh_obj), remove(material), remove(texture), remove(image)
     assert mock_bpy.data.objects.remove.call_count == 1
     # Get the mock mesh object that would have been iterated over
     mesh_obj = next(iter(mock_bpy.data.objects.__iter__.side_effect()))
@@ -212,7 +220,7 @@ def test_task_imports_glb_all_flags(mock_bpy, mock_metadata_helpers, mock_args_a
     assert result == expected_result
 
 def test_task_imports_fbx_some_flags(mock_bpy, mock_metadata_helpers, mock_args_some_false, mock_os_path):
-    """Tests task with a .fbx file and some metadata flags disabled."""
+    """MTC2: Tests task with a .fbx file and some metadata flags disabled."""
     object_files_chunk = ["/fake/path/to/another_model.fbx"]
     expected_obj_id = "another_model"
 
@@ -250,7 +258,7 @@ def test_task_imports_fbx_some_flags(mock_bpy, mock_metadata_helpers, mock_args_
     assert result == expected_result
 
 def test_task_unsupported_file_type(mock_bpy, mock_args_all_true, mock_os_path):
-    """Tests task raises ValueError for unsupported file types."""
+    """MTC3: Tests task raises ValueError for unsupported file types."""
     object_files_chunk = ["/fake/path/to/document.txt"]
 
     with pytest.raises(ValueError, match="Unsupported file type: /fake/path/to/document.txt"):
@@ -259,10 +267,9 @@ def test_task_unsupported_file_type(mock_bpy, mock_args_all_true, mock_os_path):
     # Ensure no import or processing happened
     mock_bpy.ops.import_scene.gltf.assert_not_called()
     mock_bpy.ops.import_scene.fbx.assert_not_called()
-    # No need to check helpers or cleanup as it should fail before that
 
 def test_task_multiple_files(mock_bpy, mock_metadata_helpers, mock_args_all_true, mock_os_path):
-    """Tests task processing multiple files in a chunk."""
+    """MTC4: Tests task processing multiple files in a chunk."""
     object_files_chunk = ["/path/model1.glb", "/path/model2.fbx"]
     expected_ids = ["model1", "model2"]
 
@@ -292,16 +299,11 @@ def test_task_multiple_files(mock_bpy, mock_metadata_helpers, mock_args_all_true
     assert mock_metadata_helpers['count_meshes'].call_count == 2
     assert mock_metadata_helpers['count_poly'].call_count == 2
     assert mock_metadata_helpers['count_edge'].call_count == 2
-    # Check bpy.data lengths are implicitly checked via result
 
     # Check cleanup calls (should be called twice, once per file for each type)
-    # One mesh object removed per file loop iteration
     assert mock_bpy.data.objects.remove.call_count == 2
-    # One material removed per file loop iteration
     assert mock_bpy.data.materials.remove.call_count == 2
-    # One texture removed per file loop iteration
     assert mock_bpy.data.textures.remove.call_count == 2
-    # One image removed per file loop iteration
     assert mock_bpy.data.images.remove.call_count == 2
 
     # Check result dictionary contains data for both objects
@@ -317,7 +319,7 @@ def test_task_multiple_files(mock_bpy, mock_metadata_helpers, mock_args_all_true
     assert result == expected_result
 
 def test_split_list():
-    """Tests the split_list utility function."""
+    """MTC5: Tests the split_list utility function."""
     # Test with even division
     original_list = [1, 2, 3, 4, 5, 6]
     split_into_3 = split_list(original_list, 3)
@@ -352,7 +354,7 @@ def mock_global_args(mocker):
     return args
 
 def test_save_to_file(mock_global_args, mocker):
-    """Tests the save_to_file function."""
+    """MTC6: Tests the save_to_file function."""
     # Create test data
     results = [
         {
@@ -392,7 +394,7 @@ def test_save_to_file(mock_global_args, mocker):
     assert call("obj4: 400\n") in file_handle.write.call_args_list
 
 def test_main_missing_path(mock_global_args, mocker):
-    """Tests main function with a non-existent path."""
+    """MTC7: Tests main function with a non-existent path."""
     # Mock os.path.isdir to return False (path doesn't exist)
     mocker.patch('os.path.isdir', return_value=False)
     
@@ -404,7 +406,7 @@ def test_main_missing_path(mock_global_args, mocker):
     assert excinfo.value.code == 1
 
 def test_main_success(mock_global_args, mocker):
-    """Tests successful execution of the main function."""
+    """MTC8: Tests successful execution of the main function."""
     # Mock os.path.isdir to return True (path exists)
     mocker.patch('os.path.isdir', return_value=True)
     
@@ -451,7 +453,7 @@ def test_main_success(mock_global_args, mocker):
     (".fbx", "fbx")
 ])
 def test_task_file_type_import(mock_bpy, mock_metadata_helpers, mock_args_all_true, mock_os_path, file_type, expected_function):
-    """Tests that task correctly imports different file types."""
+    """MTC9: Tests that task correctly imports different file types."""
     object_files_chunk = [f"/path/model{file_type}"]
     
     task(object_files_chunk)
@@ -464,7 +466,7 @@ def test_task_file_type_import(mock_bpy, mock_metadata_helpers, mock_args_all_tr
         mock_bpy.ops.import_scene.gltf.assert_not_called()
 
 def test_parse_args():
-    """Tests argument parsing with mocked sys.argv."""
+    """MTC10: Tests argument parsing with mocked sys.argv."""
     # Test the case where -- is present
     with patch('sys.argv', ['blender', '-b', '-P', 'metadata_multiproc.py', '--', 
                '--save_path', '/test/save', '--objects_path', '/test/objects']):

@@ -177,7 +177,6 @@ def execute_command(objects_paths, save_file_name, output_dir, gpu_id, separate_
             --elevation {elevation}\
             --resolution {group_settings.resolution}\
             --mode_multi {1 if group_settings.mode_multi else 0}\
-            --mode_static {1 if group_settings.mode_static else 0}\
             --mode_front {1 if group_settings.mode_front_view else 0}\
             --mode_four_view {1 if group_settings.mode_four_view else 0}\
             --only_northern_hemisphere {1 if group_settings.only_northern_hemisphere else 0}'
@@ -246,7 +245,7 @@ def main():
             render_tasks.append((group_paths[group.name], group.name, args.output_dir, gpu_id % gpu_count, group.settings.separately, group.settings))
             gpu_id+=1
         
-        
+    # cpu_count = multiprocessing.cpu_count()
     with multiprocessing.Pool(processes=gpu_count) as pool:
         pool.starmap(execute_command, render_tasks)
         
