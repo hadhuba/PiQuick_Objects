@@ -1,15 +1,12 @@
-import 'dart:convert';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/core/constants/server_constants.dart';
 import 'package:test_piquick/core/failure/failure.dart';
-import 'package:test_piquick/features/picker/model/object_groups_model.dart';
 part 'picker_remote_repository.g.dart';
 
 @riverpod
-PickerRemoteRepository pickerRemoteRepository(PickerRemoteRepositoryRef ref) {
+PickerRemoteRepository pickerRemoteRepository(Ref ref) {
   return PickerRemoteRepository();
 }
 
