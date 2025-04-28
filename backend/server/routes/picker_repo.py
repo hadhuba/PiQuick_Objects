@@ -64,7 +64,6 @@ def fetch_glb(id: str) -> str | None:
     current_file_dir = os.path.dirname(os.path.abspath(__file__))
     objects_database_path = os.path.join(current_file_dir, "../../src/objects_database")
     objects_database_path = os.path.normpath(objects_database_path)
-    
     paths_db_file = os.path.join(objects_database_path, "paths_for_db.json")
     
     if not os.path.exists(objects_database_path):
@@ -84,17 +83,8 @@ def fetch_glb(id: str) -> str | None:
                 else:
                     logger.warning(f"File path in database exists but actual file is missing: {paths_db[id]}")
         except json.JSONDecodeError:
-            logger.warning(f"Error decoding {paths_db_file}, falling back to directory search")
+            logger.warning(f"Error decoding {paths_db_file}")
         except Exception as e:
-            logger.warning(f"Error reading paths database: {e}, falling back to directory search")
-    
-    # Fallback to the old method if paths database doesn't exist or had issues
-    base_path = os.path.join(objects_database_path, "glbs/000-023/")
-    if not os.path.exists(base_path):
-        return None
-        
-    files = os.listdir(base_path)
-    target_file = f"{id}.glb"
-    if target_file in files:
-        return os.path.join(base_path, target_file)
+            logger.warning(f"Error reading paths database: {e}")
+   
     return None

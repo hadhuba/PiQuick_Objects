@@ -284,7 +284,42 @@ class _PickerPageState extends ConsumerState<PickerPage> {
               ),
               Flexible(
                 child: Scaffold(
-                  appBar: AppBar(title: const Text("Listed Objects")),
+                  appBar: AppBar(
+                    title:
+                    // const Text("Listed Objects")
+                    ref
+                        .read(pickerViewModelProvider)
+                        .objects
+                        .when(
+                          data:
+                              (objectsList) => Text(
+                                'Objects (${objectsList.length})',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                          loading:
+                              () => const Text(
+                                'Objects (loading...)',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                          error:
+                              (_, __) => const Text(
+                                'Objects (error)',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                        ),
+                  ),
                   body: ref
                       .watch(pickerViewModelProvider)
                       .objects

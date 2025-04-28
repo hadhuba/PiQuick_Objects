@@ -38,6 +38,7 @@ from models.render_model import Group
 
 logger = setup_custom_logger("download_script")
 
+# parsing arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Objaverse Batch Downloader")
     parser.add_argument("--groups_json", type=str, required=True,
@@ -48,6 +49,86 @@ def parse_arguments():
                         help="Directory where downloaded objects will be stored. Defaults to '<project_root>/src/objects_database'.")
     return parser.parse_args()
 
+def load_groups_from_json(json_path_or_data):
+    """Load group data from a JSON file or directly from a JSON string"""
+    try:
+        # First try to parse as direct JSON data
+        if json_path_or_data.strip().startswith('{') or json_path_or_data.strip().startswith('['):
+            logger.info("Loading groups from JSON string\n")
+            raw_data = json.loads(json_path_or_data)
+            return [Group(**group_data) for group_data in raw_data]
+        # If that fails, try as a file path
+        else:
+            with open(json_path_or_data, 'r') as f:
+                logger.info(f"Loading groups from JSON file: {json_path_or_data}\n")
+                raw_data = json.load(f)
+                return [Group(**group_data) for group_data in raw_data]
+
+    except (json.JSONDecodeError, FileNotFoundError) as e:
+        logger.error(f"Error loading groups: {e}")
+        sys.exit(1)
+
+def process_groups(groups, args, cpu_count):
+    for group in groups:
+        # Checking if files are already downloaded
+        logger.info(f"Saving object files to {args.store_path}")
+
+        existing_filepaths, ids_to_download = search_in_database(args.store_path, group.object_ids)
+
+        # If all exists
+        if not ids_to_download or len(ids_to_download) == 0:
+            logger.info(f"All files in group '{group.name}' have already been downloaded.")
+            final_filepaths = existing_filepaths
+        else:
+            # Start downloading of missing files
+            logger.info(f"Downloading {len(ids_to_download)} files for group: {group.name}")
+            objaverse._VERSIONED_PATH = args.store_path
+            
+            try:
+            # Download objects and get their paths
+            new_filepaths = objaverse.load_objects(
+                uids=ids_to_download,
+                download_processes=cpu_count
+            )
+            except Exception as e:
+                logger.error(f"Error downloading objects: {e}")
+                exit(1)
+            
+            if len(new_filepaths) != len(ids_to_download):
+                logger.warning(f"Downloaded {len(new_filepaths)} files, but expected {len(ids_to_download)}.")
+            
+            # Update our paths database with the actual paths
+            paths_db = load_paths_database(args.store_path)
+            paths_db.update(new_filepaths)
+            save_paths_database(args.store_path, paths_db)
+
+
+            # retry to get the paths
+            final_filepaths, ids_to_download = search_in_database(args.store_path, group.object_ids)
+            
+            if len(ids_to_download) != 0:
+                logger.info(f"Following files couldn't be downloaded in '{group.name}': {ids_to_download}.")
+
+        # Write to file
+        write_group_to_json(group.name, final_filepaths, args.save_path, args.groups_json)
+
+def search_in_database(store_path, ids):
+    """Check which IDs need to be downloaded by consulting the paths database"""
+    paths_db = load_paths_database(store_path)
+    
+    # Determine which files already exist in the database
+    existing_filepaths = []
+    ids_to_download = []
+    
+    for id in ids:
+        if id in paths_db:
+            existing_filepaths.append(paths_db[id])
+        else:
+            ids_to_download.append(id)
+    
+    return existing_filepaths, ids_to_download
+
+# reads all of the paths in the store_path db    
 def load_paths_database(db_path):
     """Load the centralized paths database or create if it doesn't exist"""
     paths_db_file = os.path.join(db_path, "paths_for_db.json")
@@ -68,31 +149,17 @@ def load_paths_database(db_path):
 def save_paths_database(db_path, paths_db):
     """Save the centralized paths database"""
     paths_db_file = os.path.join(db_path, "paths_for_db.json")
+    
+    # Delete the file if it exists
+    if os.path.exists(paths_db_file):
+        os.remove(paths_db_file)
+        logger.info(f"Deleted existing paths database at {paths_db_file}")
+    
     os.makedirs(os.path.dirname(paths_db_file), exist_ok=True)
     with open(paths_db_file, 'w') as f:
         json.dump(paths_db, f, indent=2)
     logger.info(f"Updated paths database at {paths_db_file}")
 
-def search_in_database(store_path, ids):
-    """Check which IDs need to be downloaded by consulting the paths database"""
-    paths_db = load_paths_database(store_path)
-    
-    # Determine which files already exist in the database
-    filepaths = []
-    ids_to_download = []
-    
-    for id in ids:
-        if id in paths_db:
-            filepaths.append(paths_db[id])
-        else:
-            # Predict where the file will be stored based on objaverse's structure
-            # The final path will be updated after download
-            path_to_id = os.path.join(store_path, "glbs", "000-023", id + ".glb")
-            filepaths.append(path_to_id)
-            ids_to_download.append(id)
-    
-    return filepaths, ids_to_download
-            
 def write_group_to_json(group, filepaths, save_path, groups_json):
     groups_name = os.path.basename(groups_json).split('.')[-2]
     output_json_dir = os.path.join(save_path, groups_name+"_paths")
@@ -105,61 +172,6 @@ def write_group_to_json(group, filepaths, save_path, groups_json):
     with open(group_json_path, "w") as json_file:
         json.dump(data, json_file, indent=2)
     logger.info(f"Json file with id paths written for group: {group} {group_json_path}\n")
-
-def process_groups(groups, args, cpu_count):
-    for group in groups:
-        # Checking if files are already downloaded
-        logger.info(f"Saving object files to {args.store_path}")
-
-        filepaths, ids_to_download = search_in_database(args.store_path, group.object_ids)
-
-        # If all exists
-        if not ids_to_download:
-            logger.info(f"All files in group '{group.name}' have already been downloaded.")
-        else:
-            # Start downloading of missing files
-            logger.info(f"Downloading {len(ids_to_download)} files for group: {group.name}")
-            objaverse._VERSIONED_PATH = args.store_path
-            
-            # Download objects and get their paths
-            downloaded_paths = objaverse.load_objects(
-                uids=ids_to_download,
-                download_processes=cpu_count
-            )
-            
-            # Update our paths database with the actual paths
-            paths_db = load_paths_database(args.store_path)
-            paths_db.update(downloaded_paths)
-            save_paths_database(args.store_path, paths_db)
-            
-            # Update filepaths with the actual downloaded paths
-            for i, id in enumerate(group.object_ids):
-                if id in downloaded_paths:
-                    # Replace the predicted path with the actual path
-                    idx = group.object_ids.index(id)
-                    filepaths[idx] = downloaded_paths[id]
-
-        # Write to file
-        write_group_to_json(group.name, filepaths, args.save_path, args.groups_json)
-
-def load_groups_from_json(json_path_or_data):
-    """Load group data from a JSON file or directly from a JSON string"""
-    try:
-        # First try to parse as direct JSON data
-        if json_path_or_data.strip().startswith('{') or json_path_or_data.strip().startswith('['):
-            logger.info("Loading groups from JSON string\n")
-            raw_data = json.loads(json_path_or_data)
-            return [Group(**group_data) for group_data in raw_data]
-        # If that fails, try as a file path
-        else:
-            with open(json_path_or_data, 'r') as f:
-                logger.info(f"Loading groups from JSON file: {json_path_or_data}\n")
-                raw_data = json.load(f)
-                return [Group(**group_data) for group_data in raw_data]
-
-    except (json.JSONDecodeError, FileNotFoundError) as e:
-        logger.error(f"Error loading groups: {e}")
-        sys.exit(1)
 
 def main():
     logger.info("%s\n",objaverse.__version__)

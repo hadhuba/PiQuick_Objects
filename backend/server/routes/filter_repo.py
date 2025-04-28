@@ -5,7 +5,7 @@ This module defines API routes for filtering and retrieving 3D objects.
 It includes endpoints for fetching filter options, applying filters, and retrieving all objects,
 allowing clients to query the 3D object database with specific criteria.
 """
-
+import json
 from fastapi import HTTPException, APIRouter, Depends
 import uuid
 import os
@@ -154,32 +154,16 @@ def get_all():
     if not os.path.exists(objects_database_path):
         raise FileNotFoundError(f"The directory {objects_database_path} does not exist.")
     
-    # Check if paths database exists and use it
+    # Check if paths database exists
     if os.path.exists(paths_db_file):
         try:
-            import json
             with open(paths_db_file, 'r') as f:
                 paths_db = json.load(f)
-                
             # Return all object IDs from the paths database
             return list(paths_db.keys())
         except json.JSONDecodeError:
-            logger.warning(f"Error decoding {paths_db_file}, falling back to directory search")
+            logger.warning(f"Error decoding {paths_db_file}")
         except Exception as e:
-            logger.warning(f"Error reading paths database: {e}, falling back to directory search")
-    
-    # Fallback to the old method if paths database doesn't exist or had issues
-    file_path = os.path.join(objects_database_path, "glbs", "000-023")
-    
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"The file {file_path} does not exist.")
-
-    ids = []
-
-    paths = os.listdir(file_path)
-    for path in paths:
-        if path.endswith(".glb"):
-            id = path.split(".")[0]
-            ids.append(id)
-
-    return ids
+            logger.warning(f"Error reading paths database: {e}")
+   
+    return []
