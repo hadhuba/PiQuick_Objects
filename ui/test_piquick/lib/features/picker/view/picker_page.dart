@@ -50,19 +50,6 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                   ref: ref, // Pass ref to Viewer3D
                 ),
               ),
-              const SizedBox(height: 4),
-
-              ElevatedButton(
-                onPressed: () {
-                  // Navigate to FiltersPage as a popup.
-                  showDialog(
-                    context: context,
-                    builder: (context) => const FiltersPage(),
-                  );
-                },
-                child: const Text('Go to Filters'),
-              ),
-              const SizedBox(height: 4),
             ],
           ),
         ),

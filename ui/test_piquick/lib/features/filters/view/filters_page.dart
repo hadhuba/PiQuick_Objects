@@ -403,7 +403,6 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                 ref
                                     .read(filtersViewModelProvider.notifier)
                                     .applyFilters();
-                                Navigator.of(context).pop();
                               },
                               icon: const Icon(Icons.filter_alt),
                               label: const Text('Apply Filters'),

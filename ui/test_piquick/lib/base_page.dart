@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:test_piquick/features/picker/view/picker_page.dart';
 import 'package:test_piquick/features/rendering/view/render_page.dart';
+import 'package:test_piquick/features/filters/view/filters_page.dart';
 
 class BasePage extends ConsumerStatefulWidget {
   const BasePage({super.key});
@@ -11,12 +12,13 @@ class BasePage extends ConsumerStatefulWidget {
 }
 
 class _BasePageState extends ConsumerState<BasePage> {
-  int selectedIndex = 0;
+  int selectedIndex = 1;
 
   @override
   Widget build(BuildContext context) {
     final pages = [
-      const PickerPage(), // PickerPage widget for 3D object selection.
+      const FiltersPage(), // Filter page.
+      PickerPage(), // PickerPage widget for 3D object selection.
       const RenderPage(), // Render page.
     ];
 
@@ -35,6 +37,10 @@ class _BasePageState extends ConsumerState<BasePage> {
           });
         },
         items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.filter_alt),
+            label: 'Filter',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.search),
             label: 'PickerPage',
