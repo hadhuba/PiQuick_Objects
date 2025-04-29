@@ -8,8 +8,6 @@ import 'package:test_piquick/core/constants/server_constants.dart';
 import 'package:test_piquick/core/failure/failure.dart';
 import 'package:test_piquick/features/filters/model/filter.dart';
 
-// Using a simple Either class since you seem to be using fpdart
-
 part 'filter_remote_repository.g.dart';
 
 @riverpod
@@ -18,6 +16,11 @@ FilterRemoteRepository filterRemoteRepository(Ref ref) {
 }
 
 class FilterRemoteRepository {
+  final http.Client client;
+
+  FilterRemoteRepository({http.Client? client})
+    : client = client ?? http.Client();
+
   Future<Either<AppFailure, List<String>>> applyFilters({
     required List<Filter> filters,
   }) async {
@@ -26,7 +29,7 @@ class FilterRemoteRepository {
         "filters": filters.map((filter) => filter.toMap()).toList(),
       };
 
-      final response = await http.post(
+      final response = await client.post(
         Uri.parse('${ServerConstants.serverUrl}/filters/apply'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(filtersJson),
@@ -50,10 +53,9 @@ class FilterRemoteRepository {
     }
   }
 
-  // You can add more filter-related API methods here
   Future<Either<AppFailure, List<Filter>>> getFilterOptions() async {
     try {
-      final response = await http.get(
+      final response = await client.get(
         Uri.parse('${ServerConstants.serverUrl}/filters/options'),
         headers: {'Content-Type': 'application/json'},
       );
@@ -72,9 +74,6 @@ class FilterRemoteRepository {
               .map((filter) => Filter.fromMap(filter as Map<String, dynamic>))
               .toList();
 
-      // Wrap the filters list in a Filters object
-      // final Filters filters = Filters(filters: filtersList);
-
       return Right(filtersList);
     } catch (e) {
       return Left(AppFailure(e.toString()));
@@ -83,7 +82,7 @@ class FilterRemoteRepository {
 
   Future<Either<AppFailure, List<String>>> getObjectsList() async {
     try {
-      final response = await http.get(
+      final response = await client.get(
         Uri.parse('${ServerConstants.serverUrl}/filters/allobjects'),
       );
 

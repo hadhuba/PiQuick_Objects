@@ -19,9 +19,7 @@ class PickerViewModel extends _$PickerViewModel {
 
   @override
   PickerState build() {
-    _pickerRemoteRepository =
-        PickerRemoteRepository(); // we cant continously track the changes in authremoterepo
-    _pickerRemoteRepository = ref.watch(
+    _pickerRemoteRepository =ref.watch(
       pickerRemoteRepositoryProvider,
     ); // if it changes the latest comes, build runs again
 
@@ -47,7 +45,7 @@ class PickerViewModel extends _$PickerViewModel {
     final bus = ref.read(filterEventBusProvider);
     _eventSubscription = bus.events.listen((event) {
       if (event is AppliedFiltersEvent) {
-        _handleFiltersAppliedEvent(event);
+        handleFiltersAppliedEvent(event);
       }
     });
   }
@@ -179,7 +177,7 @@ class PickerViewModel extends _$PickerViewModel {
     state = state.copyWith(objects: AsyncValue.data(objectsList));
   }
 
-  void _handleFiltersAppliedEvent(AppliedFiltersEvent event) {
+  void handleFiltersAppliedEvent(AppliedFiltersEvent event) {
     updateObjectsList(objectsList: event.newObjects ?? []);
   }
 }

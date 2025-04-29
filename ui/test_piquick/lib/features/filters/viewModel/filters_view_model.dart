@@ -10,23 +10,18 @@ part 'auto_generated/filters_view_model.g.dart';
 @riverpod
 class FiltersViewModel extends _$FiltersViewModel {
   late FilterRemoteRepository _filterRemoteRepository;
-  // static bool _hasInitialized = false;
   
   @override
   FiltersState build() {
-    _filterRemoteRepository =
-        FilterRemoteRepository(); // we cant continously track the changes in authremoterepo
     _filterRemoteRepository = ref.watch(
       filterRemoteRepositoryProvider,
-    ); // if it changes the latest comes, build runs again
+    );
 
-    // Initialize the state
     final initialState = FiltersState(
       filters: const AsyncValue.loading(),
       objectsList: const AsyncValue.loading(),
     );
 
-    // Defer the call to fetchFilters() until after the state is initialized
     Future.microtask(() => initFilters());
 
 

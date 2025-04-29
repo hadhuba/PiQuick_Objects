@@ -312,7 +312,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                                 style: TextStyle(
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.bold,
-                                                  color: Colors.blue,
+                                                  color: Colors.red,
                                                 ),
                                               ),
                                         ),
@@ -378,7 +378,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                             error:
                                                 (error, stackTrace) => Center(
                                                   child: Text(
-                                                    'Error: $error',
+                                                    '$error',
                                                     style: const TextStyle(
                                                       color: Colors.red,
                                                     ),
