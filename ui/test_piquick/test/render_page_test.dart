@@ -1,92 +1,62 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:test_piquick/features/rendering/view/render_page.dart';
-import 'package:test_piquick/features/rendering/viewModel/render_view_model.dart';
-import 'package:mocktail/mocktail.dart';
+import 'dart:io';
 
-// Mock osztály létrehozása a RenderViewModel-hez
-class MockRenderViewModel extends Mock implements RenderViewModel {}
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:test_piquick/core/failure/failure.dart';
+import 'package:test_piquick/features/rendering/viewModel/render_view_model.dart';
+import 'package:test_piquick/features/rendering/model/repository/render_remote_repository.dart';
+
+class MockRenderRemoteRepository extends Mock
+    implements RenderRemoteRepository {}
 
 void main() {
-  group('RenderPage Widget Tests', () {
-    testWidgets('should show loading indicator when data is loading', (
-      WidgetTester tester,
-    ) async {
-      // Arrange
-      await tester.pumpWidget(
-        const ProviderScope(child: MaterialApp(home: RenderPage())),
-      );
+  late MockRenderRemoteRepository mockRepository;
+  late ProviderContainer container;
 
-      // Mivel alapértelmezetten az adatok betöltődnek, a kezdeti állapotban
-      // a loader-nek látszódnia kell
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      // vagy
-      expect(
-        find.byType(LinearProgressIndicator),
-        findsWidgets,
-      ); // javított találati predikátum
+  setUp(() {
+    mockRepository = MockRenderRemoteRepository();
+    container = ProviderContainer(
+      overrides: [
+        renderRemoteRepositoryProvider.overrideWithValue(mockRepository),
+      ],
+    );
+  });
+
+  tearDown(() {
+    container.dispose();
+  });
+
+  group('RenderViewModel Tests', () {
+    test('Initial state is loading', () {
+      final viewModel = container.read(renderViewModelProvider.notifier);
+      expect(viewModel.state.renderModel.isLoading, isTrue);
     });
 
-    // Az alábbiakban egy teszt vázlata látható, de ez függhet a valós implementációdtól
-    // Ezért szükség szerint módosítsd
-    testWidgets('should render group selection dropdown when data is loaded', (
-      WidgetTester tester,
-    ) async {
-      // Ehhez a teszthez Riverpod-ot és mock adatokat kell használnunk
+    test('sendSettings updates state on success', () async {
+      final mockFile = File('mock_path.zip');
+      when(
+        () => mockRepository.sendSettings(any()),
+      ).thenAnswer((_) async => Right(mockFile));
 
-      // A tényleges implementációhoz egy olyan megoldás szükséges,
-      // ami override-olja a provider-t mock adatokkal
+      final viewModel = container.read(renderViewModelProvider.notifier);
+      viewModel.sendSettings();
 
-      // Példa (ez nem fog működni a valós implementáció ismerete nélkül):
-      /*
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            renderViewModelProvider.overrideWithProvider(
-              // Itt egy olyan provider kellene, ami mock adatokkal van feltöltve
-            ),
-          ],
-          child: const MaterialApp(
-            home: RenderPage(),
-          ),
-        ),
-      );
-      
-      await tester.pumpAndSettle();
-      
-      // Ellenőrizzük a dropdown megjelenését
-      expect(find.byType(DropdownButton<String>), findsOneWidget);
-      */
+      expect(viewModel.state.downloadedFile.value, equals(mockFile));
+      expect(viewModel.state.downloadStatus, contains('successful'));
     });
 
-    testWidgets('should show error message when data loading fails', (
-      WidgetTester tester,
-    ) async {
-      // Itt is egy olyan tesztet kellene írni, amely a provider-t overrideolva
-      // hibát szimulál, majd ellenőrzi, hogy a hibaüzenet megjelenik-e
+    test('sendSettings updates state on failure', () async {
+      when(
+        () => mockRepository.sendSettings(any()),
+      ).thenAnswer((_) async => Left(AppFailure('Network error')));
 
-      // Példa (ez nem fog működni a valós implementáció ismerete nélkül):
-      /*
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            renderViewModelProvider.overrideWithProvider(
-              // Itt egy olyan provider kellene, ami hibát dob
-            ),
-          ],
-          child: const MaterialApp(
-            home: RenderPage(),
-          ),
-        ),
-      );
-      
-      await tester.pumpAndSettle();
-      
-      // Ellenőrizzük a hibaüzenet megjelenését
-      expect(find.text('Error loading render settings'), findsOneWidget);
-      expect(find.text('Retry'), findsOneWidget);
-      */
+      final viewModel = container.read(renderViewModelProvider.notifier);
+      viewModel.sendSettings();
+
+      expect(viewModel.state.downloadedFile.hasError, isTrue);
+      expect(viewModel.state.downloadStatus, contains('unsuccessful'));
     });
   });
 }
