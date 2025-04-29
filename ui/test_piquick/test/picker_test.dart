@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:test_piquick/core/failure/failure.dart';
-import 'package:test_piquick/features/picker/model/object_groups_model.dart';
 import 'package:test_piquick/features/picker/model/picker_events.dart';
 import 'package:test_piquick/features/picker/model/repository/picker_remote_repository.dart';
 import 'package:test_piquick/features/picker/view/picker_page.dart';
@@ -14,7 +13,6 @@ import 'package:fpdart/fpdart.dart';
 import 'package:test_piquick/features/picker/viewModel/picker_event_bus.dart';
 import 'package:test_piquick/features/filters/viewModel/filter_event_bus.dart';
 import 'package:test_piquick/features/filters/model/filter_events.dart';
-import 'package:test_piquick/features/picker/viewModel/states/viewer_3d_state.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 // Mock osztály létrehozása a PickerViewModel-hez

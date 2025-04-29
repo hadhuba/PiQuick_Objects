@@ -3,8 +3,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/picker/model/object_groups_model.dart';
 import 'package:test_piquick/features/picker/model/picker_events.dart';
 import 'package:test_piquick/features/picker/viewModel/picker_event_bus.dart';
-import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
-import 'package:test_piquick/features/picker/viewModel/picker_view_model.dart';
 import 'package:test_piquick/features/rendering/model/group.dart';
 import 'package:test_piquick/features/rendering/model/render_events.dart';
 import 'package:test_piquick/features/rendering/model/render_model.dart';
@@ -28,13 +26,6 @@ class RenderViewModel extends _$RenderViewModel {
   RenderState build() {
     _renderRemoteRepository = ref.watch(renderRemoteRepositoryProvider);
     settingsFormViewModel = ref.watch(settingsFormViewModelProvider.notifier);
-
-    // // Figyeljük a Picker állapotváltozásait
-    // ref.listen<PickerState>(pickerViewModelProvider, (_, next) {
-    //   next.groupedObjects.whenData((objects) {
-    //     updateRender(groupedObjects: objects);
-    //   });
-    // });
 
     // Figyeljük az EventBus eseményeit
     _setupEventListeners();
@@ -71,9 +62,7 @@ class RenderViewModel extends _$RenderViewModel {
   }
 
   void _handleSaveSettingsEvent(SaveSettingsEvent event) {
-    final newSettings =
-        settingsFormViewModel.state.formModel.toRenderSettings();
-    updateGroupSettings(event.groupName, newSettings);
+    updateGroupSettings(event.groupName, event.settings);
   }
 
   void _handleSendSettingsEvent(SendSettingsEvent event) {
@@ -93,8 +82,6 @@ class RenderViewModel extends _$RenderViewModel {
   }
 
   void updateRender({required ObjectGroups groupedObjects}) {
-    print("Updating render with new object groups...");
-
     // Get current render model if available to preserve existing settings
     final currentRenderModel = state.renderModel.valueOrNull;
 
@@ -161,6 +148,7 @@ class RenderViewModel extends _$RenderViewModel {
     } else {
       emptySettingsForm();
     }
+    print("Updating render with new object groups... ${state.renderModel}");
   }
 
   RenderSettings? getSettingsForGroup(String groupName) {
@@ -205,7 +193,7 @@ class RenderViewModel extends _$RenderViewModel {
     );
   }
 
-  void sendSettings() async {
+  Future<void> sendSettings() async {
     final newSettings =
         settingsFormViewModel.state.formModel.toRenderSettings();
     updateGroupSettings(settingsFormViewModel.state.groupName, newSettings);

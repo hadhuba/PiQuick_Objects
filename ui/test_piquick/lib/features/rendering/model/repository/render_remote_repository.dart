@@ -36,7 +36,7 @@ class RenderRemoteRepository {
         final zipFileName = 'rendered_output_$timestamp.zip';
 
         if (kIsWeb) {
-          downloadFileWeb(response.bodyBytes, zipFileName);
+          downloadFile(response.bodyBytes, zipFileName);
           return Right(null);
         } else {
           // android, ios
