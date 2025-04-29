@@ -85,11 +85,11 @@ def process_groups(groups, args, cpu_count):
             objaverse._VERSIONED_PATH = args.store_path
             
             try:
-            # Download objects and get their paths
-            new_filepaths = objaverse.load_objects(
-                uids=ids_to_download,
-                download_processes=cpu_count
-            )
+                # Download objects and get their paths
+                new_filepaths = objaverse.load_objects(
+                    uids=ids_to_download,
+                    download_processes=cpu_count
+                )
             except Exception as e:
                 logger.error(f"Error downloading objects: {e}")
                 exit(1)

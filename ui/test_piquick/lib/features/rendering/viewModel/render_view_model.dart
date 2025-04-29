@@ -1,6 +1,8 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/picker/model/object_groups_model.dart';
+import 'package:test_piquick/features/picker/model/picker_events.dart';
+import 'package:test_piquick/features/picker/viewModel/picker_event_bus.dart';
 import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
 import 'package:test_piquick/features/picker/viewModel/picker_view_model.dart';
 import 'package:test_piquick/features/rendering/model/group.dart';
@@ -27,12 +29,12 @@ class RenderViewModel extends _$RenderViewModel {
     _renderRemoteRepository = ref.watch(renderRemoteRepositoryProvider);
     settingsFormViewModel = ref.watch(settingsFormViewModelProvider.notifier);
 
-    // Figyeljük a Picker állapotváltozásait
-    ref.listen<PickerState>(pickerViewModelProvider, (_, next) {
-      next.groupedObjects.whenData((objects) {
-        updateRender(groupedObjects: objects);
-      });
-    });
+    // // Figyeljük a Picker állapotváltozásait
+    // ref.listen<PickerState>(pickerViewModelProvider, (_, next) {
+    //   next.groupedObjects.whenData((objects) {
+    //     updateRender(groupedObjects: objects);
+    //   });
+    // });
 
     // Figyeljük az EventBus eseményeit
     _setupEventListeners();
@@ -44,9 +46,9 @@ class RenderViewModel extends _$RenderViewModel {
   }
 
   void _setupEventListeners() {
-    final bus = ref.read(renderEventBusProvider);
+    final renderBus = ref.read(renderEventBusProvider);
 
-    _eventSubscription = bus.events.listen((event) {
+    _eventSubscription = renderBus.events.listen((event) {
       if (event is SaveSettingsEvent) {
         _handleSaveSettingsEvent(event);
       } else if (event is SendSettingsEvent) {
@@ -55,6 +57,17 @@ class RenderViewModel extends _$RenderViewModel {
         createOrUpdateSettingsForm(event.groupName);
       }
     });
+    final pickerBus = ref.read(pickerEventBusProvider);
+
+    _eventSubscription = pickerBus.events.listen((event) {
+      if (event is GroupAlteredEvent) {
+        _handleGroupAltered(event);
+      }
+    });
+  }
+
+  void _handleGroupAltered(event) {
+    updateRender(groupedObjects: event.newObjectGroups);
   }
 
   void _handleSaveSettingsEvent(SaveSettingsEvent event) {
@@ -80,6 +93,8 @@ class RenderViewModel extends _$RenderViewModel {
   }
 
   void updateRender({required ObjectGroups groupedObjects}) {
+    print("Updating render with new object groups...");
+
     // Get current render model if available to preserve existing settings
     final currentRenderModel = state.renderModel.valueOrNull;
 
@@ -148,7 +163,6 @@ class RenderViewModel extends _$RenderViewModel {
     }
   }
 
-
   RenderSettings? getSettingsForGroup(String groupName) {
     return state.renderModel
         .whenData((renderModel) => renderModel.get(groupName)?.settings)
@@ -170,7 +184,6 @@ class RenderViewModel extends _$RenderViewModel {
   bool hasDownloadError() {
     return state.downloadedFile.hasError;
   }
-
 
   // Action methods
   void selectGroup(String? value) {
@@ -194,9 +207,9 @@ class RenderViewModel extends _$RenderViewModel {
 
   void sendSettings() async {
     final newSettings =
-      settingsFormViewModel.state.formModel.toRenderSettings();
-      updateGroupSettings(settingsFormViewModel.state.groupName, newSettings);
-    
+        settingsFormViewModel.state.formModel.toRenderSettings();
+    updateGroupSettings(settingsFormViewModel.state.groupName, newSettings);
+
     state = state.copyWith(
       downloadStatus: "Sending rendering request...",
       downloadedFile: const AsyncValue.loading(),
@@ -216,10 +229,7 @@ class RenderViewModel extends _$RenderViewModel {
             downloadStatus: "Rendering successful! Download initiated.",
           ),
           Left(value: final l) => state.copyWith(
-            downloadedFile: AsyncValue.error(
-              l.message,
-              StackTrace.empty,
-            ),
+            downloadedFile: AsyncValue.error(l.message, StackTrace.empty),
             downloadStatus: "Rendering unsuccessful!",
           ),
         };

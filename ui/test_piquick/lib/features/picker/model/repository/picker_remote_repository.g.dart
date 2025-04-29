@@ -7,7 +7,7 @@ part of 'picker_remote_repository.dart';
 // **************************************************************************
 
 String _$pickerRemoteRepositoryHash() =>
-    r'0afd64cd843027dfccb3db7f7bf6c31a90f9c1b8';
+    r'9f72cd43405411e366382272a89c8ee572081047';
 
 /// See also [pickerRemoteRepository].
 @ProviderFor(pickerRemoteRepository)

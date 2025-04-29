@@ -1,12 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'picker_view_model.dart';
+part of '../picker_view_model.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$pickerViewModelHash() => r'65e3726144d5187d77acee1de4cd39d48b098be7';
+String _$pickerViewModelHash() => r'e0488b9ebaf5b3d13d08a08e4c0ef8db68a0849f';
 
 /// See also [PickerViewModel].
 @ProviderFor(PickerViewModel)

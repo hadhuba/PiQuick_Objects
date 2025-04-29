@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:test_piquick/features/picker/model/object_groups_model.dart';
+import 'package:test_piquick/features/picker/model/picker_events.dart';
 import 'package:test_piquick/features/picker/model/repository/picker_remote_repository.dart';
+import 'package:test_piquick/features/picker/viewModel/picker_event_bus.dart';
 import 'package:test_piquick/features/picker/viewModel/states/picker_state.dart';
 import 'package:test_piquick/features/picker/viewModel/states/viewer_3d_state.dart';
 import 'package:test_piquick/features/filters/model/filter_events.dart';
 import 'package:test_piquick/features/filters/viewModel/filter_event_bus.dart';
-part 'picker_view_model.g.dart';
+part 'auto_generated/picker_view_model.g.dart';
 
 @riverpod
 class PickerViewModel extends _$PickerViewModel {
@@ -22,7 +24,6 @@ class PickerViewModel extends _$PickerViewModel {
     _pickerRemoteRepository = ref.watch(
       pickerRemoteRepositoryProvider,
     ); // if it changes the latest comes, build runs again
-
 
     final initialState = PickerState(
       objects: AsyncValue.loading(), // Initialize the state with loading
@@ -44,7 +45,6 @@ class PickerViewModel extends _$PickerViewModel {
 
   void _setupEventListeners() {
     final bus = ref.read(filterEventBusProvider);
-
     _eventSubscription = bus.events.listen((event) {
       if (event is AppliedFiltersEvent) {
         _handleFiltersAppliedEvent(event);
@@ -116,6 +116,9 @@ class PickerViewModel extends _$PickerViewModel {
             ),
           )),
     );
+    ref
+        .read(pickerEventBusProvider)
+        .emit(GroupAlteredEvent(newObjectGroups: state.groupedObjects.value!));
   }
 
   String? newGroup({required String groupname}) {
@@ -135,6 +138,11 @@ class PickerViewModel extends _$PickerViewModel {
             groups.createGroup(groupName: groupname),
           ),
         );
+        ref
+            .read(pickerEventBusProvider)
+            .emit(
+              GroupAlteredEvent(newObjectGroups: state.groupedObjects.value!),
+            );
       }
     });
 
@@ -148,6 +156,9 @@ class PickerViewModel extends _$PickerViewModel {
             groupedObjects: AsyncValue.data(groups.removeGroup(groupname)),
           )),
     );
+    ref
+        .read(pickerEventBusProvider)
+        .emit(GroupAlteredEvent(newObjectGroups: state.groupedObjects.value!));
   }
 
   void removeFromGroup({required String groupname, required String objectId}) {
@@ -159,6 +170,9 @@ class PickerViewModel extends _$PickerViewModel {
             ),
           )),
     );
+    ref
+        .read(pickerEventBusProvider)
+        .emit(GroupAlteredEvent(newObjectGroups: state.groupedObjects.value!));
   }
 
   void updateObjectsList({required List<String> objectsList}) {
