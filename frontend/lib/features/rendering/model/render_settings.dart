@@ -13,7 +13,6 @@ class RenderSettings {
   bool modeFrontView;
   bool modeFourView;
   bool onlyNorthernHemisphere;
-  bool separately;
 
   // Human-readable descriptions for UI display
   static const Map<String, String> labels = {
@@ -25,7 +24,6 @@ class RenderSettings {
     'modeFrontView': 'Front View Mode',
     'modeFourView': 'Four View Mode',
     'onlyNorthernHemisphere': 'Only Northern Hemisphere',
-    'separately': 'Render Separately',
   };
 
   // Detailed descriptions for tooltips or help text
@@ -46,9 +44,7 @@ class RenderSettings {
         'If enabled, images will be rendered from front/left/right/back. At least one view mode must be enabled.',
     'onlyNorthernHemisphere':
         'If enabled, only renders from the top hemisphere of viewing angles. This is useful for objects acquired via photogrammetry, as the southern hemisphere may have holes',
-    'separately':
-        'If enabled, each object in the group is rendered separately. Otherwise, the objects in the group are placed in a common scene.',
-  };
+      };
 
   // Get display label for a property
   static String getLabel(String property) {
@@ -69,7 +65,6 @@ class RenderSettings {
     this.modeFrontView = false,
     this.modeFourView = false,
     this.onlyNorthernHemisphere = true,
-    this.separately = true,
   });
 
   RenderSettings copyWith({
@@ -81,7 +76,6 @@ class RenderSettings {
     bool? modeFrontView,
     bool? modeFourView,
     bool? onlyNorthernHemisphere,
-    bool? separately,
   }) {
     return RenderSettings(
       numImages: numImages ?? this.numImages,
@@ -93,7 +87,6 @@ class RenderSettings {
       modeFourView: modeFourView ?? this.modeFourView,
       onlyNorthernHemisphere:
           onlyNorthernHemisphere ?? this.onlyNorthernHemisphere,
-      separately: separately ?? this.separately,
     );
   }
 
@@ -108,7 +101,6 @@ class RenderSettings {
       'mode_front_view': modeFrontView,
       'mode_four_view': modeFourView,
       'only_northern_hemisphere': onlyNorthernHemisphere,
-      'separately': separately,
     };
   }
 
@@ -125,7 +117,6 @@ class RenderSettings {
       onlyNorthernHemisphere:
           map['only_northern_hemisphere'] ??
           map['onlyNorthernHemisphere'] as bool,
-      separately: map['separately'] as bool,
     );
   }
 

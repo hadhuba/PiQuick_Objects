@@ -15,7 +15,6 @@ class SettingsFormModel {
   bool modeFrontView;
   bool modeFourView;
   bool onlyNorthernHemisphere;
-  bool separately;
 
   // Common resolution options
   static const List<int> commonResolutions = [256, 512, 1024, 2048, 4096];
@@ -32,7 +31,6 @@ class SettingsFormModel {
     required this.modeFrontView,
     required this.modeFourView,
     required this.onlyNorthernHemisphere,
-    required this.separately,
   });
 
   /// Create a form model from render settings
@@ -50,7 +48,6 @@ class SettingsFormModel {
       modeFrontView: settings.modeFrontView,
       modeFourView: settings.modeFourView,
       onlyNorthernHemisphere: settings.onlyNorthernHemisphere,
-      separately: settings.separately,
     );
   }
 
@@ -65,7 +62,6 @@ class SettingsFormModel {
       modeFrontView: false,
       modeFourView: false,
       onlyNorthernHemisphere: true,
-      separately: true,
     );
   }
 
@@ -80,7 +76,6 @@ class SettingsFormModel {
       modeFrontView: modeFrontView,
       modeFourView: modeFourView,
       onlyNorthernHemisphere: onlyNorthernHemisphere,
-      separately: separately,
     );
   }
 

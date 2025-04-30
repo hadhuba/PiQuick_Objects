@@ -179,19 +179,6 @@ class _RenderSettingsFormState extends ConsumerState<RenderSettingsForm> {
                   ),
                   viewModel: viewModel,
                 ),
-                _createSettingField(
-                  fieldId: 'separately',
-                  child: SwitchListTile(
-                    title: Text(RenderSettings.getLabel('separately')),
-                    value: viewModel.formModel.separately,
-                    onChanged: (value) {
-                      setState(() {
-                        viewModel.formModel.separately = value;
-                      });
-                    },
-                  ),
-                  viewModel: viewModel,
-                ),
               ],
             ),
           ),
