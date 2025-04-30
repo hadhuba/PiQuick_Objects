@@ -16,27 +16,40 @@ FilterRepository filterRepository(Ref ref) {
 }
 
 class FilterRepository {
-  final http.Client client;
+  late http.Client client;
 
   FilterRepository({http.Client? client}) : client = client ?? http.Client();
+
+    void resetClient() {
+    print('Resetting HTTP client: ${client.hashCode}');
+    client.close(); // Close the existing client to release resources
+    client = http.Client(); // Create a new client instance
+    print('New HTTP client created: ${client.hashCode}');
+  }
 
   Future<Either<AppFailure, List<String>>> applyFilters({
     required List<Filter> filters,
   }) async {
     try {
+      if (filters.isEmpty || filters.every((filter) => filter.minValue == null && filter.maxValue == null)) {
+        return await getObjectsList(); // Return an empty list if no filters are provided or all min and max values are null
+      }
       final Map<String, dynamic> filtersJson = {
         "filters": filters.map((filter) => filter.toMap()).toList(),
       };
 
-      final response = await client.post(
-        Uri.parse('${ServerConstants.serverUrl}/filters/apply'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(filtersJson),
-      );
+      final response = await client
+          .post(
+            Uri.parse('${ServerConstants.serverUrl}/filters/apply'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode(filtersJson),
+          )
+          .timeout(const Duration(seconds: 20));
 
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode != 200) {
+        print('Failed to apply filter options');
         return Left(
           AppFailure(responseBody['detail'] ?? 'Failed to apply filters'),
         );
@@ -53,15 +66,20 @@ class FilterRepository {
   }
 
   Future<Either<AppFailure, List<Filter>>> getFilterOptions() async {
+    print('getFilterOptions called');
     try {
-      final response = await client.get(
-        Uri.parse('${ServerConstants.serverUrl}/filters/options'),
-        headers: {'Content-Type': 'application/json'},
-      );
+      final response = await client
+          .get(
+            Uri.parse('${ServerConstants.serverUrl}/filters/options'),
+            headers: {'Content-Type': 'application/json'},
+          )
+          .timeout(const Duration(seconds: 20));
+
       print('Response status: ${response.statusCode}');
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode != 200) {
+        print('Failed to get filter options');
         return Left(
           AppFailure(responseBody['detail'] ?? 'Failed to get filter options'),
         );
@@ -75,20 +93,22 @@ class FilterRepository {
 
       return Right(filtersList);
     } catch (e) {
+      print('Error in getFilterOptions: $e');
       return Left(AppFailure(e.toString()));
     }
   }
 
   Future<Either<AppFailure, List<String>>> getObjectsList() async {
     try {
-      final response = await client.get(
-        Uri.parse('${ServerConstants.serverUrl}/filters/allobjects'),
-      );
+      final response = await client
+          .get(Uri.parse('${ServerConstants.serverUrl}/filters/allobjects'), 
+          )
+          .timeout(const Duration(seconds: 20));
 
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode != 200) {
-        print(responseBody['detail'] ?? 'Failed to get objects list');
+        print('Failed to get filter options');
         return Left(
           AppFailure(responseBody['detail'] ?? 'Failed to fetch objects list'),
         );

@@ -70,7 +70,6 @@ void main() {
 
   group('PickerViewModel Tests', () {
     test('initial state should be loading', () {
-      final viewModel = container.read(pickerViewModelProvider.notifier);
       final state = container.read(pickerViewModelProvider);
 
       expect(state.objects.isLoading, isTrue);

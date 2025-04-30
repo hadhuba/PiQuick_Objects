@@ -1,6 +1,7 @@
 // Extracted reusable widget for the filter list
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/core/utils.dart';
 import 'package:frontend/features/filters/model/filter.dart';
 import 'package:frontend/features/filters/view/widgets/filter_input_field.dart';
 import 'package:frontend/features/filters/viewModel/filters_view_model.dart';
@@ -9,11 +10,8 @@ class FilterList extends StatelessWidget {
   final List<Filter> filtersList;
   final WidgetRef ref;
 
-  const FilterList({
-    required this.filtersList,
-    required this.ref,
-    Key? key,
-  }) : super(key: key);
+  const FilterList({required this.filtersList, required this.ref, Key? key})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -45,12 +43,16 @@ class FilterList extends StatelessWidget {
                       label: 'Min:',
                       initialValue: filter.minValue?.toString(),
                       onChanged: (value) {
-                        final num? newMin = value.isEmpty ? null : num.tryParse(value);
-                        ref.read(filtersViewModelProvider.notifier).updateFilter(
-                          type: filter.type,
-                          minValue: newMin,
-                          maxValue: filter.maxValue,
-                        );
+                        final error = ref
+                            .read(filtersViewModelProvider.notifier)
+                            .updateFilter(
+                              type: filter.type,
+                              minValue: value,
+                              maxValue: filter.maxValue?.toString(),
+                            );
+                        if (error != null) {
+                          showSnackBar(context, error);
+                        }
                       },
                     ),
                   ),
@@ -60,12 +62,16 @@ class FilterList extends StatelessWidget {
                       label: 'Max:',
                       initialValue: filter.maxValue?.toString(),
                       onChanged: (value) {
-                        final num? newMax = value.isEmpty ? null : num.tryParse(value);
-                        ref.read(filtersViewModelProvider.notifier).updateFilter(
-                          type: filter.type,
-                          minValue: filter.minValue,
-                          maxValue: newMax,
-                        );
+                        final error = ref
+                            .read(filtersViewModelProvider.notifier)
+                            .updateFilter(
+                              type: filter.type,
+                              minValue: filter.minValue?.toString(),
+                              maxValue: value,
+                            );
+                        if (error != null) {
+                          showSnackBar(context, error);
+                        }
                       },
                     ),
                   ),

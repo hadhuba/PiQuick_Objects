@@ -99,6 +99,7 @@ void main() {
             () => FakeFiltersViewModel(
               buildFn:
                   () => FiltersState(
+                    serverConnection: const AsyncValue.loading(),
                     filters: const AsyncValue.loading(),
                     objectsList: const AsyncValue.loading(),
                   ),
@@ -127,6 +128,7 @@ void main() {
             () => FakeFiltersViewModel(
               buildFn:
                   () => FiltersState(
+                    serverConnection: const AsyncValue.data('Connected'),
                     filters: AsyncValue.data([Filter(type: "testFilter")]),
                     objectsList: AsyncValue.data([]),
                   ),
@@ -158,6 +160,7 @@ void main() {
             () => FakeFiltersViewModel(
               buildFn:
                   () => FiltersState(
+                    serverConnection: AsyncValue.error("error", StackTrace.current),
                     filters: AsyncValue.error("error", StackTrace.current),
                     objectsList: AsyncValue.error("error", StackTrace.current),
                   ),

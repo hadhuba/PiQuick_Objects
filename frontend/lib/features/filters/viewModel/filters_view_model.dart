@@ -16,6 +16,7 @@ class FiltersViewModel extends _$FiltersViewModel {
     _filterRepository = ref.watch(filterRepositoryProvider);
 
     final initialState = FiltersState(
+      serverConnection: const AsyncValue.loading(),
       filters: const AsyncValue.loading(),
       objectsList: const AsyncValue.loading(),
     );
@@ -26,59 +27,121 @@ class FiltersViewModel extends _$FiltersViewModel {
   }
 
   Future<void> initFilters() async {
-    state = state.copyWith(filters: const AsyncValue.loading());
+    _filterRepository.resetClient(); // Reset the client to avoid conflicts
+    print('initFilters called');
 
-    final filterResponse = await _filterRepository.getFilterOptions();
-    state = switch (filterResponse) {
-      Right(value: final r) => state.copyWith(filters: AsyncValue.data(r)),
-      Left(value: final l) => state.copyWith(
-        filters: AsyncValue.error(l.message, StackTrace.current),
-      ),
-    };
+    // Cancel any pending requests or reset state to avoid conflicts
+    state = state.copyWith(
+      filters: const AsyncValue.loading(),
+      serverConnection: const AsyncValue.loading(),
+      objectsList: const AsyncValue.loading(),
+    );
 
-    final objResponse = await _filterRepository.getObjectsList();
+    try {
+      final filterResponse = await _filterRepository.getFilterOptions();
+      switch (filterResponse) {
+        case Right(value: final r):
+          state = state.copyWith(
+            filters: AsyncValue.data(r),
+            serverConnection: const AsyncValue.data('Connected'),
+          );
+        case Left(value: final l):
+          state = state.copyWith(
+            filters: AsyncValue.error(l.message, StackTrace.current),
+            serverConnection: AsyncValue.error(
+              'Error connecting to server',
+              StackTrace.current,
+            ),
+          );
+          return;
+      }
+      ;
 
-    switch (objResponse) {
-      case Right(value: final r):
-        {
+      final objResponse = await _filterRepository.getObjectsList();
+      switch (objResponse) {
+        case Right(value: final r):
           ref
               .read(filterEventBusProvider)
               .emit(AppliedFiltersEvent(newObjects: r));
           state = state.copyWith(objectsList: AsyncValue.data(r));
-        }
-      case Left(value: final l):
-        {
+          break;
+        case Left(value: final l):
           ref
               .read(filterEventBusProvider)
               .emit(AppliedFiltersEvent(newObjects: []));
-          state = state.copyWith(
-            objectsList: AsyncValue.error(l.message, StackTrace.current),
-          );
-        }
+          if (l.message.contains("TimeoutException")) {
+            state = state.copyWith(
+              objectsList: AsyncValue.error(
+                'Server took too long to respond',
+                StackTrace.current,
+              ),
+              serverConnection: AsyncValue.error(
+                'Server took too long to respond',
+                StackTrace.current,
+              ),
+            );
+          } else {
+            state = state.copyWith(
+              objectsList: AsyncValue.error(l.message, StackTrace.current),
+            );
+          }
+      }
+    } catch (e, stackTrace) {
+      // Handle unexpected errors
+      state = state.copyWith(
+        serverConnection: AsyncValue.error('Unexpected error: $e', stackTrace),
+        filters: AsyncValue.error('Unexpected error: $e', stackTrace),
+        objectsList: AsyncValue.error('Unexpected error: $e', stackTrace),
+      );
     }
   }
 
-  void updateFilter({required String type, num? minValue, num? maxValue}) {
+  String? updateFilter({
+    required String type,
+    String? minValue,
+    String? maxValue,
+  }) {
+    // Validate that minValue and maxValue are numeric or null
+    final num? parsedMinValue =
+        minValue == null || minValue.isEmpty ? null : num.tryParse(minValue);
+    final num? parsedMaxValue =
+        maxValue == null || maxValue.isEmpty ? null : num.tryParse(maxValue);
+
+    if (minValue != null && parsedMinValue == null) {
+      return 'Minimum value must be a valid number';
+    }
+    if (maxValue != null && parsedMaxValue == null) {
+      return 'Maximum value must be a valid number';
+    }
+
+    // Validate that minValue is not greater than maxValue
+    if (parsedMinValue != null &&
+        parsedMaxValue != null &&
+        parsedMinValue > parsedMaxValue) {
+      return 'Minimum value cannot be greater than maximum value';
+    }
+
+    // Update the filter in the state
     state.filters.whenData((filters) {
       final index = filters.indexWhere((filter) => filter.type == type);
       if (index != -1) {
         // Update the filter values
-        filters[index].minValue = minValue;
-        filters[index].maxValue = maxValue;
+        filters[index].minValue = parsedMinValue;
+        filters[index].maxValue = parsedMaxValue;
 
         // Update the state with the modified filters
         state = state.copyWith(filters: AsyncValue.data(filters));
       }
     });
+
+    return null; // Return null if no validation errors
   }
 
   Future<void> applyFilters() async {
     state.filters.whenData((filters) async {
       state = state.copyWith(objectsList: const AsyncValue.loading());
 
-      final response = await _filterRepository.applyFilters(
-        filters: filters,
-      );
+      final response = await _filterRepository.applyFilters(filters: filters);
       switch (response) {
         case Right(value: final r):
           {
@@ -92,9 +155,23 @@ class FiltersViewModel extends _$FiltersViewModel {
             ref
                 .read(filterEventBusProvider)
                 .emit(AppliedFiltersEvent(newObjects: []));
-            state = state.copyWith(
-              objectsList: AsyncValue.error(l.message, StackTrace.current),
-            );
+            if (l.message.contains("TimeoutException")) {
+              print('TimeoutException occurred');
+              state = state.copyWith(
+                objectsList: AsyncValue.error(
+                  'Server took too long to respond',
+                  StackTrace.current,
+                ),
+                serverConnection: AsyncValue.error(
+                  'Server took too long to respond',
+                  StackTrace.current,
+                ),
+              );
+            } else {
+              state = state.copyWith(
+                objectsList: AsyncValue.error(l.message, StackTrace.current),
+              );
+            }
           }
       }
     });
