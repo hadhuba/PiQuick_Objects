@@ -3,11 +3,11 @@
 // and real-time object list updates.
 
 import 'package:flutter/material.dart';
-import 'package:test_piquick/core/widgets/loader.dart';
-import 'package:test_piquick/features/filters/viewModel/filters_view_model.dart';
+import 'package:frontend/core/widgets/loader.dart';
+import 'package:frontend/features/filters/viewModel/filters_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test_piquick/features/filters/view/widgets/object_list.dart';
-import 'package:test_piquick/features/filters/view/widgets/filter_list.dart';
+import 'package:frontend/features/filters/view/widgets/object_list.dart';
+import 'package:frontend/features/filters/view/widgets/filter_list.dart';
 
 class FiltersPage extends ConsumerStatefulWidget {
   const FiltersPage({super.key});
