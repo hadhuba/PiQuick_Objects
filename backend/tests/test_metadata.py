@@ -136,7 +136,6 @@ def mock_args_all_true(mocker):
         run_poly=True,
         run_material=True,
         run_edge=True,
-        run_animation=True
     )
     mocker.patch('scripts.metadata_multiproc.args', args)
     return args
@@ -151,7 +150,6 @@ def mock_args_some_false(mocker):
         run_poly=False,
         run_material=True,
         run_edge=True,
-        run_animation=False
     )
     mocker.patch('scripts.metadata_multiproc.args', args)
     return args
@@ -215,7 +213,6 @@ def test_task_imports_glb_all_flags(mock_bpy, mock_metadata_helpers, mock_args_a
         "poly_count": {expected_obj_id: 200},
         "material_count": {expected_obj_id: 1}, # Based on len(mock_bpy.data.materials)
         "edge_count": {expected_obj_id: 300},
-        "animation_count": {expected_obj_id: 1} # Based on len(mock_bpy.data.actions)
     }
     assert result == expected_result
 
@@ -253,7 +250,6 @@ def test_task_imports_fbx_some_flags(mock_bpy, mock_metadata_helpers, mock_args_
         "poly_count": {},
         "material_count": {expected_obj_id: 1}, # Still collected as flag is True
         "edge_count": {expected_obj_id: 300},
-        "animation_count": {} # Flag is False
     }
     assert result == expected_result
 
@@ -314,7 +310,6 @@ def test_task_multiple_files(mock_bpy, mock_metadata_helpers, mock_args_all_true
         "poly_count": {expected_ids[0]: 200, expected_ids[1]: 200},
         "material_count": {expected_ids[0]: 1, expected_ids[1]: 1},
         "edge_count": {expected_ids[0]: 300, expected_ids[1]: 300},
-        "animation_count": {expected_ids[0]: 1, expected_ids[1]: 1}
     }
     assert result == expected_result
 
@@ -348,7 +343,6 @@ def mock_global_args(mocker):
         run_poly=True,
         run_material=True,
         run_edge=True,
-        run_animation=True
     )
     mocker.patch('scripts.metadata_multiproc.args', args)
     return args

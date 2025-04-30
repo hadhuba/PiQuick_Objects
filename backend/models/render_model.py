@@ -1,4 +1,13 @@
 from typing import Dict, List, Optional
+"""
+This module defines data models for rendering 3D object groups using Pydantic's BaseModel. 
+It includes settings for rendering and grouping of 3D objects.
+
+Classes:
+    RenderSettings: Represents the configuration for rendering 3D object groups, 
+                    including parameters like number of images, resolution, and augmentation options.
+    Group: Represents a group of 3D objects with associated rendering settings.
+"""
 from pydantic import BaseModel, Field
 
 class RenderSettings(BaseModel):
@@ -11,7 +20,6 @@ class RenderSettings(BaseModel):
     mode_front_view: bool = Field(default=False)
     mode_four_view: bool = Field(default=False)
     only_northern_hemisphere: bool = Field(default=True)
-    separately: bool = Field(default=True)
 
 
 class Group(BaseModel):

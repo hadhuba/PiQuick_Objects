@@ -3,7 +3,15 @@ import argparse
 import os
 from pathlib import Path
 from typing import List, Dict, Any
+"""
+This script defines utility functions for managing render settings and creating groups with default configurations. It includes:
 
+get_default_settings(): Returns a dictionary of default rendering settings, 
+such as the number of images, resolution, and augmentation options.
+create_groups_with_settings(input_groups): 
+Accepts a list of groups (each containing a name and object IDs) 
+and applies the default render settings to each group, returning a new list of groups with these settings.
+"""
 def parse_args():
     parser = argparse.ArgumentParser(description="Create render groups JSON file from object IDs")
     parser.add_argument(
@@ -37,7 +45,6 @@ def get_default_settings():
         "mode_front_view": False,
         "mode_four_view": False,
         "only_northern_hemisphere": True,
-        "separately": True
     }
 
 def create_groups_with_settings(input_groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

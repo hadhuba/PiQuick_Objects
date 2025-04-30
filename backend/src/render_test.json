@@ -1,6 +1,6 @@
 [
     {
-        "name": "KitchenObjects",
+        "name": "group_1",
         "object_ids": [
             "8476c4170df24cf5bbe6967222d1a42d",
             "71c71dd1dc754a8e9a84d43f5f3af7b9",
@@ -13,12 +13,9 @@
             "elevation_aug": false,
             "resolution": 256,
             "mode_multi": true,
-            "mode_static": false,
             "mode_front_view": false,
             "mode_four_view": false,
-            "engine": "cycles",
-            "only_northern_hemisphere": false,
-            "separately": true
+            "only_northern_hemisphere": false
         }
     },
     {

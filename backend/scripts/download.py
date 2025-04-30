@@ -1,23 +1,18 @@
 """
 Objaverse Batch Downloader
 
-This script downloads 3D objects in groups from Objaverse based on a specified list of IDs.
-For each group of object IDs:
-    - Checks if files are already downloaded to avoid redundant downloads.
-    - Downloads missing objects if necessary.
-    - Uses multiprocessing to optimize download speed, leveraging available CPU cores.
-    - Saves the file paths of downloaded objects in a JSON file for each group.
+This script downloads 3D objects in groups from Objaverse based on a specified list of IDs. It ensures efficient downloading by avoiding redundant downloads and leveraging multiprocessing for speed. The downloaded file paths are saved in a JSON file for each group.
 
 Parameters:
-    --[REQUIRED] groups_json: Path to a JSON file containing grouped object IDs and settings.
-    --save_path: Directory where JSON files with object paths will be saved. Defaults to the directory of the input JSON file if not provided.
-    --store_path: Directory where downloaded objects will be stored. Defaults to a local database path (src/objects_database).
+    --groups_json: Path to a JSON file containing grouped object IDs and settings (required).
+    --save_path: Directory to save JSON files with object paths (optional, defaults to the directory of the input JSON file).
+    --store_path: Directory to store downloaded objects (optional, defaults to 'src/objects_database').
 
 Expected Structure of groups_json:
-    The JSON file should be structured based on the `Group` data model from `server/models/render_model`, containing:
+    The JSON file should contain:
         - A unique group name (e.g., "group_1", "group_2").
-        - A list of object IDs (as strings) to download for that group.
-        - Rendering settings (optional) for the objects in that group.
+        - A list of object IDs to download for that group.
+        - Optional rendering settings for the objects in that group.
 
 Usage:
     python download.py --groups_json <path_to_groups_json> --save_path <destination_path> --store_path <storage_path>
@@ -29,9 +24,7 @@ import os
 import json
 import argparse
 import sys
-
-from utils.setup_path import add_project_root
-add_project_root()
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from utils.logging_config import setup_custom_logger
 from models.render_model import Group

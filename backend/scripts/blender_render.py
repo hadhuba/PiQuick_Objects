@@ -1,10 +1,15 @@
-"""Blender script to render images of a 3D scene with various objects.
+"""
+This script is a Blender utility for rendering 3D scenes with various objects. It performs the following tasks:
 
-This script is used to render images of a 3D scene containing objects scattered
-on a table. It takes in a path to the directory of the .glb files and renders
-images of the scene. The images are saved to the output directory.
+1. Parses command-line arguments to configure rendering options such as object paths, output directories, GPU settings, and rendering modes.
+2. Loads 3D object files into the Blender scene and normalizes them for rendering.
+3. Configures camera positions and lighting setups to capture multiple views of the objects.
+4. Supports rendering in different modes, including multi-view, front-view, and four-view configurations.
+5. Saves rendered images and associated metadata, including camera matrices and object bounding boxes.
+6. Handles missing textures by replacing them with random colors.
+7. Utilizes GPU or CPU for rendering based on the configuration.
 
-
+The script is designed for headless execution and is compatible with various 3D file formats such as GLB, OBJ, FBX, and more.
 """
 
 import argparse
@@ -89,7 +94,6 @@ def _sample_spherical(
     vec = np.array([0, 0, 0])
     while not correct:
         vec = np.random.uniform(-1, 1, 3)
-        #         vec[2] = np.abs(vec[2])
         radius = np.random.uniform(radius_min, radius_max, 1)
         vec = vec / np.linalg.norm(vec, axis=0) * radius[0]
         if maxz > vec[2] > minz:
@@ -248,7 +252,7 @@ def reset_scene() -> None:
         bpy.data.images.remove(image, do_unlink=True)
 
 
-def load_objects(objects_paths: str) -> None:
+def load_objects(object_path: str) -> None:
     """Loads a model with a supported file extension into the scene.
 
     Args:
@@ -260,64 +264,37 @@ def load_objects(objects_paths: str) -> None:
     Returns:
         None
     """
-    # Convert the objects_paths string into a list  
-    objects_path_list = objects_paths.split(',')
 
-    # Single object
-    if len(objects_path_list) == 1: 
-        object_path = objects_path_list[0]
 
-        file_extension = object_path.split(".")[-1].lower()
-        if file_extension is None:
-            raise ValueError(f"Unsupported file type: {object_path}")
+    file_extension = object_path.split(".")[-1].lower()
+    if file_extension is None:
+        raise ValueError(f"Unsupported file type: {object_path}")
 
-        if file_extension == "usdz":
-            # Install usdz io package
-            dirname = os.path.dirname(os.path.realpath(__file__))
-            usdz_package = os.path.join(dirname, "io_scene_usdz.zip")
-            bpy.ops.preferences.addon_install(filepath=usdz_package)
-            # Enable it
-            addon_name = "io_scene_usdz"
-            bpy.ops.preferences.addon_enable(module=addon_name)
-            # Import the usdz
-            from io_scene_usdz.import_usdz import import_usdz
+    if file_extension == "usdz":
+        # Install usdz io package
+        dirname = os.path.dirname(os.path.realpath(__file__))
+        usdz_package = os.path.join(dirname, "io_scene_usdz.zip")
+        bpy.ops.preferences.addon_install(filepath=usdz_package)
+        # Enable it
+        addon_name = "io_scene_usdz"
+        bpy.ops.preferences.addon_enable(module=addon_name)
+        # Import the usdz
+        from io_scene_usdz.import_usdz import import_usdz
 
-            import_usdz(context, filepath=object_path, materials=True, animations=True)
-            return None
+        import_usdz(context, filepath=object_path, materials=True, animations=True)
+        return None
 
-        # Load from existing import functions
-        import_function = IMPORT_FUNCTIONS[file_extension]
+    # Load from existing import functions
+    import_function = IMPORT_FUNCTIONS[file_extension]
 
-        if file_extension == "blend":
-            import_function(directory=object_path, link=False)
-        elif file_extension in {"glb", "gltf"}:
-            import_function(filepath=object_path, merge_vertices=True)
-        else:
-            import_function(filepath=object_path)
-    # Multiple objects
+    if file_extension == "blend":
+        import_function(directory=object_path, link=False)
+    elif file_extension in {"glb", "gltf"}:
+        import_function(filepath=object_path, merge_vertices=True)
     else:
-        offset = 2
-        grid_size = math.ceil(math.sqrt(len(objects_path_list))) 
-
-        for index, path in enumerate(objects_path_list):
-            if os.path.exists(path):
-                bpy.ops.import_scene.gltf(filepath=path)
-
-                # Get the newly imported objects
-                imported_objects = bpy.context.selected_objects
-
-                # Calculate the grid position
-                row = index // grid_size
-                col = index % grid_size
-                position = (col * offset, row * offset, 0)
-
-                # Move the imported objects to the calculated position
-                for obj in imported_objects:
-                    obj.location = position
-            else:
-                print(f"File not found: {path}")
-
-
+        import_function(filepath=object_path)
+    
+    
 
 def scene_bbox(
     single_obj: Optional[bpy.types.Object] = None, ignore_matrix: bool = False
@@ -568,7 +545,6 @@ def place_camera(time, camera_pose_mode="random", camera_dist_min=2.0, camera_di
     camera_dist = random.uniform(camera_dist_min, camera_dist_max)
     if camera_pose_mode == "random":
         randomize_camera(camera_dist=camera_dist,Direction_type=Direction_type,az_front_vector=az_front_vector)
-        # bpy.ops.view3d.camera_to_view_selected()
     elif camera_pose_mode == "z-circular":
         pan_camera(time, axis="Z", camera_dist=camera_dist,elevation=elevation,Direction_type=Direction_type,azimuth=azimuth)
     elif camera_pose_mode == "z-circular-elevated":
@@ -578,7 +554,6 @@ def place_camera(time, camera_pose_mode="random", camera_dist_min=2.0, camera_di
 
 def pan_camera(time, axis="Z", camera_dist=2.0, elevation=-0.1,Direction_type='multi',azimuth=0):
     angle = (math.pi *2 -time * math.pi * 2)+ azimuth * math.pi * 2
-    #example  15-345
     direction = [-math.cos(angle), -math.sin(angle), -elevation]
     direction = [math.sin(angle), math.cos(angle), -elevation]
     assert axis in ["X", "Y", "Z"]
@@ -602,12 +577,9 @@ def set_camera(direction, camera_dist=2.0,Direction_type='front',az_front_vector
     elif Direction_type=='az_front':
         direction=az_front_vector
     
-    
-    print('direction:',direction)
     camera_pos = -camera_dist * direction
     bpy.context.scene.camera.location = camera_pos
 
-    # https://blender.stackexchange.com/questions/5210/pointing-the-camera-in-a-particular-direction-programmatically
     rot_quat = direction.to_track_quat("-Z", "Y")
     bpy.context.scene.camera.rotation_euler = rot_quat.to_euler()
 
@@ -649,7 +621,7 @@ def scene_fov():
 
 
 def render_scene(
-    objects_paths: str,
+    object_path: str,
     scene,
     args,
     num_images: int,
@@ -677,45 +649,23 @@ def render_scene(
 
     #load the objects
     reset_scene()
-    # reset_cameras()
-    # delete_invisible_objects()
-    load_objects(objects_paths)
+    load_objects(object_path)
 
-    # normalize the scene
     normalize_scene()
-    print("Scene was normalized")
 
     # randomize the lighting
     randomize_lighting()
-    print("light randomized")
-
 
     camera_pose="random"
-    # Calculate the bounding box of the scene
-    bbox_min, bbox_max = scene_bbox()
-    scene_size = max(bbox_max - bbox_min)
-    print(f"Scene size: {scene_size}")
-    print(args.separate)
+    camera_dist_min=2
+    camera_dist_max=2
 
-    # Adjust camera distance based on scene size
-    if not args.separate:
-        camera_dist_min=scene_size * 2
-        camera_dist_max=scene_size * 2
-    else:
-        camera_dist_min=2
-        camera_dist_max=2 # Default distance for single object rendering
-
-
-    # render the images
     angle = azimuth * math.pi * 2
     direction = [math.sin(angle), math.cos(angle), 0]
     direction_az = Vector(direction).normalized()
-    
-    print("starting render")
 
     if args.mode_multi:
         for frame in range(num_images):
-            print("mode_multi")
             t = frame / max(num_images - 1, 1)
             place_camera(
                 t,
@@ -729,11 +679,11 @@ def render_scene(
             bpy.context.scene.frame_set(frame)
             render_path = os.path.join(output_dir, f"multi_frame{frame}.png")  #view and frame 
             scene.render.filepath = render_path
-            print("render_path: ", render_path)
             bpy.ops.render.render(write_still=True)
             write_camera_metadata(os.path.join(output_dir, f"multi{frame}.json"))    
 
     if args.mode_front:
+        frame = 0
         place_camera(
             0,
             camera_pose_mode="random",
@@ -749,7 +699,7 @@ def render_scene(
         
         write_camera_metadata(os.path.join(output_dir, f"front.json"))
     
-    #print('args.mode_four_view:',args.mode_four_view)
+#print('args.mode_four_view:',args.mode_four_view)
     if args.mode_four_view:
 
         #front
@@ -805,27 +755,7 @@ def render_scene(
         bpy.ops.render.render(write_still=True)
         write_camera_metadata(os.path.join(output_dir, f"right.json"))
         
-        print(output_dir)
-    if  args.mode_static:
-        for frame in range(num_images):
-            t = frame / max(num_images - 1, 1)
-            place_camera(
-                t,
-                camera_pose_mode="z-circular",
-                camera_dist_min=camera_dist_min,
-                camera_dist_max=camera_dist_max,
-                Direction_type='multi',
-                elevation=elevation,
-                azimuth=azimuth
-            )
-            bpy.context.scene.frame_set(0)
-            render_path = os.path.join(output_dir, f"multi_static_frame{frame}.png")  #view and frame 
-            scene.render.filepath = render_path
-            print("render_path: ", render_path)
-            bpy.ops.render.render(write_still=True)
-            write_camera_metadata(os.path.join(output_dir, f"static{frame}.json"))   
-    
-
+        print(output_dir)  
 
 
 def look_at(obj_camera, point):
@@ -843,26 +773,26 @@ def main():
         type=str,
         required=True,
         help="Paths of the object files",)
-    parser.add_argument( #--separate
-        "--separate",
-        type=int,
-        required=True,
-        help="Wether to render in group or separately",)
-    parser.add_argument( #--output_dir
+    parser.add_argument(
         "--output_dir", 
         type=str, 
         default="~/.objaverse/hf-objaverse-v1/scene_views",
         help="Path to save output images",)
-    parser.add_argument( #--gpu_id
+    parser.add_argument(
+        "--output_extension", 
+        type=str, 
+        default="",
+        help="azimuth and elevation indicator",)
+    parser.add_argument(
         "--gpu_id",
         type=int,
         default=0,
         help="Current GPU id")
-    parser.add_argument( #--num_images
+    parser.add_argument(
         "--num_images",
         type=int, 
         default=16)
-    parser.add_argument( #--only_northern_hemisphere
+    parser.add_argument(
         "--only_northern_hemisphere",
         type=int,
         help="Only render the northern hemisphere of the object.",
@@ -901,12 +831,6 @@ def main():
     )
     
     parser.add_argument(
-        "--mode_static",
-    type=int, default=0,
-        help="render multi view images at time 0",
-    )
-    
-    parser.add_argument(
         "--mode_front",
         type=int, default=0,
         help="render images of front views at each time",
@@ -939,29 +863,38 @@ def main():
     scene.cycles.filter_width = 0.01
     scene.cycles.use_denoising = True
     scene.render.film_transparent = True
-    
-    try:
-        bpy.context.preferences.addons["cycles"].preferences.get_devices()
-        bpy.context.preferences.addons[
-            "cycles"
-        ].preferences.compute_device_type = "CUDA"  # or "OPENCL"
-    except Exception as e:
-        print(f"Warning: Could not set CUDA devices: {e}")
-        print("Falling back to CPU rendering")
-        scene.cycles.device = "CPU"
 
-    # print(f"starting render of: {objects_path_list}")
-    render_scene(
-        objects_paths=args.objects_paths,
-        scene=scene,
-        args=args,
-        num_images=args.num_images,
-        only_northern_hemisphere=args.only_northern_hemisphere,
-        output_dir=args.output_dir,
-        elevation=args.elevation/180,
-        azimuth=args.azimuth,
-    )
+    # Convert the objects_paths string into a list  
+    objects_path_list = args.objects_paths.split(',')
+    for object_path in objects_path_list:
+        if args.gpu_id == -1:
+            scene.cycles.device = "CPU"
+        else:
+            try:
+                bpy.context.preferences.addons["cycles"].preferences.get_devices()
+                bpy.context.preferences.addons[
+                    "cycles"
+                ].preferences.compute_device_type = "CUDA"  # or "OPENCL"
+                print("\n\n\nCUDA devices set\n\n\n")
+            except Exception as e:
+                scene.cycles.device = "CPU"
 
+        # Create a unique output directory for each object based on its filename
+        object_name = os.path.basename(object_path).split('.')[0]
+        object_name = args.output_extension+object_name 
+        object_output_dir = os.path.join(args.output_dir, object_name)
+        os.makedirs(object_output_dir, exist_ok=True)
+        
+        render_scene(
+            object_path=object_path,
+            scene=scene,
+            args=args,
+            num_images=args.num_images,
+            only_northern_hemisphere=args.only_northern_hemisphere,
+            output_dir=object_output_dir,
+            elevation=args.elevation/180,
+            azimuth=args.azimuth,
+        )
 
 if __name__ == "__main__":
     main()

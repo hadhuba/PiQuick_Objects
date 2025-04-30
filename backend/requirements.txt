@@ -1,7 +1,19 @@
-
-# server
-fastapi
+# --- Server dependencies ---
+fastapi==0.110.0
 fastapi[standard]
+uvicorn[standard]
 
-#backend
+# --- Backend dependencies ---
 objaverse
+
+# --- HTTP és benchmark teszteléshez ---
+httpx>=0.26.0
+pytest-httpx
+pytest-benchmark
+
+# --- Tesztelés ---
+pytest
+pytest-mock
+
+# --- Egyéb függőségek, ha szükséges ---
+# pydantic>=2.6.0   # (Ha külön használod)

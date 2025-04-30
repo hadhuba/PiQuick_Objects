@@ -1,0 +1,20 @@
+[
+    {
+      "name": "example_render_five",
+      "object_ids": [
+        "a1e1c4d21c8440bfaae07701f76f34ef",
+        "81c74e93020f4748bd2e4dfe243f54b7",
+        "8bd89478b6e8424ba762d1f9da9a89ea",
+        "90d734bc9b14485db13868e94b864c0a",
+        "b84520a8e3e94002b9d1edd378148a79"
+      ]
+    },
+    {
+      "name": "example_render_three",
+      "object_ids": [
+        "83dd979948384297b49e681a18ed6bd5",
+        "07385e2f33c64363852363346b9f0bd2",
+        "738ccbf3a6ba403bbd359388c8839606"
+      ]
+    }
+  ]

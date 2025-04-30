@@ -1,4 +1,23 @@
-#!/usr/bin/env python3
+"""
+This script generates a JSON file containing groups of objects based on Objaverse UIDs. 
+Each group is assigned a specified number of unique object IDs.
+Imports:
+    argparse: For parsing command-line arguments.
+    json: For handling JSON file creation.
+    os: For file and directory operations.
+    random: For shuffling and selecting random UIDs.
+    typing: For type annotations.
+    objaverse: For loading UIDs from the Objaverse dataset.
+Functions:
+    parse_arguments() -> argparse.Namespace:
+        Parses and returns command-line arguments for group names, GLB counts, save path, and file name.
+    validate_inputs(group_names: List[str], glbs_per_group: List[int]) -> bool:
+        Validates that the number of group names matches the number of GLB counts.
+    create_object_groups(group_names: List[str], glbs_per_group: List[int], all_uids: List[str]) -> List[Dict[str, Any]]:
+        Creates groups of objects with unique UIDs based on the provided group names and counts.
+    main() -> int:
+        Main function that orchestrates argument parsing, UID loading, group creation, and JSON file saving.
+"""
 import argparse
 import json
 import os

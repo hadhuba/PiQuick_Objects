@@ -14,6 +14,8 @@ PiQuick_Objects is a toolkit and web application designed for preparing datasets
 
 ## Setup and Installation
 
+pip install -r requirements.txt
+
 ### ***download.py***
 
 The ```download.py``` script downloads 3D objects from Objaverse based on a specified list of object IDs. This script checks existing files to avoid redundant downloads, handles missing objects, and supports multiprocessing to improve speed by leveraging available CPU cores.
@@ -81,7 +83,6 @@ scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_m
     --run_poly \
     --run_material \
     --run_edge \
-    --run_animation
 -->
 
 ### ***render.py***

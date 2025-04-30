@@ -55,8 +55,8 @@ def mock_args(tmp_path):
     args.output_file = str(tmp_path / "output.zip")
 
     dummy_group_data = [
-        {"name": "group1", "object_ids": ["id1", "id2"], "settings": {"separately": False, "num_images": 10}},
-        {"name": "group2", "object_ids": ["id3"], "settings": {"separately": True, "num_images": 5}}
+        {"name": "group1", "object_ids": ["id1", "id2"], "settings": {"num_images": 10}},
+        {"name": "group2", "object_ids": ["id3"], "settings": {"num_images": 5}}
     ]
     with open(args.groups_json, 'w') as f:
         json.dump(dummy_group_data, f)
@@ -68,7 +68,6 @@ def mock_args(tmp_path):
 def mock_group_settings():
     """Fixture for mock RenderSettings."""
     return RenderSettings(
-        separately=False,
         num_images=10,
         resolution=512,
         azimuth_aug=False,
@@ -283,32 +282,6 @@ def test_download_groups_file_not_found(mock_args, mock_group, mock_subprocess, 
     mock_fs["exists"].assert_called_once_with(expected_group_json_path)
     mock_fs["open"].assert_not_called()
     
-
-@pytest.mark.parametrize("azimuth_aug,elevation_aug,expected_suffix", [
-    (False, False, ""),
-    (True, False, "_az0.50"),
-    (True, True, "_az0.50_el15"),
-])
-def test_execute_command_augmentation(
-    mock_subprocess, mock_random, mock_args, mock_group_settings,
-    azimuth_aug, elevation_aug, expected_suffix
-):
-    """RTC10: Verifies that render commands include proper augmentation suffixes based on settings."""
-    objects_paths = ["/path/obj1.glb"]
-    save_file_name = "my_render"
-    gpu_id = 0
-    
-    mock_group_settings.azimuth_aug = azimuth_aug
-    mock_group_settings.elevation_aug = elevation_aug
-    
-    execute_command(objects_paths, save_file_name, mock_args.output_dir, 
-                   gpu_id, False, mock_group_settings)
-    
-    called_command = mock_subprocess.call_args[0][0]
-    expected_output_path = f"{mock_args.output_dir}/{save_file_name}{expected_suffix}"
-    
-    assert f"--output_dir {expected_output_path}" in called_command
-
 def test_zip_subfolders(mock_fs, mock_zipfile, tmp_path):
     """RTC11: Tests that the zip_subfolders function correctly archives all files in the output directory."""
     output_dir = str(tmp_path / "render_outputs")
@@ -362,8 +335,8 @@ def test_main_flow(mock_pool, mock_isfile, mock_makedirs, mock_zip, mock_execute
     mock_parse.return_value = mock_args
     mock_isfile.return_value = True
 
-    settings1 = RenderSettings(separately=False, num_images=10)
-    settings2 = RenderSettings(separately=True, num_images=5)
+    settings1 = RenderSettings(num_images=10)
+    settings2 = RenderSettings(num_images=10)
     group1 = Group(name="group1", object_ids=["id1", "id2"], settings=settings1)
     group2 = Group(name="group2", object_ids=["id3", "id4"], settings=settings2)
     mock_load.return_value = [group1, group2]
@@ -385,10 +358,10 @@ def test_main_flow(mock_pool, mock_isfile, mock_makedirs, mock_zip, mock_execute
     mock_makedirs.assert_called_once_with(mock_args.output_dir, exist_ok=True)
 
     expected_tasks = [
-    (mock_group_paths["group1"], "group1", mock_args.output_dir, 0 % gpu_count, False, settings1),
-    ([mock_group_paths["group2"][0]], "group2" + "id3"[:5], mock_args.output_dir, 1 % gpu_count, True, settings2),
-    ([mock_group_paths["group2"][1]], "group2" + "id4"[:5], mock_args.output_dir, 2 % gpu_count, True, settings2),
+    (mock_group_paths["group1"], "group1", mock_args.output_dir, 0, settings1),
+    (mock_group_paths["group2"], "group2", mock_args.output_dir, 1, settings1),
     ]
+
     assert render_tasks_captured == expected_tasks
 
     mock_starmap.assert_called_once_with(mock_execute, expected_tasks)

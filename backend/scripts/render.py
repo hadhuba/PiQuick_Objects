@@ -1,3 +1,17 @@
+"""
+This script is responsible for rendering 3D objects using Blender in a headless mode. It performs the following tasks:
+
+1. Parses command-line arguments to configure rendering options such as input JSON, output paths, GPU usage, and rendering settings.
+2. Loads group data from a JSON file or string and validates the input.
+3. Downloads required 3D object files using a separate script (`download.py`) and organizes their paths.
+4. Executes rendering tasks in parallel using multiple GPUs or CPU cores, depending on the configuration.
+5. Supports rendering with various settings like azimuth, elevation, resolution, and multiple view modes.
+6. Zips the rendered output files into a single archive for easy access.
+7. Cleans up temporary files and directories after rendering is complete.
+
+The script uses multiprocessing for efficient parallel execution and ensures compatibility with systems that lack a graphical display by using `xvfb-run` or a virtual display environment.
+"""
+
 import subprocess
 import multiprocessing
 import argparse
@@ -5,18 +19,14 @@ import concurrent.futures
 import json
 import os
 import sys
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from utils.setup_path import add_project_root
-add_project_root()
-
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from models.render_model import Group
-# from server.models.render_model import Group
 from utils.logging_config import setup_custom_logger
-# from server.logger.logging_config import setup_custom_logger
 import random
 import time
 import zipfile
 import shutil
+import math
 
 import concurrent.futures
 
@@ -133,21 +143,21 @@ def download_groups(args, groups):
     
     return groups_paths
 
-def execute_command(objects_paths, save_file_name, output_dir, gpu_id, separate_render, group_settings):
-    output_dir_name = save_file_name
+def execute_command(objects_paths, save_file_name, output_dir, gpu_id, group_settings):
+    extension_name = ""
     
     azimuth = 0
     if group_settings.azimuth_aug:
         azimuth = round(random.uniform(0, 1), 2)
-        output_dir_name += f'_az{azimuth:.2f}'
+        extension_name += f'az_{azimuth:.2f}'
     
     elevation = 0
     if group_settings.elevation_aug:
         elevation = random.randint(5, 30)
-        output_dir_name += f'_el{elevation}'
+        extension_name += f'el_{elevation}'
         
     # output dir + name of group + elevation/azimuth
-    output_dir_path = os.path.join(output_dir, output_dir_name)
+    output_dir_path = os.path.join(output_dir, save_file_name)
     
     # Set up environment for headless rendering
     # Use xvfb-run if available to create a virtual framebuffer
@@ -169,8 +179,8 @@ def execute_command(objects_paths, save_file_name, output_dir, gpu_id, separate_
     command = f'{gpu_options} {display_env}{xvfb_prefix}scripts/blender-3.2.2-linux-x64/blender \
             --background --python scripts/blender_render.py --\
             --objects_paths {",".join(objects_paths)}\
-            --separate {1 if separate_render else 0}\
             --output_dir {output_dir_path}\
+            --output_extension {extension_name}\
             --gpu_id {gpu_id}\
             --num_images {group_settings.num_images}\
             --azimuth {azimuth}\
@@ -211,7 +221,31 @@ def zip_subfolders(output_dir: str, output_file: str):
                 file_path = os.path.join(root, file)
                 arcname = os.path.relpath(file_path, output_dir)
                 zipf.write(file_path, arcname)
+
+def split_up_group(paths, avg):
+    """
+    Splits the list of paths into sublists where each sublist contains around arg.avg paths.
+    If the total number of paths is not divisible by arg.avg, the split is adjusted to balance the sublists.
+
+    Args:
+        paths (list): A list of paths to be split.
+
+    Returns:
+        list[list]: A list of sublists containing the split paths.
+    """
+    total_paths = len(paths)
+
+    if total_paths <= avg:
+        return [paths]
+
+    splits_number = math.ceil(total_paths / avg)
+    result = []
     
+    for i in (range(splits_number)):
+        result.append(paths[i::splits_number])
+
+    return result
+
 def main():
     args = parse_arguments()
     
@@ -230,23 +264,29 @@ def main():
     gpu_count = args.num_of_gpus
     render_tasks = []
     
-    gpu_id = 0
-    for group in (groups):
-        if group.settings.separately:
-            for i, path in enumerate(group_paths[group.name]):
-                obj_id = group.object_ids[i]
-                logger.debug(f"Object ID: {obj_id}")
-                obj_id = obj_id[:5]
-                logger.debug(f"Object path: {path}")
-                render_tasks.append(([path], group.name+obj_id, args.output_dir, gpu_id % gpu_count, group.settings.separately, group.settings))
-                gpu_id+=1
-        else:
-            logger.debug(f"Group name: {group.name}, is rendered together")
-            render_tasks.append((group_paths[group.name], group.name, args.output_dir, gpu_id % gpu_count, group.settings.separately, group.settings))
-            gpu_id+=1
+    if gpu_count == 0:
+        gpu_id = -1
+        for group in (groups):
+            batches = split_up_group(group_paths[group.name], 6)
+            for batch in batches:
+                logger.debug(f"Batch: {batch}")
+                render_tasks.append((batch, group.name, args.output_dir, gpu_id, group.settings))
         
-    # cpu_count = multiprocessing.cpu_count()
-    with multiprocessing.Pool(processes=gpu_count) as pool:
+    else:
+        gpu_id = 0
+        for group in (groups):
+            batches = split_up_group(group_paths[group.name], 6)
+            for batch in batches:
+                logger.debug(f"Batch: {batch}")
+                render_tasks.append((batch, group.name, args.output_dir, gpu_id % gpu_count, group.settings))
+                gpu_id+=1
+        
+    if gpu_count == 0:
+        process_number = multiprocessing.cpu_count()
+    else:
+        process_number = gpu_count
+    
+    with multiprocessing.Pool(processes=process_number) as pool:
         pool.starmap(execute_command, render_tasks)
         
     logger.success("Rendering process completed.")
@@ -256,7 +296,7 @@ def main():
     if os.path.exists(groups_paths_dir) and os.path.isdir(groups_paths_dir):
         try:
             shutil.rmtree(groups_paths_dir)
-            logger.info(f"Deleted remporary folder containing .glb paths: {groups_paths_dir}")
+            logger.info(f"Deleted temporary folder containing .glb paths: {groups_paths_dir}")
         except Exception as e:
             logger.info(f"Failed to delete folder {groups_paths_dir}: {e}")
     zip_subfolders(args.output_dir, args.output_file)
@@ -264,5 +304,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()    
-
+    main()

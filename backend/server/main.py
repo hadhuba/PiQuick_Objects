@@ -9,6 +9,7 @@ picker, and render functionalities, providing the main entry point for the API s
 from fastapi import FastAPI
 import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from server.routes import filter_repo, picker_repo, render_repo
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -39,5 +40,6 @@ app.include_router(render_repo.router, prefix="/render")
 
 
 #run server with 
+
 # fastapi dev server/main.py --host 127.0.0.1 --port 8006
 # uvicorn server.main:app --host 127.0.0.1 --port 8006

@@ -32,7 +32,6 @@ def mock_args(tmp_path):
     args.groups_json = str(tmp_path / "test_groups.json")
     args.save_path = str(tmp_path / "output_paths")
     args.store_path = str(tmp_path / "objects_database")
-    args.num_of_gpus = 2
     
     dummy_group_data = [{"name": "group1", "object_ids": ["id1", "id2"]}]
     with open(args.groups_json, 'w') as f:
@@ -56,14 +55,14 @@ def mock_objaverse_and_logger(mocker):
 def mock_fs(mocker):
     """Fixture to mock filesystem operations."""
     mock_exists = mocker.patch('os.path.exists')
-    mock_listdir = mocker.patch('os.listdir')
     mock_makedirs = mocker.patch('os.makedirs')
     mock_open_func = mocker.patch('builtins.open', mock_open())
+    mock_remove = mocker.patch('os.remove')
     return {
         "exists": mock_exists,
-        "listdir": mock_listdir,
         "makedirs": mock_makedirs,
-        "open": mock_open_func
+        "open": mock_open_func,
+        "remove": mock_remove
     }
 
 # --- Test Functions ---
@@ -84,75 +83,138 @@ def test_parse_arguments_required(mocker):
     with pytest.raises(SystemExit):
         download.parse_arguments()
 
+# --- Tests for paths database operations ---
+
+def test_load_paths_database_file_exists(mock_fs):
+    """Test loading an existing paths database."""
+    db_path = "/fake/store"
+    db_file = os.path.join(db_path, "paths_for_db.json")
+    db_content = {"id1": "/path/to/id1.glb", "id2": "/path/to/id2.glb"}
+    mock_fs["exists"].return_value = True
+    mock_fs["open"].return_value.__enter__.return_value.read.return_value = json.dumps(db_content)
+    
+    result = download.load_paths_database(db_path)
+    
+    mock_fs["exists"].assert_called_once_with(db_file)
+    mock_fs["open"].assert_called_once_with(db_file, 'r')
+    assert result == db_content
+
+def test_load_paths_database_file_does_not_exist(mock_fs):
+    """Test loading a paths database when the file doesn't exist."""
+    db_path = "/fake/store"
+    db_file = os.path.join(db_path, "paths_for_db.json")
+    mock_fs["exists"].return_value = False
+    
+    result = download.load_paths_database(db_path)
+    
+    mock_fs["exists"].assert_called_once_with(db_file)
+    mock_fs["open"].assert_not_called()
+    assert result == {}
+
+def test_load_paths_database_json_error(mock_fs, mocker):
+    """Test error handling when loading an invalid JSON database."""
+    db_path = "/fake/store"
+    db_file = os.path.join(db_path, "paths_for_db.json")
+    mock_fs["exists"].return_value = True
+    mock_fs["open"].return_value.__enter__.return_value.read.side_effect = json.JSONDecodeError("Invalid JSON", "", 0)
+    mock_warning = mocker.patch.object(download.logger, 'warning')
+    
+    result = download.load_paths_database(db_path)
+    
+    mock_fs["exists"].assert_called_once_with(db_file)
+    mock_fs["open"].assert_called_once_with(db_file, 'r')
+    mock_warning.assert_called_once()
+    assert result == {}
+
+def test_save_paths_database(mock_fs):
+    """Test saving a paths database."""
+    db_path = "/fake/store"
+    db_file = os.path.join(db_path, "paths_for_db.json")
+    paths_db = {"id1": "/path/to/id1.glb", "id2": "/path/to/id2.glb"}
+    mock_fs["exists"].return_value = True
+    
+    # Configure the mock to capture all write calls
+    mock_file_handle = mock_open().return_value.__enter__.return_value
+    mock_fs["open"].return_value.__enter__.return_value = mock_file_handle
+    
+    download.save_paths_database(db_path, paths_db)
+    
+    mock_fs["exists"].assert_called_once_with(db_file)
+    mock_fs["remove"].assert_called_once_with(db_file)
+    mock_fs["makedirs"].assert_called_once_with(os.path.dirname(db_file), exist_ok=True)
+    mock_fs["open"].assert_called_once_with(db_file, 'w')
+    
+    # Get the argument passed to json.dump through the mock
+    # Instead of checking the written content string, mock the json.dump function
+    with patch('json.dump') as mock_json_dump:
+        download.save_paths_database(db_path, paths_db)
+        mock_json_dump.assert_called_once()
+        # Check that the first argument to json.dump is our paths_db dictionary
+        saved_data = mock_json_dump.call_args[0][0]
+        assert "id1" in saved_data
+        assert "id2" in saved_data
+        assert saved_data["id1"] == "/path/to/id1.glb"
+        assert saved_data["id2"] == "/path/to/id2.glb"
+
 # --- Tests for search_in_database ---
 
-def test_search_in_database_store_does_not_exist(mock_fs):
-    """DTC3: Test when the store directory doesn't exist."""
-    mock_fs["exists"].return_value = False
-    store_folder = "/fake/store"
+def test_search_in_database_store_does_not_exist(mocker):
+    """DTC3: Test searching in database when no paths are stored."""
+    mock_load_db = mocker.patch('scripts.download.load_paths_database', return_value={})
+    store_path = "/fake/store"
     ids = ["id1", "id2"]
-    expected_paths = [os.path.join(store_folder, "id1.glb"), os.path.join(store_folder, "id2.glb")]
+    
+    existing_filepaths, ids_to_download = download.search_in_database(store_path, ids)
+    
+    mock_load_db.assert_called_once_with(store_path)
+    assert existing_filepaths == []
+    assert sorted(ids_to_download) == sorted(ids)
 
-    filepaths, ids_to_download = download.search_in_database(store_folder, ids)
-
-    mock_fs["exists"].assert_called_once_with(store_folder)
-    assert filepaths == expected_paths
-    assert ids_to_download == ids
-
-def test_search_in_database_store_exists_no_files(mock_fs):
-    """DTC4: Test when store exists but contains no relevant files."""
-    mock_fs["exists"].return_value = True
-    mock_fs["listdir"].return_value = [] 
-    store_folder = "/fake/store"
+def test_search_in_database_store_exists_no_files(mocker):
+    """DTC4: Test when paths database exists but contains no relevant IDs."""
+    mock_load_db = mocker.patch('scripts.download.load_paths_database', return_value={
+        "other1": "/path/to/other1.glb",
+        "other2": "/path/to/other2.glb"
+    })
+    store_path = "/fake/store"
     ids = ["id1", "id2"]
-    expected_paths = [os.path.join(store_folder, "id1.glb"), os.path.join(store_folder, "id2.glb")]
+    
+    existing_filepaths, ids_to_download = download.search_in_database(store_path, ids)
+    
+    mock_load_db.assert_called_once_with(store_path)
+    assert existing_filepaths == []
+    assert sorted(ids_to_download) == sorted(ids)
 
-    filepaths, ids_to_download = download.search_in_database(store_folder, ids)
-
-    mock_fs["exists"].assert_called_once_with(store_folder)
-    mock_fs["listdir"].assert_called_once_with(store_folder)
-    assert filepaths == expected_paths
-    assert ids_to_download == ids
-
-def test_search_in_database_store_exists_some_files(mock_fs):
-    """DTC5: Test when store exists and contains some of the files."""
-    mock_fs["exists"].return_value = True
-    mock_fs["listdir"].return_value = ["id1.glb", "otherfile.txt"]
-    store_folder = "/fake/store"
+def test_search_in_database_store_exists_some_files(mocker):
+    """DTC5: Test when database contains some of the requested IDs."""
+    mock_load_db = mocker.patch('scripts.download.load_paths_database', return_value={
+        "id1": "/path/to/id1.glb",
+        "other": "/path/to/other.glb"
+    })
+    store_path = "/fake/store"
     ids = ["id1", "id2", "id3"]
-    expected_paths = [
-        os.path.join(store_folder, "id1.glb"),
-        os.path.join(store_folder, "id2.glb"),
-        os.path.join(store_folder, "id3.glb")
-    ]
-    expected_ids_to_download = ["id2", "id3"]
+    
+    existing_filepaths, ids_to_download = download.search_in_database(store_path, ids)
+    
+    mock_load_db.assert_called_once_with(store_path)
+    assert existing_filepaths == ["/path/to/id1.glb"]
+    assert sorted(ids_to_download) == sorted(["id2", "id3"])
 
-    filepaths, ids_to_download = download.search_in_database(store_folder, ids)
-
-    mock_fs["exists"].assert_called_once_with(store_folder)
-    mock_fs["listdir"].assert_called_once_with(store_folder)
-    assert filepaths == expected_paths
-    assert sorted(ids_to_download) == sorted(expected_ids_to_download)
-
-def test_search_in_database_store_exists_all_files(mock_fs):
-    """DTC6: Test when store exists and contains all the files."""
-    mock_fs["exists"].return_value = True
-    mock_fs["listdir"].return_value = ["id1.glb", "id2.glb", "id3.glb"]
-    store_folder = "/fake/store"
+def test_search_in_database_store_exists_all_files(mocker):
+    """DTC6: Test when database contains all the requested IDs."""
+    mock_load_db = mocker.patch('scripts.download.load_paths_database', return_value={
+        "id1": "/path/to/id1.glb",
+        "id2": "/path/to/id2.glb",
+        "id3": "/path/to/id3.glb"
+    })
+    store_path = "/fake/store"
     ids = ["id1", "id2", "id3"]
-    expected_paths = [
-        os.path.join(store_folder, "id1.glb"),
-        os.path.join(store_folder, "id2.glb"),
-        os.path.join(store_folder, "id3.glb")
-    ]
-    expected_ids_to_download = []
-
-    filepaths, ids_to_download = download.search_in_database(store_folder, ids)
-
-    mock_fs["exists"].assert_called_once_with(store_folder)
-    mock_fs["listdir"].assert_called_once_with(store_folder)
-    assert filepaths == expected_paths
-    assert ids_to_download == expected_ids_to_download
+    
+    existing_filepaths, ids_to_download = download.search_in_database(store_path, ids)
+    
+    mock_load_db.assert_called_once_with(store_path)
+    assert sorted(existing_filepaths) == sorted(["/path/to/id1.glb", "/path/to/id2.glb", "/path/to/id3.glb"])
+    assert ids_to_download == []
 
 # --- Tests for write_group_to_json ---
 
@@ -230,67 +292,114 @@ def test_load_groups_from_json_invalid_json(mocker, mock_fs, tmp_path):
 
 # --- Tests for process_groups ---
 
-@pytest.fixture
-def mock_process_deps(mocker):
-    """Fixture to mock dependencies of process_groups."""
-    return {
-        "search": mocker.patch('scripts.download.search_in_database'),
-        "write": mocker.patch('scripts.download.write_group_to_json'),
-        "load_objects": mocker.patch('scripts.download.objaverse.load_objects')
-    }
-
-def test_process_groups_all_exist(mock_process_deps, mock_args, mock_group):
+def test_process_groups_all_exist(mocker, mock_args, mock_group):
     """DTC12: Test process_groups when all files already exist."""
-    mock_process_deps["search"].return_value = (["/path/id1.glb", "/path/id2.glb"], [])
+    mock_search = mocker.patch('scripts.download.search_in_database')
+    mock_search.return_value = (["/path/id1.glb", "/path/id2.glb"], [])
+    
+    mock_load_db = mocker.patch('scripts.download.load_paths_database')
+    mock_save_db = mocker.patch('scripts.download.save_paths_database')
+    mock_write = mocker.patch('scripts.download.write_group_to_json')
+    
     groups = [mock_group]
     cpu_count = 4
 
     download.process_groups(groups, mock_args, cpu_count)
 
-    expected_store_path = os.path.join(mock_args.store_path, "glbs", "000-023")
-    mock_process_deps["search"].assert_called_once_with(expected_store_path, mock_group.object_ids)
-    mock_process_deps["load_objects"].assert_not_called()
-    mock_process_deps["write"].assert_called_once_with(
+    mock_search.assert_called_once_with(mock_args.store_path, mock_group.object_ids)
+    mock_load_db.assert_not_called()
+    mock_save_db.assert_not_called()
+    mock_write.assert_called_once_with(
         mock_group.name, ["/path/id1.glb", "/path/id2.glb"], mock_args.save_path, mock_args.groups_json
     )
 
-def test_process_groups_none_exist(mock_process_deps, mock_args, mock_group):
+def test_process_groups_none_exist(mocker, mock_args, mock_group):
     """DTC13: Test process_groups when no files exist and all need downloading."""
-    expected_paths = [os.path.join(mock_args.store_path, "glbs", "000-023", f"{id}.glb") for id in mock_group.object_ids]
-    mock_process_deps["search"].return_value = (expected_paths, mock_group.object_ids)
+    # Setup for the first search_in_database call
+    mock_search = mocker.patch('scripts.download.search_in_database')
+    mock_search.side_effect = [
+        ([], mock_group.object_ids),  # First call - no files exist
+        (["/path/id1.glb", "/path/id2.glb"], [])  # Second call - files found after download
+    ]
+    
+    mock_load_objects = mocker.patch('scripts.download.objaverse.load_objects')
+    mock_load_objects.return_value = {
+        "id1": "/path/id1.glb",
+        "id2": "/path/id2.glb"
+    }
+    
+    mock_load_db = mocker.patch('scripts.download.load_paths_database')
+    mock_load_db.return_value = {}
+    
+    mock_save_db = mocker.patch('scripts.download.save_paths_database')
+    mock_write = mocker.patch('scripts.download.write_group_to_json')
+    
     groups = [mock_group]
     cpu_count = 4
 
     download.process_groups(groups, mock_args, cpu_count)
 
-    expected_store_path = os.path.join(mock_args.store_path, "glbs", "000-023")
-    mock_process_deps["search"].assert_called_once_with(expected_store_path, mock_group.object_ids)
-    mock_process_deps["load_objects"].assert_called_once_with(
+    # Check first call to search_in_database
+    assert mock_search.call_count == 2
+    mock_search.assert_any_call(mock_args.store_path, mock_group.object_ids)
+    
+    # Check that load_objects was called with correct parameters
+    mock_load_objects.assert_called_once_with(
         uids=mock_group.object_ids,
         download_processes=cpu_count
     )
-    mock_process_deps["write"].assert_called_once_with(
-        mock_group.name, expected_paths, mock_args.save_path, mock_args.groups_json
+    
+    # Check that database operations were performed
+    mock_load_db.assert_called_once_with(mock_args.store_path)
+    mock_save_db.assert_called_once()
+    
+    # Check that write_group_to_json was called with the right paths
+    mock_write.assert_called_once_with(
+        mock_group.name, ["/path/id1.glb", "/path/id2.glb"], mock_args.save_path, mock_args.groups_json
     )
 
-def test_process_groups_some_exist(mock_process_deps, mock_args, mock_group):
+def test_process_groups_some_exist(mocker, mock_args, mock_group):
     """DTC14: Test process_groups when some files exist."""
-    ids_to_download = ["id2"]
-    existing_paths = [os.path.join(mock_args.store_path, "glbs", "000-023", f"{id}.glb") for id in mock_group.object_ids]
-    mock_process_deps["search"].return_value = (existing_paths, ids_to_download)
+    # Setup for the first search_in_database call
+    mock_search = mocker.patch('scripts.download.search_in_database')
+    mock_search.side_effect = [
+        (["/path/id1.glb"], ["id2"]),  # First call - one file exists, one needs download
+        (["/path/id1.glb", "/path/id2.glb"], [])  # Second call - both files found after download
+    ]
+    
+    mock_load_objects = mocker.patch('scripts.download.objaverse.load_objects')
+    mock_load_objects.return_value = {
+        "id2": "/path/id2.glb"
+    }
+    
+    mock_load_db = mocker.patch('scripts.download.load_paths_database')
+    mock_load_db.return_value = {"id1": "/path/id1.glb"}
+    
+    mock_save_db = mocker.patch('scripts.download.save_paths_database')
+    mock_write = mocker.patch('scripts.download.write_group_to_json')
+    
     groups = [mock_group]
     cpu_count = 4
 
     download.process_groups(groups, mock_args, cpu_count)
 
-    expected_store_path = os.path.join(mock_args.store_path, "glbs", "000-023")
-    mock_process_deps["search"].assert_called_once_with(expected_store_path, mock_group.object_ids)
-    mock_process_deps["load_objects"].assert_called_once_with(
-        uids=ids_to_download,
+    # Check calls to search_in_database
+    assert mock_search.call_count == 2
+    mock_search.assert_any_call(mock_args.store_path, mock_group.object_ids)
+    
+    # Check that load_objects was called with correct parameters
+    mock_load_objects.assert_called_once_with(
+        uids=["id2"],
         download_processes=cpu_count
     )
-    mock_process_deps["write"].assert_called_once_with(
-        mock_group.name, existing_paths, mock_args.save_path, mock_args.groups_json
+    
+    # Check that database operations were performed
+    mock_load_db.assert_called_once_with(mock_args.store_path)
+    mock_save_db.assert_called_once()
+    
+    # Check that write_group_to_json was called with the right paths
+    mock_write.assert_called_once_with(
+        mock_group.name, ["/path/id1.glb", "/path/id2.glb"], mock_args.save_path, mock_args.groups_json
     )
 
 # --- Tests for main ---
@@ -336,8 +445,7 @@ def test_main_default_paths(mock_cpu_count, mock_makedirs, mock_process, mock_lo
     mock_cpu_count.return_value = 4
 
     expected_save_path = str(tmp_path / "input")
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    expected_store_path = os.path.join("src", "objects_database")
+    expected_store_path = os.path.join(os.path.dirname(os.path.abspath(__file__).split(os.sep)[-3]), "src", "objects_database")
 
     download.main()
 
