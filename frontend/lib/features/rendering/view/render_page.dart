@@ -31,89 +31,122 @@ class _RenderPageState extends ConsumerState<RenderPage> {
     final selectedGroup = ref.watch(
       renderViewModelProvider.select((state) => state.selectedGroup),
     );
+    final groupNames = ref.watch(
+      renderViewModelProvider.select((state) => state.groupNames),
+    );
 
-    return modelAsync.when(
-      data: (_) {
-        final groupNames = ref.watch(
-          renderViewModelProvider.select((state) => state.groupNames),
-        );
-
-        return Scaffold(
-          appBar: AppBar(title: const Text('Render Settings')),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
+    return (groupNames.isEmpty)
+        ? Scaffold(
+          body: Center(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    DropdownButton<String>(
-                      value: selectedGroup,
-                      hint: const Text('Select a Group'),
-                      items:
-                          groupNames.map((groupName) {
-                            return DropdownMenuItem<String>(
-                              value: groupName,
-                              child: Text(groupName),
-                            );
-                          }).toList(),
-                      onChanged: (value) {
-                        viewModel.selectGroup(value);
-                      },
-                    ),
-                    const SizedBox(width: 16),
-                    ElevatedButton(
-                      onPressed:
-                          viewModel.isDownloading() || groupNames.isEmpty
-                              ? null // Disable button while downloading or when no groups are available
-                              : () => viewModel.sendSettings(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Pallete.whiteColor,
-                      ),
-                      child: const Text('Apply & Send to Server'),
-                    ),
-                  ],
+                const Icon(
+                  Icons.group_work_outlined,
+                  size: 64,
+                  color: Pallete.greyColor,
                 ),
-                const SizedBox(height: 20),
-
-                if (selectedGroup != null)
-                  Expanded(
-                    child: RenderSettingsForm(
-                      viewModel: viewModel.settingsFormViewModel,
-                    ),
+                const SizedBox(height: 16),
+                const Text(
+                  'No groups available',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Pallete.greyColor,
                   ),
-
-                // File Download Status & Controls
-                if (ref.watch(renderViewModelProvider).downloadStatus != null ||
-                    ref.watch(renderViewModelProvider).downloadedFile.isLoading)
-                  _buildDownloadStatusCard(viewModel),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Please create some groups first before rendering',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Pallete.greyColor),
+                ),
               ],
             ),
           ),
-        );
-      },
-      loading: () => const Scaffold(body: Loader()),
-      error:
-          (error, stack) => Scaffold(
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Error loading render settings: ${error.toString()}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Pallete.errorColor),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => ref.refresh(renderViewModelProvider),
-                    child: const Text('Retry'),
-                  ),
-                ],
+        )
+        : modelAsync.when(
+          data: (_) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('Render Settings')),
+              body: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        DropdownButton<String>(
+                          value: selectedGroup,
+                          hint: const Text('Select a Group'),
+                          items:
+                              groupNames.map((groupName) {
+                                return DropdownMenuItem<String>(
+                                  value: groupName,
+                                  child: Text(groupName),
+                                );
+                              }).toList(),
+                          onChanged: (value) {
+                            viewModel.selectGroup(value);
+                          },
+                        ),
+                        const SizedBox(width: 16),
+                        ElevatedButton(
+                          onPressed:
+                              viewModel.isDownloading() || groupNames.isEmpty
+                                  ? null // Disable button while downloading or when no groups are available
+                                  : () => viewModel.sendSettings(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Pallete.whiteColor,
+                          ),
+                          child: const Text('Apply & Send to Server'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    if (selectedGroup != null)
+                      Expanded(
+                        child: RenderSettingsForm(
+                          viewModel: viewModel.settingsFormViewModel,
+                        ),
+                      ),
+
+                    // File Download Status & Controls
+                    if (ref.watch(renderViewModelProvider).downloadStatus !=
+                            null ||
+                        ref
+                            .watch(renderViewModelProvider)
+                            .downloadedFile
+                            .isLoading)
+                      _buildDownloadStatusCard(viewModel),
+                  ],
+                ),
               ),
-            ),
-          ),
-    );
+            );
+          },
+          loading: () => const Scaffold(body: Loader()),
+          error:
+              (error, stack) => Scaffold(
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Error loading render settings: ${error.toString()}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Pallete.errorColor),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => ref.refresh(renderViewModelProvider),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+        );
   }
 
   Widget _buildDownloadStatusCard(RenderViewModel viewModel) {

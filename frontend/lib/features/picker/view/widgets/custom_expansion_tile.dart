@@ -12,14 +12,14 @@ class CustomExpansionTile extends StatefulWidget {
   final String? selectedGroup;
 
   const CustomExpansionTile({
-    Key? key,
+    super.key,
     required this.children,
     required this.onRemove,
     required this.groupId,
     required this.onGroupSelected,
     this.selectedGroup,
     this.initiallyExpanded = false,
-  }) : super(key: key);
+  });
 
   @override
   _CustomExpansionTileState createState() => _CustomExpansionTileState();

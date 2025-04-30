@@ -9,11 +9,11 @@ class CustomListTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const CustomListTile({
-    Key? key,
+    super.key,
     required this.fileName,
     required this.onAddToGroup,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

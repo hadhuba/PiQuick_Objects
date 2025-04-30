@@ -6,7 +6,6 @@ import 'package:frontend/core/theme/theme.dart';
 void main() {
   runApp(
     ProviderScope(
-      // Add ProviderScope at the root
       child: const MyApp(),
     ),
   );

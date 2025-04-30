@@ -8,8 +8,6 @@ part of '../filter_event_bus.dart';
 
 String _$filterEventBusHash() => r'd934e5fd34f1b61381c378df7b181413b52487d0';
 
-/// Riverpod provider az event bus-hoz
-///
 /// Copied from [filterEventBus].
 @ProviderFor(filterEventBus)
 final filterEventBusProvider = Provider<FilterEventBus>.internal(

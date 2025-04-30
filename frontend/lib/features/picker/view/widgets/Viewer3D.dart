@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/theme/app_pallete.dart';
+import 'package:frontend/core/utils.dart';
 import 'package:frontend/features/picker/viewModel/picker_view_model.dart';
 
 /// Interactive 3D model viewer that displays the currently selected object.
@@ -144,10 +145,9 @@ class _Viewer3DState extends State<Viewer3D> {
                 setState(() {
                   isLoadingTexture = false;
                 });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Error loading textures: ${e.toString()}'),
-                  ),
+                showSnackBar(
+                  context,
+                  'Error loading textures: ${e.toString()}',
                 );
               }
             },

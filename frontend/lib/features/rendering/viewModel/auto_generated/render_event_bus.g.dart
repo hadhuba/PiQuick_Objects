@@ -8,8 +8,6 @@ part of '../render_event_bus.dart';
 
 String _$renderEventBusHash() => r'4c8defd76f890111e94843afc8bd702ec857f20c';
 
-/// Riverpod provider az event bus-hoz
-///
 /// Copied from [renderEventBus].
 @ProviderFor(renderEventBus)
 final renderEventBusProvider = Provider<RenderEventBus>.internal(

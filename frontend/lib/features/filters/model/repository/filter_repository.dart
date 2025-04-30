@@ -21,10 +21,8 @@ class FilterRepository {
   FilterRepository({http.Client? client}) : client = client ?? http.Client();
 
     void resetClient() {
-    print('Resetting HTTP client: ${client.hashCode}');
     client.close();
     client = http.Client();
-    print('New HTTP client created: ${client.hashCode}');
   }
 
   Future<Either<AppFailure, List<String>>> applyFilters({
@@ -49,7 +47,6 @@ class FilterRepository {
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode != 200) {
-        print('Failed to apply filter options');
         return Left(
           AppFailure(responseBody['detail'] ?? 'Failed to apply filters'),
         );
@@ -66,7 +63,6 @@ class FilterRepository {
   }
 
   Future<Either<AppFailure, List<Filter>>> getFilterOptions() async {
-    print('getFilterOptions called');
     try {
       final response = await client
           .get(
@@ -75,11 +71,9 @@ class FilterRepository {
           )
           .timeout(const Duration(seconds: 20));
 
-      print('Response status: ${response.statusCode}');
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode != 200) {
-        print('Failed to get filter options');
         return Left(
           AppFailure(responseBody['detail'] ?? 'Failed to get filter options'),
         );
@@ -93,7 +87,6 @@ class FilterRepository {
 
       return Right(filtersList);
     } catch (e) {
-      print('Error in getFilterOptions: $e');
       return Left(AppFailure(e.toString()));
     }
   }
@@ -108,7 +101,6 @@ class FilterRepository {
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode != 200) {
-        print('Failed to get filter options');
         return Left(
           AppFailure(responseBody['detail'] ?? 'Failed to fetch objects list'),
         );

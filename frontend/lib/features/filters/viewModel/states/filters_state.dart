@@ -29,9 +29,9 @@ class FiltersState {
     return filters.when(
       data:
           (filters) =>
-              filters, // Return the list of filters if data is available
-      loading: () => null, // Return null if loading
-      error: (error, stackTrace) => null, // Return null if there's an error
+              filters,
+      loading: () => null,
+      error: (error, stackTrace) => null,
     );
   }
 }
