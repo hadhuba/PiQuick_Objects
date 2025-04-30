@@ -1,24 +1,27 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+/// Represents a filter with a specific type and optional min/max values.
+/// Used to filter 3D objects based on numerical criteria.
 class Filter {
   final String type;
   num? minValue;
   num? maxValue;
   String? description;
 
-  Filter({required this.type, this.minValue, this.maxValue, this.description}) {
-    minValue = minValue ?? null;
-    maxValue = maxValue ?? null;
-    description = description ?? null;
-  }
+  Filter({required this.type, this.minValue, this.maxValue, this.description});
 
-  Filter copyWith({String? type, num? minValue, num? maxValue, String? description}) {
+  Filter copyWith({
+    String? type,
+    num? minValue,
+    num? maxValue,
+    String? description,
+  }) {
     return Filter(
       type: type ?? this.type,
       minValue: minValue ?? this.minValue,
       maxValue: maxValue ?? this.maxValue,
-      description: this.description,
+      description: description ?? this.description,
     );
   }
 
@@ -26,7 +29,7 @@ class Filter {
     return <String, dynamic>{
       'type': type,
       'minValue': minValue,
-      'maxValue': maxValue
+      'maxValue': maxValue,
     };
   }
 
@@ -35,7 +38,8 @@ class Filter {
       type: map['type'] as String,
       minValue: map['minValue'] != null ? map['minValue'] as num : null,
       maxValue: map['maxValue'] != null ? map['maxValue'] as num : null,
-      description: map['description'] != null ? map['description'] as String : null,
+      description:
+          map['description'] != null ? map['description'] as String : null,
     );
   }
 
@@ -59,5 +63,9 @@ class Filter {
   }
 
   @override
-  int get hashCode => type.hashCode ^ minValue.hashCode ^ maxValue.hashCode ^ description.hashCode;
-  }
+  int get hashCode =>
+      type.hashCode ^
+      minValue.hashCode ^
+      maxValue.hashCode ^
+      description.hashCode;
+}

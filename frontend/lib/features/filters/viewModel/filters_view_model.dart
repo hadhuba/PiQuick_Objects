@@ -7,6 +7,8 @@ import 'package:frontend/features/filters/viewModel/states/filters_state.dart';
 
 part 'auto_generated/filters_view_model.g.dart';
 
+/// Manages the application's filtering functionality including filter initialization,
+/// validation, updates, and application of filters to the object list.
 @riverpod
 class FiltersViewModel extends _$FiltersViewModel {
   late FilterRepository _filterRepository;
@@ -28,7 +30,6 @@ class FiltersViewModel extends _$FiltersViewModel {
 
   Future<void> initFilters() async {
     _filterRepository.resetClient(); // Reset the client to avoid conflicts
-    print('initFilters called');
 
     // Cancel any pending requests or reset state to avoid conflicts
     state = state.copyWith(
@@ -156,7 +157,6 @@ class FiltersViewModel extends _$FiltersViewModel {
                 .read(filterEventBusProvider)
                 .emit(AppliedFiltersEvent(newObjects: []));
             if (l.message.contains("TimeoutException")) {
-              print('TimeoutException occurred');
               state = state.copyWith(
                 objectsList: AsyncValue.error(
                   'Error: Server took too long to respond',

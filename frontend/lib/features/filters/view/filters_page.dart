@@ -1,14 +1,13 @@
-// FiltersPage: A Flutter widget that provides an interface for applying filters
-// to a list of 3D objects. Features dynamic min/max value inputs for each filter type
-// and real-time object list updates.
-
 import 'package:flutter/material.dart';
+import 'package:frontend/core/theme/app_pallete.dart';
 import 'package:frontend/core/widgets/loader.dart';
 import 'package:frontend/features/filters/viewModel/filters_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/filters/view/widgets/object_list.dart';
 import 'package:frontend/features/filters/view/widgets/filter_list.dart';
 
+/// A Flutter widget that provides an interface for applying filters to a list of 3D objects.
+/// Features dynamic min/max value inputs for each filter type and real-time object list updates.
 class FiltersPage extends ConsumerStatefulWidget {
   const FiltersPage({super.key});
 
@@ -70,7 +69,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                         style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.blue,
+                                          color: Pallete.gradient1,
                                         ),
                                       ),
                                       const Divider(),
@@ -86,7 +85,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                                       fontSize: 16,
                                                       fontWeight:
                                                           FontWeight.w500,
-                                                      color: Colors.grey,
+                                                      color: Pallete.greyColor,
                                                     ),
                                                   ),
                                                 )
@@ -122,7 +121,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                               style: const TextStyle(
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.blue,
+                                                color: Pallete.gradient1,
                                               ),
                                             ),
                                         loading:
@@ -131,7 +130,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                               style: TextStyle(
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.blue,
+                                                color: Pallete.gradient1,
                                               ),
                                             ),
                                         error:
@@ -140,7 +139,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                               style: TextStyle(
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.red,
+                                                color: Pallete.errorColor,
                                               ),
                                             ),
                                       ),
@@ -161,7 +160,7 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                                                 child: Text(
                                                   '$error',
                                                   style: const TextStyle(
-                                                    color: Colors.red,
+                                                    color: Pallete.errorColor,
                                                   ),
                                                 ),
                                               ),
@@ -213,16 +212,14 @@ class _FiltersPageState extends ConsumerState<FiltersPage> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: Colors.red,
+                      color: Pallete.errorColor,
                     ),
                   ),
 
                   IconButton(
                     icon: const Icon(Icons.refresh),
                     onPressed: () {
-                      ref.invalidate(
-                        filtersViewModelProvider,
-                      ); // Invalidate the provider to trigger a rebuild
+                      ref.invalidate(filtersViewModelProvider);
                     },
                   ),
                 ],

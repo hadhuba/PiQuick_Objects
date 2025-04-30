@@ -22,8 +22,8 @@ class FilterRepository {
 
     void resetClient() {
     print('Resetting HTTP client: ${client.hashCode}');
-    client.close(); // Close the existing client to release resources
-    client = http.Client(); // Create a new client instance
+    client.close();
+    client = http.Client();
     print('New HTTP client created: ${client.hashCode}');
   }
 

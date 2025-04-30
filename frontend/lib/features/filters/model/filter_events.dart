@@ -1,11 +1,11 @@
-// A filters modul különböző eseményeinek definíciói
+/// Base class for all filter-related events in the application.
 abstract class FilterEvent {
   const FilterEvent();
 }
 
-// A beállítások mentésének eseménye
+/// Event triggered when filters are applied, containing the new list of objects.
 class AppliedFiltersEvent extends FilterEvent {
-  final List<String>? newObjects; // A beállítások objektum
+  final List<String>? newObjects;
 
   const AppliedFiltersEvent({required this.newObjects});
 }
