@@ -16,12 +16,21 @@ PiQuick_Objects is a toolkit and web application designed for preparing datasets
 
 pip install -r requirements.txt
 
+you can follow the instructions intuitively in first_setup as well (learn by doing)
+
 ### ***download.py***
 
 The ```download.py``` script downloads 3D objects from Objaverse based on a specified list of object IDs. This script checks existing files to avoid redundant downloads, handles missing objects, and supports multiprocessing to improve speed by leveraging available CPU cores.
+´´´
+python3 scripts/utils/uid_prep.py   --group_names "example_metadata"\
+                                    --number_of_glbs "50"\
+                                    --save_path src/\
+                                    --name example_metadata_ids
+´´´
+"group" file without settings created at src/example_metadata_ids.json
+
 ```
-python3 scripts/download.py     --groups_json src/download_test.json\
-                                --save_path src/
+python3 scripts/download.py     --groups_json src/example_metadata_ids.json
 ```
 
 ### ***uid_prep.py***
@@ -45,10 +54,6 @@ Note that the groups_json file can either be created with this helper script or 
 ### ***metadata_multiproc.py***
 The ```metadata_multiproc``` script uses Blender to extract and save metadata for a given set of objects. The key feature of this script is its flexibility in easily adding new rendering parameters or metadata extraction criteria. You can customize what metadata to extract for each 3D object and how to organize the output, making it simple to adapt the process to new requirements.
 
-```
-python3 scripts/download.py     --groups_json src/metadata_test.json\
-                                --save_path src/
-```
 This script is designed to be extended, allowing you to add additional metadata extraction features or render parameters at any point in the process.
 
 #### Download Blender:
@@ -65,15 +70,11 @@ wget https://download.blender.org/release/Blender3.2/blender-3.2.2-linux-x64.tar
 sudo apt-get install xserver-xorg -y && \
   sudo python3 start_x_server.py start
 ```
-
-Run metadata_multiproc
-```
-cd ..\
-
+´´´
 scripts/blender-3.2.2-linux-x64/blender --background --python scripts/metadata_multiproc.py -- \
         --save_path metadata/ \
-        --objects_path src/metadata_test_paths/
-```
+        --objects_path src/example_metadata_ids_paths/
+´´´
 
 <!-- optional parameters \
     --cpu_count 16 \
@@ -102,11 +103,21 @@ wget https://download.blender.org/release/Blender3.2/blender-3.2.2-linux-x64.tar
 sudo apt-get install xserver-xorg -y && \
   sudo python3 start_x_server.py start
 ```
-
+´´´
+python3 scripts/utils/uid_prep.py       --group_names "example_render_five,example_render_three"\
+                                        --number_of_glbs "5,3"\
+                                        --save_path src/\
+                                        --name example_render_ids
+´´´
+```
+python3 scripts/utils/ids_to_groups.py  --path_to_groups src/example_render_ids.json\
+                                        --save_path src\
+                                        --name example_render_group
+```
 Run render.py
 ```
 python3 scripts/render.py \
-    --groups_json "src/render_test.json" \
+    --groups_json "src/example_render_group.json" \
     --save_path "src/" \
     --output_dir "results/" \
     --num_of_gpus 2 \
