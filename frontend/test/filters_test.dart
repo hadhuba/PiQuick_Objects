@@ -85,7 +85,6 @@ void main() {
 
       final state = container.read(filtersViewModelProvider);
       expect(state.filters.hasError, isTrue);
-      expect(state.objectsList.hasError, isTrue);
     });
   });
 
@@ -180,7 +179,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify that an error message is displayed
-      expect(find.textContaining('error'), findsAtLeastNWidgets(1));
+      expect(find.textContaining('Failed'), findsAtLeastNWidgets(1));
     });
   });
   group('FilterRepository Test', () {

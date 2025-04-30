@@ -72,11 +72,11 @@ class FiltersViewModel extends _$FiltersViewModel {
           if (l.message.contains("TimeoutException")) {
             state = state.copyWith(
               objectsList: AsyncValue.error(
-                'Server took too long to respond',
+                'Error: Server took too long to respond',
                 StackTrace.current,
               ),
               serverConnection: AsyncValue.error(
-                'Server took too long to respond',
+                'Error: Server took too long to respond',
                 StackTrace.current,
               ),
             );
@@ -159,11 +159,11 @@ class FiltersViewModel extends _$FiltersViewModel {
               print('TimeoutException occurred');
               state = state.copyWith(
                 objectsList: AsyncValue.error(
-                  'Server took too long to respond',
+                  'Error: Server took too long to respond',
                   StackTrace.current,
                 ),
                 serverConnection: AsyncValue.error(
-                  'Server took too long to respond',
+                  'Error: Server took too long to respond',
                   StackTrace.current,
                 ),
               );
