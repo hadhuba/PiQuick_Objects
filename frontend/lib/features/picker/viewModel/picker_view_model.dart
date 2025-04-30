@@ -21,9 +21,7 @@ class PickerViewModel extends _$PickerViewModel {
 
   @override
   PickerState build() {
-    _pickerRepository =ref.watch(
-      pickerRepositoryProvider,
-    );
+    _pickerRepository = ref.watch(pickerRepositoryProvider);
 
     final initialState = PickerState(
       objects: AsyncValue.loading(),

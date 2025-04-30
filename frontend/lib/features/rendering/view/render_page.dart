@@ -4,11 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:frontend/core/theme/app_pallete.dart';
 import 'package:frontend/core/utils.dart';
 import 'package:frontend/core/widgets/loader.dart';
 import 'package:frontend/features/rendering/viewModel/render_view_model.dart';
 import 'package:frontend/features/rendering/view/render_settings_form.dart';
 
+/// Main interface for configuring and sending rendering requests to the server.
+/// Provides group selection, rendering options, and displays download status.
 class RenderPage extends ConsumerStatefulWidget {
   const RenderPage({super.key});
 
@@ -65,7 +68,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                               : () => viewModel.sendSettings(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Colors.white,
+                        foregroundColor: Pallete.whiteColor,
                       ),
                       child: const Text('Apply & Send to Server'),
                     ),
@@ -99,7 +102,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                   Text(
                     'Error loading render settings: ${error.toString()}',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.red),
+                    style: const TextStyle(color: Pallete.errorColor),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -160,7 +163,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                         const Expanded(
                           child: Text(
                             'Your download has started. If it doesn\'t appear, check your browser\'s download folder.',
-                            style: TextStyle(color: Colors.green),
+                            style: TextStyle(color: Pallete.successColor),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -184,8 +187,8 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                             label: const Text('Open Rendered Files'),
                             onPressed: () => _openFile(file),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
+                              backgroundColor: Pallete.successColor,
+                              foregroundColor: Pallete.whiteColor,
                             ),
                           ),
                         ),
@@ -209,7 +212,7 @@ class _RenderPageState extends ConsumerState<RenderPage> {
                       children: [
                         Text(
                           error.toString(),
-                          style: const TextStyle(color: Colors.red),
+                          style: const TextStyle(color: Pallete.errorColor),
                         ),
                         ElevatedButton(
                           onPressed: () => viewModel.resetDownload(),

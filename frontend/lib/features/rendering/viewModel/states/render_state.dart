@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/rendering/model/render_model.dart';
 import 'dart:io';
 
+/// State class for the rendering feature.
+/// Manages the rendering model, selected group information, group names list,
+/// and download-related states for rendered output files.
 class RenderState {
   final AsyncValue<RenderModel> renderModel;
   final String? selectedGroup;

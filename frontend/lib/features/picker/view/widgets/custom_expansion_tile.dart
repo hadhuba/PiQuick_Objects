@@ -79,10 +79,7 @@ class _CustomExpansionTileState extends State<CustomExpansionTile>
       decoration: BoxDecoration(
         border:
             isSelected
-                ? Border.all(
-                  color: Pallete.gradient1,
-                  width: 3.0,
-                )
+                ? Border.all(color: Pallete.gradient1, width: 3.0)
                 : Border.all(color: Pallete.transparentColor),
         borderRadius: BorderRadius.circular(8.0),
       ),

@@ -5,31 +5,31 @@ import 'package:frontend/features/rendering/model/render_events.dart';
 
 part 'auto_generated/render_event_bus.g.dart';
 
-/// Event bus osztály, ami központilag kezeli a rendering eseményeket.
-/// Biztosítja, hogy a komponensek kommunikálhassanak egymással közvetlen függőség nélkül.
+/// Event bus class that centrally manages rendering events.
+/// Enables components to communicate without direct dependencies.
 class RenderEventBus {
   final _controller = StreamController<RenderEvent>.broadcast();
 
-  /// A stream, amit más komponensek figyelhetnek az események kezelésére
+  /// Stream that other components can listen to for handling events
   Stream<RenderEvent> get events => _controller.stream;
 
-  /// Esemény kiváltása a buszra
+  /// Emit an event to the bus
   void emit(RenderEvent event) {
     _controller.add(event);
   }
 
-  /// Adott típusú események figyelése
+  /// Listen for events of a specific type
   Stream<T> on<T extends RenderEvent>() {
     return events.where((event) => event is T).cast<T>();
   }
 
-  /// Erőforrások felszabadítása
+  /// Release resources
   void dispose() {
     _controller.close();
   }
 }
 
-/// Riverpod provider az event bus-hoz
+/// Riverpod provider for the event bus
 @Riverpod(keepAlive: true)
 RenderEventBus renderEventBus(Ref ref) {
   final bus = RenderEventBus();

@@ -225,7 +225,8 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                                                   Icons
                                                                       .remove_circle_outline,
                                                                   color:
-                                                                      Pallete.errorColor,
+                                                                      Pallete
+                                                                          .errorColor,
                                                                 ),
                                                                 onPressed: () {
                                                                   ref
@@ -264,8 +265,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
               Flexible(
                 child: Scaffold(
                   appBar: AppBar(
-                    title:
-                    ref
+                    title: ref
                         .read(pickerViewModelProvider)
                         .objects
                         .when(
@@ -346,9 +346,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                                   pickerViewModelProvider
                                                       .notifier,
                                                 )
-                                                .addToGroup(
-                                                  file,
-                                                );
+                                                .addToGroup(file);
                                           },
                                           onTap: () {
                                             ref

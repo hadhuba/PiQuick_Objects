@@ -5,7 +5,9 @@ import 'package:frontend/features/rendering/model/render_settings.dart';
 import 'package:frontend/features/rendering/model/settings_form_model.dart';
 import 'package:frontend/features/rendering/viewModel/settings_form_view_model.dart';
 
-/// A form for configuring render settings for a group of objects
+/// Form widget for configuring rendering settings for a group of 3D objects.
+/// Provides controls for all rendering parameters including image count, resolution,
+/// view modes, and other rendering options with tooltips for each setting.
 class RenderSettingsForm extends ConsumerStatefulWidget {
   const RenderSettingsForm({super.key, required this.viewModel});
   final SettingsFormViewModel viewModel;
@@ -15,20 +17,7 @@ class RenderSettingsForm extends ConsumerStatefulWidget {
 }
 
 class _RenderSettingsFormState extends ConsumerState<RenderSettingsForm> {
-  // @override
-  // void didUpdateWidget(RenderSettingsForm oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  //   if (oldWidget.groupName != widget.groupName) {
-  //     viewModel.dispose();
-  //     viewModel = RenderSettingsFormController(
-  //       viewModel: ref.read(renderViewModelProvider.notifier),
-  //       groupName: widget.groupName,
-  //     );
-  //     setState(() {});
-  //   }
-  // }
-
-  // Helper method to create hover-based tooltip widgets
+  /// Helper method to create hover-based tooltip widgets
   Widget _createSettingField({
     required String fieldId,
     required Widget child,
@@ -45,9 +34,8 @@ class _RenderSettingsFormState extends ConsumerState<RenderSettingsForm> {
 
   @override
   Widget build(BuildContext context) {
-    // final viewModel = widget.viewModel;
     final viewModel = ref.watch(settingsFormViewModelProvider.notifier);
-    // Force rebuild when download status changes
+
     return Column(
       children: [
         Expanded(

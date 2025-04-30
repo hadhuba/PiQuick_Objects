@@ -14,8 +14,6 @@ import 'package:frontend/features/picker/viewModel/picker_event_bus.dart';
 import 'package:frontend/features/filters/viewModel/filter_event_bus.dart';
 import 'package:frontend/features/filters/model/filter_events.dart';
 
-// Mock osztály létrehozása a PickerViewModel-hez
-
 class MockHttpClient extends Mock implements http.Client {}
 
 class MockPickerRepository extends Mock implements PickerRepository {}

@@ -153,6 +153,7 @@ class _Viewer3DState extends State<Viewer3D> {
             },
             icon:
                 isLoadingTexture
+                    // ignore: dead_code
                     ? const SizedBox(
                       width: 24,
                       height: 24,

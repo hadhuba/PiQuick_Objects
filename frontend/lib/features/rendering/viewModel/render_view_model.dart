@@ -16,6 +16,8 @@ import 'dart:io';
 
 part 'auto_generated/render_view_model.g.dart';
 
+/// Manages the rendering process including group settings, form handling,
+/// and communication with the server for rendering 3D objects.
 @riverpod
 class RenderViewModel extends _$RenderViewModel {
   late RenderRepository _renderRepository;
@@ -27,7 +29,7 @@ class RenderViewModel extends _$RenderViewModel {
     _renderRepository = ref.watch(renderRepositoryProvider);
     settingsFormViewModel = ref.watch(settingsFormViewModelProvider.notifier);
 
-    // Figyeljük az EventBus eseményeit
+    // Setup event listeners
     _setupEventListeners();
     ref.onDispose(() {
       _eventSubscription?.cancel();
@@ -69,18 +71,20 @@ class RenderViewModel extends _$RenderViewModel {
     sendSettings();
   }
 
-  // SettingsFormViewModel létrehozás vagy frissítése
+  /// Creates or updates the settings form for a specific group
   SettingsFormViewModel createOrUpdateSettingsForm(String groupName) {
     final settings = getSettingsForGroup(groupName);
     settingsFormViewModel.initialize(groupName: groupName, settings: settings);
     return settingsFormViewModel;
   }
 
+  /// Creates an empty settings form when no group is selected
   SettingsFormViewModel emptySettingsForm() {
     settingsFormViewModel.initialize(groupName: null, settings: null);
     return settingsFormViewModel;
   }
 
+  /// Updates the render model when object groups change
   void updateRender({required ObjectGroups groupedObjects}) {
     // Get current render model if available to preserve existing settings
     final currentRenderModel = state.renderModel.valueOrNull;
@@ -116,7 +120,7 @@ class RenderViewModel extends _$RenderViewModel {
       }
 
       newGroups.add(
-        Group(name: groupName, object_ids: objectIds, settings: settings),
+        Group(name: groupName, objectIds: objectIds, settings: settings),
       );
     }
 
@@ -148,9 +152,9 @@ class RenderViewModel extends _$RenderViewModel {
     } else {
       emptySettingsForm();
     }
-    print("Updating render with new object groups... ${state.renderModel}");
   }
 
+  /// Gets the settings for a specific group
   RenderSettings? getSettingsForGroup(String groupName) {
     return state.renderModel
         .whenData((renderModel) => renderModel.get(groupName)?.settings)
@@ -181,6 +185,7 @@ class RenderViewModel extends _$RenderViewModel {
     }
   }
 
+  /// Updates the settings for a specific group
   void updateGroupSettings(String groupName, RenderSettings newSettings) {
     if (state.renderModel.isLoading) {
       return;
@@ -193,6 +198,7 @@ class RenderViewModel extends _$RenderViewModel {
     );
   }
 
+  /// Sends the rendering settings to the server and handles the response
   Future<void> sendSettings() async {
     final newSettings =
         settingsFormViewModel.state.formModel.toRenderSettings();
@@ -207,9 +213,7 @@ class RenderViewModel extends _$RenderViewModel {
       try {
         state = state.copyWith(downloadStatus: "Processing render request...");
 
-        final response = await _renderRepository.sendSettings(
-          renderModel,
-        );
+        final response = await _renderRepository.sendSettings(renderModel);
 
         state = switch (response) {
           Right(value: final r) => state.copyWith(

@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+/// Manages rendering configuration options with detailed documentation.
+/// Contains properties that control how 3D objects are rendered, including angles,
+/// resolution, modes, and other rendering parameters.
 class RenderSettings {
   // Internal properties that match the Python Pydantic model
   int numImages;

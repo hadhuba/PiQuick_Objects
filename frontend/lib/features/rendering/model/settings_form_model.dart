@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/features/rendering/model/render_settings.dart';
 
-/// Form model that encapsulates the state and logic for the render settings form
+/// Encapsulates the state and logic for the render settings form.
+/// Manages form controllers, validation, and conversion between form values and render settings.
+/// Provides methods to create form models from existing settings or with default values.
 class SettingsFormModel {
   TextEditingController numImagesController;
   TextEditingController resolutionController;
@@ -66,6 +68,7 @@ class SettingsFormModel {
       separately: true,
     );
   }
+
   /// Convert form values to RenderSettings object
   RenderSettings toRenderSettings() {
     return RenderSettings(

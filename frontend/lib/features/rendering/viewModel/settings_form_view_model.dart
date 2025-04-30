@@ -8,12 +8,14 @@ import 'package:frontend/features/rendering/viewModel/states/settings_form_state
 
 part 'auto_generated/settings_form_view_model.g.dart';
 
+/// Manages the form for configuring rendering settings.
+/// Handles form state, validation, saving settings, and communication with the event bus.
 @riverpod
 class SettingsFormViewModel extends _$SettingsFormViewModel {
   String? _groupName;
   RenderSettings? _settings;
 
-  // Initialize with group name and settings
+  /// Initialize with group name and settings
   void initialize({String? groupName, RenderSettings? settings}) {
     _groupName = groupName;
     _settings = settings;
@@ -32,9 +34,10 @@ class SettingsFormViewModel extends _$SettingsFormViewModel {
     // Default empty state - must call initialize() before using
     return SettingsFormState(
       groupName: groupName,
-      formModel: settings != null
-            ? SettingsFormModel.fromSettings(settings)
-            : SettingsFormModel.defaults(),
+      formModel:
+          settings != null
+              ? SettingsFormModel.fromSettings(settings)
+              : SettingsFormModel.defaults(),
     );
   }
 
@@ -53,7 +56,7 @@ class SettingsFormViewModel extends _$SettingsFormViewModel {
       formModel: formModel,
     );
 
-    // Értesítjük az event bus-on keresztül, hogy a form reset történt
+    // Notify via the event bus that a form reset occurred
     ref
         .read(renderEventBusProvider)
         .emit(ResetFormEvent(groupName: state.groupName));
@@ -62,7 +65,7 @@ class SettingsFormViewModel extends _$SettingsFormViewModel {
   /// Save the current form values to the view model
   bool saveSettings() {
     if (state.formModel.validate()) {
-      // Kiváltunk egy eseményt az event bus-on keresztül
+      // Emit an event through the event bus
       final newSettings = state.formModel.toRenderSettings();
       _settings = newSettings; // Save settings locally too
 
@@ -82,7 +85,7 @@ class SettingsFormViewModel extends _$SettingsFormViewModel {
   /// Save settings and send to server
   void saveAndSendSettings() {
     if (saveSettings()) {
-      // Kiváltunk egy eseményt a beállítások elküldésére
+      // Emit an event to send the settings
       ref.read(renderEventBusProvider).emit(const SendSettingsEvent());
     }
   }

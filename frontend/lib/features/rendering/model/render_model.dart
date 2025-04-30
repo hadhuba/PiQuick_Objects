@@ -2,6 +2,8 @@ import 'package:frontend/features/picker/model/object_groups_model.dart';
 import 'package:frontend/features/rendering/model/group.dart';
 import 'package:frontend/features/rendering/model/render_settings.dart';
 
+/// Manages groups of 3D objects with their rendering settings.
+/// Provides methods for getting, updating, and converting render groups.
 class RenderModel {
   final List<Group> _groups;
 
@@ -36,7 +38,7 @@ class RenderModel {
       groups.add(
         Group(
           name: groupName,
-          object_ids: objectIds,
+          objectIds: objectIds,
           settings:
               renderSettings, // Use the same renderSettings for all groups
         ),
@@ -58,13 +60,13 @@ class RenderModel {
       final existingGroup = updatedGroups[existingIndex];
       updatedGroups[existingIndex] = Group(
         name: existingGroup.name,
-        object_ids: existingGroup.object_ids,
+        objectIds: existingGroup.objectIds,
         settings: settings,
       );
     } else {
       // Create a new group if one doesn't exist
       updatedGroups.add(
-        Group(name: groupName, object_ids: [], settings: settings),
+        Group(name: groupName, objectIds: [], settings: settings),
       );
     }
     return RenderModel(groups: updatedGroups);
@@ -76,7 +78,7 @@ class RenderModel {
         .map(
           (group) => {
             'name': group.name,
-            'object_ids': group.object_ids,
+            'object_ids': group.objectIds,
             'settings': group.settings.toMap(),
           },
         )

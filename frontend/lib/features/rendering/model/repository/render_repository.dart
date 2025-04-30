@@ -13,12 +13,17 @@ import 'package:frontend/core/web_download_helper.dart';
 
 part 'render_repository.g.dart';
 
+/// Provider for the RenderRepository
 @riverpod
 RenderRepository renderRepository(Ref ref) {
   return RenderRepository();
 }
 
+/// Repository responsible for handling server communication related to rendering operations.
+/// Manages sending render settings to the server and processing the resulting files.
 class RenderRepository {
+  /// Sends rendering settings to the server and processes the returned ZIP file.
+  /// Returns either a File object pointing to the downloaded ZIP file or an AppFailure.
   Future<Either<AppFailure, File?>> sendSettings(
     RenderModel renderModel,
   ) async {
@@ -54,7 +59,7 @@ class RenderRepository {
           return Right(zipFile);
         }
       } else {
-        // JSON-ból kinyerjük a "detail" mezőt, ha van
+        // Extract the "detail" field from the JSON response if available
         String errorMessage;
         try {
           final Map<String, dynamic> json = jsonDecode(response.body);
