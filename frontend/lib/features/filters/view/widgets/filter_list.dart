@@ -1,7 +1,6 @@
 // Extracted reusable widget for the filter list
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/core/theme/app_pallete.dart';
 import 'package:frontend/core/utils.dart';
 import 'package:frontend/features/filters/model/filter.dart';
 import 'package:frontend/features/filters/view/widgets/filter_input_field.dart';

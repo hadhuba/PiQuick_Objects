@@ -12,6 +12,8 @@ import 'package:frontend/features/filters/model/filter_events.dart';
 import 'package:frontend/features/filters/viewModel/filter_event_bus.dart';
 part 'auto_generated/picker_view_model.g.dart';
 
+/// Manages the object picker functionality including group management, 3D object viewing,
+/// and handling events related to object selection and filtering.
 @riverpod
 class PickerViewModel extends _$PickerViewModel {
   late PickerRepository _pickerRepository;
@@ -21,10 +23,10 @@ class PickerViewModel extends _$PickerViewModel {
   PickerState build() {
     _pickerRepository =ref.watch(
       pickerRepositoryProvider,
-    ); // if it changes the latest comes, build runs again
+    );
 
     final initialState = PickerState(
-      objects: AsyncValue.loading(), // Initialize the state with loading
+      objects: AsyncValue.loading(),
       groupedObjects: AsyncValue.loading(),
       viewer3DState: AsyncValue.data(
         Viewer3DState(currentObj: 'assets/Astronaut.glb', currentTexture: null),
@@ -58,13 +60,10 @@ class PickerViewModel extends _$PickerViewModel {
   }
 
   void updateObj(String newObj) {
-    // Set the state to loading while the object is being fetched
     state = state.copyWith(viewer3DState: const AsyncValue.loading());
 
-    // Fetch the object from the  repository
     final response = _pickerRepository.hostThisObject(newObj: newObj);
 
-    // Handle the response using a switch expression
     state = switch (response) {
       Right(value: final newObjUrl) => state.copyWith(
         viewer3DState: AsyncValue.data(
@@ -99,8 +98,7 @@ class PickerViewModel extends _$PickerViewModel {
 
   void addToGroup(String objectId) {
     if (state.selectedGroup == null) {
-      // setNotification('Please select a group first');
-      return; // No group selected, do nothing
+      return;
     }
 
     state.groupedObjects.whenData(
@@ -124,13 +122,11 @@ class PickerViewModel extends _$PickerViewModel {
       return "Group name cannot be empty";
     }
 
-    // Check if the group already exists
     String? errorMessage;
     state.groupedObjects.whenData((groups) {
       if (groups.groups.containsKey(groupname)) {
         errorMessage = "A group with name '$groupname' already exists";
       } else {
-        // Group doesn't exist, create it
         state = state.copyWith(
           groupedObjects: AsyncValue.data(
             groups.createGroup(groupName: groupname),

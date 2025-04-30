@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/core/theme/app_pallete.dart';
 
 /// A reusable input field specifically designed for filter values.
 /// Provides a labeled text field for entering numerical filter criteria.

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/core/theme/app_pallete.dart';
 import 'package:frontend/core/utils.dart';
 import 'package:frontend/core/widgets/loader.dart';
 import 'package:frontend/features/picker/view/widgets/Viewer3D.dart';
@@ -8,6 +9,8 @@ import 'package:frontend/features/picker/view/widgets/custom_expansion_tile.dart
 import 'package:frontend/features/picker/view/widgets/custom_list_tile.dart';
 import 'package:frontend/features/picker/viewModel/picker_view_model.dart';
 
+/// Main interface for selecting and organizing 3D objects into groups.
+/// Features a 3D model viewer, group management system, and object selection list.
 class PickerPage extends ConsumerStatefulWidget {
   const PickerPage({super.key});
 
@@ -22,7 +25,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
   void initState() {
     super.initState();
     controller.onModelLoaded.addListener(() {
-      debugPrint('Model is loaded: ${controller.onModelLoaded.value}');
+      // Model loaded event
     });
   }
 
@@ -46,7 +49,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                   isLoading: isLoading,
                   currentObj: currentObj,
                   currentTexture: currentTexture,
-                  ref: ref, // Pass ref to Viewer3D
+                  ref: ref,
                 ),
               ),
             ],
@@ -158,7 +161,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
-                                              color: Colors.grey,
+                                              color: Pallete.greyColor,
                                             ),
                                           ),
                                         )
@@ -171,7 +174,6 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                                 List<String> items =
                                                     entry.value;
                                                 return CustomExpansionTile(
-                                                  // title: Text(groupName),
                                                   groupId: groupName,
                                                   selectedGroup:
                                                       ref
@@ -187,10 +189,6 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                                           )
                                                           .selectGroup,
                                                   onRemove: () {
-                                                    debugPrint(
-                                                      'Remove button clicked for group: $groupName',
-                                                    );
-                                                    // Add logic to remove the entire group
                                                     ref
                                                         .read(
                                                           pickerViewModelProvider
@@ -208,7 +206,6 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                                               Expanded(
                                                                 child: GestureDetector(
                                                                   onTap: () {
-                                                                    // saveObjToHistory(item);
                                                                     ref
                                                                         .read(
                                                                           pickerViewModelProvider
@@ -228,13 +225,9 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                                                   Icons
                                                                       .remove_circle_outline,
                                                                   color:
-                                                                      Colors
-                                                                          .red,
+                                                                      Pallete.errorColor,
                                                                 ),
                                                                 onPressed: () {
-                                                                  debugPrint(
-                                                                    'Remove button clicked for: $item',
-                                                                  );
                                                                   ref
                                                                       .read(
                                                                         pickerViewModelProvider
@@ -272,7 +265,6 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                 child: Scaffold(
                   appBar: AppBar(
                     title:
-                    // const Text("Listed Objects")
                     ref
                         .read(pickerViewModelProvider)
                         .objects
@@ -280,10 +272,10 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                           data:
                               (objectsList) => Text(
                                 'Objects (${objectsList.length})',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.blue,
+                                  color: Pallete.gradient1,
                                 ),
                               ),
                           loading:
@@ -292,7 +284,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.blue,
+                                  color: Pallete.gradient1,
                                 ),
                               ),
                           error:
@@ -301,7 +293,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.blue,
+                                  color: Pallete.gradient1,
                                 ),
                               ),
                         ),
@@ -320,7 +312,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.grey,
+                                          color: Pallete.greyColor,
                                         ),
                                       ),
                                     )
@@ -334,15 +326,6 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                           0,
                                       itemBuilder: (context, index) {
                                         final file = objects[index];
-                                        // return ListTile(
-                                        //   title: Text(file),
-                                        //   onTap: () {
-                                        //     // saveObjToHistory(file);
-                                        //     ref
-                                        //         .read(pickerViewModelProvider.notifier)
-                                        //         .updateObj(file);
-                                        //   },
-                                        // );
                                         return CustomListTile(
                                           fileName: file,
                                           onAddToGroup: () {
@@ -365,11 +348,9 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                                                 )
                                                 .addToGroup(
                                                   file,
-                                                ); //TODO not add multiple times
+                                                );
                                           },
                                           onTap: () {
-                                            // saveObjToHistory(file);
-
                                             ref
                                                 .read(
                                                   pickerViewModelProvider

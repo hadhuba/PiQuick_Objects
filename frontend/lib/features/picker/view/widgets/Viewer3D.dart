@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/theme/app_pallete.dart';
 import 'package:frontend/features/picker/viewModel/picker_view_model.dart';
 
+/// Interactive 3D model viewer that displays the currently selected object.
+/// Supports model loading, texture switching, and provides visual feedback during loading.
 class Viewer3D extends StatefulWidget {
   final Flutter3DController controller;
   final bool isLoading;
   final String? currentObj;
   final String? currentTexture;
-  final WidgetRef ref; // Add ref to access Riverpod providers
+  final WidgetRef ref;
 
   const Viewer3D({
     Key? key,
@@ -31,14 +33,12 @@ class _Viewer3DState extends State<Viewer3D> {
   void initState() {
     super.initState();
     controller.onModelLoaded.addListener(() {
-      debugPrint('model is loaded : ${controller.onModelLoaded.value}');
+      // Model loaded event
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(widget.currentObj);
-
     // For textures
     bool isLoadingTexture = false;
 
@@ -83,7 +83,7 @@ class _Viewer3DState extends State<Viewer3D> {
                       },
                       separatorBuilder: (ctx, index) {
                         return const Divider(
-                          color: Colors.grey,
+                          color: Pallete.greyColor,
                           thickness: 0.6,
                           indent: 10,
                           endIndent: 10,
@@ -102,7 +102,7 @@ class _Viewer3DState extends State<Viewer3D> {
           widget.currentObj != null
               ? widget.currentObj!.split("=").last
               : "3D Viewer",
-          style: const TextStyle(color: Colors.black),
+          style: const TextStyle(color: Pallete.whiteColor),
         ),
       ),
       floatingActionButton: Column(
@@ -153,7 +153,6 @@ class _Viewer3DState extends State<Viewer3D> {
             },
             icon:
                 isLoadingTexture
-                    // ignore: dead_code
                     ? const SizedBox(
                       width: 24,
                       height: 24,
@@ -168,7 +167,7 @@ class _Viewer3DState extends State<Viewer3D> {
           return Container(
             decoration: const BoxDecoration(
               gradient: RadialGradient(
-                colors: [Color(0xffffffff), Colors.grey],
+                colors: [Pallete.whiteColor, Pallete.greyColor],
                 stops: [0.1, 1.0],
                 radius: 0.7,
                 center: Alignment.center,
@@ -179,16 +178,16 @@ class _Viewer3DState extends State<Viewer3D> {
             child: Flutter3DViewer(
               key: ValueKey(widget.currentObj),
               activeGestureInterceptor: true,
-              progressBarColor: Colors.red,
+              progressBarColor: Pallete.errorColor,
               enableTouch: true,
               onProgress: (double progressValue) {
-                debugPrint('Model loading progress: $progressValue');
+                // Model loading progress
               },
               onLoad: (String modelAddress) {
-                debugPrint('Model loaded: $modelAddress');
+                // Model loaded
               },
               onError: (String error) {
-                debugPrint('Model failed to load: $error');
+                // Model failed to load
               },
               controller: controller,
               src: widget.currentObj ?? 'frontend/assets/Astronaut.glb',

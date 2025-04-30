@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/theme/app_pallete.dart';
 
+/// A custom list tile widget designed for displaying object files with actions.
+/// Provides functionality to view a 3D object and add it to a selected group.
 class CustomListTile extends StatelessWidget {
   final String fileName;
   final VoidCallback onAddToGroup;
@@ -17,10 +20,10 @@ class CustomListTile extends StatelessWidget {
     return ListTile(
       title: Text(fileName),
       trailing: IconButton(
-        icon: const Icon(Icons.group_add, color: Colors.blue),
-        onPressed: onAddToGroup, // Trigger the add-to-group logic
+        icon: const Icon(Icons.group_add, color: Pallete.gradient1),
+        onPressed: onAddToGroup,
       ),
-      onTap: onTap, // Trigger the on-tap logic
+      onTap: onTap,
     );
   }
 }
