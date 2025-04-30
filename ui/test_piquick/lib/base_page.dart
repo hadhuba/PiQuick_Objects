@@ -18,7 +18,7 @@ class _BasePageState extends ConsumerState<BasePage> {
   Widget build(BuildContext context) {
     final pages = [
       const FiltersPage(), // Filter page.
-      PickerPage(), // PickerPage widget for 3D object selection.
+      const PickerPage(), // PickerPage widget for 3D object selection.
       const RenderPage(), // Render page.
     ];
 
@@ -27,7 +27,7 @@ class _BasePageState extends ConsumerState<BasePage> {
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       body: IndexedStack(
         index: selectedIndex,
-        children: pages, // Keeps the state of each page intact.
+        children: pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
