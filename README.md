@@ -109,7 +109,23 @@ python3 scripts/render.py \
     --output_file results/result.zip
 ```
 
+## The flutter application
 
+Navigate to the root of the flutter project.
+
+>run 
+
+```flutter pub get```
+
+run the server in the backend project with the command:
+
+```
+uvicorn server.main:app --host 127.0.0.1 --port 8007
+```
+
+run the flutter project from the root as:
+
+```flutter run```
 
 ## utils
 
