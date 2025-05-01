@@ -701,8 +701,7 @@ def render_scene(
     
 #print('args.mode_four_view:',args.mode_four_view)
     if args.mode_four_view:
-
-        #front
+        frame = 0
         place_camera(
             0,
             camera_pose_mode="random",
